@@ -1,0 +1,32 @@
+{
+  "name": "mcma-core",
+  "version": "0.0.0",
+  "description": "Node module with type definitions and helper utils for the EBU MCMA framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ebu/mcma-libraries/mcma-core-nodejs.git"
+  },
+  "keywords": [
+    "mcma",
+    "jsonld"
+  ],
+  "author": "Joost Rovers <joost.rovers@glookast.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs/issues"
+  },
+  "homepage": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs#readme",
+  "dependencies": {
+    "async": "^2.6.1",
+    "fast-deep-equal": "^2.0.1",
+    "jsonld": "^1.0.2",
+    "request": "^2.87.0"
+  },
+  "devDependencies": {
+    "jasmine": "^3.1.0"
+  }
+}

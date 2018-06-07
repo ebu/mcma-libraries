@@ -46,7 +46,7 @@ Note that the jobProfile is represented as a URL. In our framework we allow and 
 
 ```JSON
 {
-  "@context": "http://mcma.ebu.ch/context/v1",
+  "@context": "http://mcma.ebu.ch/contexts/v1",
   "@type": "TransformJob",
   "jobProfile": "http://service-repository/job-profiles/441439e5-a409-4a60-b8fd-69cafeb301f9",
   "jobInput": {
@@ -68,7 +68,7 @@ Note that the jobProfile is represented as a URL. In our framework we allow and 
 Below you can find an example an entry in the Service Registry describing a TransformService.
 ```JSON
 {
-  "@context": "http://mcma.ebu.ch/context/default",
+  "@context": "http://mcma.ebu.ch/contexts/v1",
   "@type": "Service",
   "label": "FFmpeg TransformService",
   "hasResource": [
