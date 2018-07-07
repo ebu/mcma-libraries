@@ -22,12 +22,9 @@
   },
   "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-nodejs#readme",
   "dependencies": {
-    "async": "^2.6.1",
-    "aws-sdk": "^2.252.1",
+    "aws-sdk": "^2.270.1",
     "dynamodb-doc": "^1.0.0",
-    "mcma-core": "0.0.0",
-    "request": "^2.87.0",
-    "uuid": "^3.2.1"
+    "uri-templates": "^0.2.0"
   },
   "devDependencies": {
     "jasmine": "^3.1.0"

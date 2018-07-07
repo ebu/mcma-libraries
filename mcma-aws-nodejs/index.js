@@ -1,3 +1,5 @@
 //"use strict";
 
-module.exports = require("./lib/mcma-aws.js");
+module.exports = {
+    RestController: require("./lib/rest-controller").RestController
+}
