@@ -1,7 +1,7 @@
 {
   "name": "mcma-aws",
   "version": "0.0.0",
-  "description": "Node module with boilerplate code for setting up a AWS lambda service with support for EBU MCMA framework",
+  "description": "Node module with boilerplate code for setting up a REST controller for an API Gateway endpoint and a DynamoDB storage backend with support for EBU MCMA framework",
   "main": "index.js",
   "scripts": {
     "test": "jasmine"
@@ -11,9 +11,12 @@
     "url": "git+https://github.com/ebu/mcma-libraries.git"
   },
   "keywords": [
+    "ebu",
     "mcma",
     "aws",
-    "lambda"
+    "apigateway",
+    "lambda",
+    "dynamodb"
   ],
   "author": "Joost Rovers <joost.rovers@glookast.com>",
   "license": "Apache-2.0",

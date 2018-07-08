@@ -1,6 +1,6 @@
 //"use strict";
 
-var uriTemplates = require('uri-templates');
+const uriTemplates = require('uri-templates');
 
 const HTTP_OK = 200;
 const HTTP_CREATED = 201;
@@ -97,7 +97,7 @@ var getStatusError = (statusCode) => {
     return "";
 }
 
-function ApiError (statusCode, message, path) {
+function ApiError(statusCode, message, path) {
     this["@type"] = "ApiError";
     this.timestamp = new Date().toISOString();
     this.status = statusCode;
@@ -132,12 +132,20 @@ function RestController() {
             httpMethod: event.httpMethod,
             headers: event.headers,
             pathVariables: {},
-            queryStringParameters: event.queryStringParameters || {}
+            queryStringParameters: event.queryStringParameters || {},
+            stageVariables: event.stageVariables || {},
+            body: event.body
+        }
+
+        if (request.body) {
+            try {
+                request.body = JSON.parse(request.body);
+            } catch (error) { }
         }
 
         let response = {
             statusCode: HTTP_OK,
-            errorMessage: null,
+            statusMessage: null,
             headers: getDefaultResponseHeaders(),
             body: null
         }
@@ -149,31 +157,30 @@ function RestController() {
             for (let i = 0; i < routes.length; i++) {
                 let route = routes[i];
 
-                if (route.template.test(request.path, {strict: true})) {
+                if (route.template.test(request.path, { strict: true })) {
                     pathMatched = true;
                     if (route.httpMethod === event.httpMethod) {
                         methodMatched = true;
 
-                        request.pathVariables = route.template.fromUri(request.path, {strict: true});
+                        request.pathVariables = route.template.fromUri(request.path, { strict: true });
 
                         await route.handler(request, response);
                         break;
                     }
-                    break;
                 }
             }
 
             if (!pathMatched) {
                 response.statusCode = HTTP_NOT_FOUND;
                 response.headers = getDefaultResponseHeaders();
-                response.body = new ApiError(response.statusCode, "Resource not found on path '" + event.path + "'", event.path);
+                response.body = new ApiError(response.statusCode, "Resource not found on path '" + event.path + "'.", event.path);
             } else if (!methodMatched) {
                 response.statusCode = HTTP_BAD_METHOD;
                 response.headers = getDefaultResponseHeaders();
-                response.body = new ApiError(response.statusCode, "Method '" + event.httpMethod + "' not allowed on path '" + event.path + "'", event.path);
+                response.body = new ApiError(response.statusCode, "Method '" + event.httpMethod + "' not allowed on path '" + event.path + "'.", event.path);
             } else if ((response.statusCode / 200 << 0) * 200 === 400) {
                 response.headers = getDefaultResponseHeaders();
-                response.body = new ApiError(response.statusCode, response.errorMessage, event.path);
+                response.body = new ApiError(response.statusCode, response.statusMessage, event.path);
             }
         } catch (error) {
             response.statusCode = HTTP_INTERNAL_ERROR;
@@ -195,5 +202,34 @@ function RestController() {
 }
 
 module.exports = {
-    RestController: RestController
+    RestController: RestController,
+    HTTP_OK: HTTP_OK,
+    HTTP_CREATED: HTTP_CREATED,
+    HTTP_ACCEPTED: HTTP_ACCEPTED,
+    HTTP_NOT_AUTHORITATIVE: HTTP_NOT_AUTHORITATIVE,
+    HTTP_NO_CONTENT: HTTP_NO_CONTENT,
+    HTTP_RESET: HTTP_RESET,
+    HTTP_PARTIAL: HTTP_PARTIAL,
+    HTTP_BAD_REQUEST: HTTP_BAD_REQUEST,
+    HTTP_UNAUTHORIZED: HTTP_UNAUTHORIZED,
+    HTTP_PAYMENT_REQUIRED: HTTP_PAYMENT_REQUIRED,
+    HTTP_FORBIDDEN: HTTP_FORBIDDEN,
+    HTTP_NOT_FOUND: HTTP_NOT_FOUND,
+    HTTP_BAD_METHOD: HTTP_BAD_METHOD,
+    HTTP_NOT_ACCEPTABLE: HTTP_NOT_ACCEPTABLE,
+    HTTP_PROXY_AUTH: HTTP_PROXY_AUTH,
+    HTTP_CLIENT_TIMEOUT: HTTP_CLIENT_TIMEOUT,
+    HTTP_CONFLICT: HTTP_CONFLICT,
+    HTTP_GONE: HTTP_GONE,
+    HTTP_LENGTH_REQUIRED: HTTP_LENGTH_REQUIRED,
+    HTTP_PRECON_FAILED: HTTP_PRECON_FAILED,
+    HTTP_ENTITY_TOO_LARGE: HTTP_ENTITY_TOO_LARGE,
+    HTTP_REQ_TOO_LONG: HTTP_REQ_TOO_LONG,
+    HTTP_UNSUPPORTED_TYPE: HTTP_UNSUPPORTED_TYPE,
+    HTTP_INTERNAL_ERROR: HTTP_INTERNAL_ERROR,
+    HTTP_NOT_IMPLEMENTED: HTTP_NOT_IMPLEMENTED,
+    HTTP_BAD_GATEWAY: HTTP_BAD_GATEWAY,
+    HTTP_UNAVAILABLE: HTTP_UNAVAILABLE,
+    HTTP_GATEWAY_TIMEOUT: HTTP_GATEWAY_TIMEOUT,
+    HTTP_VERSION: HTTP_VERSION
 }
