@@ -1,376 +1,40 @@
 //"use strict";
 
-var async = require("async");
-var equal = require('fast-deep-equal');
-var jsonld = require("jsonld");
-var request = require("request");
+// var async = require("async");
+// var equal = require('fast-deep-equal');
+// var request = require("request");
 
-var internalContext = "http://www.ebu.ch/mcma/contexts/default";
-var minimalContext = "http://www.ebu.ch/mcma/contexts/minimal";
-var defaultContextURL = internalContext;
-
-var contextCacheExpirationTime = 300000;
-var contextCache = {};
-
-contextCache[minimalContext] = {
-    context: {
-        "@context": {
-            "dc": "http://purl.org/dc/elements/1.1/",
-            "default": "urn:ebu:metadata-schema:ebuCore_2012",
-            "ebucore": "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#",
-            "mcma": "http://www.ebu.ch/mcma#",
-            "owl": "http://www.w3.org/2002/07/owl#",
-            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-            "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-            "skos": "http://www.w3.org/2004/02/skos/core#",
-            "xsd": "http://www.w3.org/2001/XMLSchema#",
-            "xsi": "http://www.w3.org/2001/XMLSchema-instance",
-
-            "id": "@id"
-        }
-    }
-}
-
-contextCache[internalContext] = {
-    context: {
-        "@context": {
-            // Namespace abbreviations
-
-            "ebucore": "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#",
-            "mcma": "http://www.ebu.ch/mcma#",
-            "other": "http//other#",
-            "owl": "http://www.w3.org/2002/07/owl#",
-            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-            "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-            "xsd": "http://www.w3.org/2001/XMLSchema#",
-
-            // General definition
-
-            "id": "@id",
-
-            "label": "rdfs:label",
-            "url": "xsd:anyURI",
-
-            // EBUcore definitions
-
-            "dateCreated": "ebucore:dateCreated",
-            "dateModified": "ebucore:dateModified",
-
-            // mcma definitions
-
-            "Service": "mcma:Service",
-            "hasResource": {
-                "@id": "mcma:hasServiceResource",
-                "@type": "@id"
-            },
-            "acceptsJobType": {
-                "@id": "mcma:acceptsJobType",
-                "@type": "@id"
-            },
-            "acceptsJobProfile": {
-                "@id": "mcma:acceptsJobProfile",
-                "@type": "@id"
-            },
-
-            "inputLocation": {
-                "@id": "mcma:hasJobInputLocation",
-                "@type": "@id"
-            },
-            "outputLocation": {
-                "@id": "mcma:hasJobOutputLocation",
-                "@type": "@id"
-            },
-
-            "ServiceResource": "mcma:ServiceResource",
-            "resourceType": {
-                "@id": "mcma:resourceType",
-                "@type": "@id"
-            },
-
-            "JobProfile": "mcma:JobProfile",
-            "hasInputParameter": {
-                "@id": "mcma:hasInputParameter",
-                "@type": "@id"
-            },
-            "hasOptionalInputParameter": {
-                "@id": "mcma:hasOptionalInputParameter",
-                "@type": "@id"
-            },
-            "hasOutputParameter": {
-                "@id": "mcma:hasOutputParameter",
-                "@type": "@id"
-            },
-
-            "JobParameter": "mcma:JobParameter",
-            "jobProperty": {
-                "@id": "mcma:jobProperty",
-                "@type": "@id"
-            },
-            "parameterType": {
-                "@id": "mcma:jobParameterType",
-                "@type": "@id"
-            },
-
-            "Locator": "mcma:Locator",
-            "httpEndpoint": {
-                "@id": "mcma:httpEndpoint",
-                "@type": "xsd:anyURI"
-            },
-
-            "awsS3Bucket": "mcma:amazonWebServicesS3Bucket",
-            "awsS3Key": "mcma:amazonWebServicesS3Key",
-            "awsS3KeyPrefix": "mcma:amazonWebServicesS3KeyPrefix",
-            "azureBlobStorageAccount": "mcma:microsoftAzureBlobStorageAccount",
-            "azureBlobStorageContainer": "mcma:microsoftAzureBlobStorageContainer",
-            "azureBlobStorageObjectName": "mcma:microsoftAzureBlobStorageObjectName",
-            "googleCloudStorageBucket": "mcma:googleCloudStorageBucket",
-            "googleCloudStorageObjectName": "mcma:googleCloudStorageObjectName",
-            "uncPath": "mcma:uncPath",
-
-            "AmeJob": "mcma:AmeJob",
-            "CaptureJob": "mcma:CaptureJob",
-            "QAJob": "mcma:QAJob",
-            "TransformJob": "mcma:TransformJob",
-            "TransferJob": "mcma:TransferJob",
-
-            "jobProfile": {
-                "@id": "mcma:hasJobProfile",
-                "@type": "@id"
-            },
-
-            "jobStatus": {
-                "@id": "mcma:hasJobStatus",
-                "@type": "mcma:JobStatus"
-            },
-
-            "jobStatusMessage": {
-                "@id": "mcma:hasjobStatusMessage",
-                "@type": "xsd:string"
-            },
-
-            "jobProcess": {
-                "@id": "mcma:hasJobProcess",
-                "@type": "@id"
-            },
-
-            "jobInput": {
-                "@id": "mcma:hasJobInput",
-                "@type": "@id"
-            },
-
-            "jobOutput": {
-                "@id": "mcma:hasJobOutput",
-                "@type": "@id"
-            },
-
-            "JobParameterBag": "mcma:JobParameterBag",
-
-            "JobProcess": "mcma:JobProcess",
-
-            "job": {
-                "@id": "mcma:hasJob",
-                "@type": "@id"
-            },
-
-            "jobProcessStatus": {
-                "@id": "mcma:hasJobProcessStatus",
-                "@type": "mcma:JobProcessStatus"
-            },
-
-            "jobProcessStatusReason": {
-                "@id": "mcma:hasJobProcessStatusReason",
-                "@type": "xsd:string"
-            },
-
-            "jobAssignment": {
-                "@id": "mcma:hasJobAssignment",
-                "@type": "@id"
-            },
-
-            "JobAssignment": "mcma:JobAssignment",
-
-            "asyncEndpoint": "mcma:hasAsyncEndpoint",
-            "AsyncEndpoint": "mcma:AsyncEndpoint",
-
-            "asyncSuccess": {
-                "@id": "mcma:asyncEndpointSuccess",
-                "@type": "xsd:anyURI"
-            },
-            "asyncFailure": {
-                "@id": "mcma:asyncEndpointFailure",
-                "@type": "xsd:anyURI"
-            },
-
-            // Default namespace for custom attributes
-
-            "@vocab": "http://other#"
-        }
-    }
-}
-
-
-function removeExpiredContexts() {
-    for (url in contextCache) {
-        if (contextCache[url].expirationTime && contextCache[url].expirationTime < Date.now()) {
-            delete contextCache[url]
-        }
-    }
-}
-
-// grab the built-in node.js doc loader
-var nodeDocumentLoader = jsonld.documentLoaders.node();
-
-var customLoader = function (url, callback) {
-    removeExpiredContexts();
-
-    // check if url is in cache
-    if (url in contextCache) {
-        return callback(
-            null, {
-                contextUrl: null, // this is for a context via a link header
-                document: contextCache[url].context, // this is the actual document that was loaded
-                documentUrl: url // this is the actual context URL after redirects
-            });
-    }
-
-    // call the underlining documentLoader using the callback API and store result in cache
-    nodeDocumentLoader(url, function (err, result) {
-        if (!err && result) {
-            contextCache[url] = {
-                context: result.document,
-                expirationTime: Date.now() + contextCacheExpirationTime
-            };
-        }
-
-        callback(err, result);
-    });
-};
-jsonld.documentLoader = customLoader;
-
-function getDefaultContext() {
-    return getContext(defaultContextURL);
-}
-
-function getDefaultContextURL() {
-    return defaultContextURL;
-}
-
-function setDefaultContextURL(url) {
-    defaultContextURL = url;
-};
-
-function getContextCacheExpirationTime() {
-    return contextCacheExpirationTime;
-};
-
-function setContextCacheExpirationTime(expirationTime) {
-    contextCacheExpirationTime = expirationTime;
-};
-
-function getContext(url) {
-    removeExpiredContexts();
-    return contextCache[url].context;
-};
-
-function putContext(url, context) {
-    contextCache[url] = {
-        context: context
-    }
-};
-
-function removeContext(url) {
-    delete contextCache[url];
-};
-
-function compact(doc, context, callback) {
-    if (!callback && typeof (context) === 'function') {
-        callback = context;
-        context = defaultContextURL;
-    }
-
-    return jsonld.compact(doc, context, callback);
-};
-
-function expand(compacted, callback) {
-    return jsonld.expand(compacted, callback);
-}
-
-function flatten(doc, callback) {
-    return jsonld.flatten(doc, callback);
-}
-
-function frame(doc, frame, callback) {
-    return jsonld.frame(doc, frame, callback);
-}
-
-function normalize(doc, options, callback) {
-    if (!callback && typeof (options) === 'function') {
-        callback = options;
-        options = {
-            algorithm: 'URDNA2015',
-            format: 'application/nquads'
-        };
-    }
-
-    return jsonld.normalize(doc, options, callback);
-}
-
-function toRDF(doc, options, callback) {
-    if (!callback && typeof (options) === 'function') {
-        callback = options;
-        options = {
-            format: 'application/nquads'
-        };
-    }
-    return jsonld.toRDF(doc, options, callback);
-}
-
-function fromRDF(nquads, options, callback) {
-    if (!callback && typeof (options) === 'function') {
-        callback = options;
-        options = {
-            format: 'application/nquads'
-        };
-    }
-    return jsonld.fromRDF(nquads, options, callback);
-}
-
-function Service(label, hasResource, acceptsJobType, acceptsJobProfile, inputLocation, outputLocation) {
-    this["@context"] = internalContext;
+const Service = (name, resources, acceptsJobType, jobProfiles, inputLocations, outputLocations) => {
     this["@type"] = "Service";
-    this.label = label;
-    this.hasResource = hasResource;
-    this.acceptsJobType = acceptsJobType;
-    this.acceptsJobProfile = acceptsJobProfile;
-    this.inputLocation = inputLocation;
-    this.outputLocation = outputLocation;
+    this.name = name;
+    this.resources = resources;
+    this.jobType = acceptsJobType;
+    this.jobProfiles = jobProfiles;
+    this.inputLocations = inputLocations;
+    this.outputLocations = outputLocations;
 }
 
-function ServiceResource(resourceType, httpEndpoint) {
-    this["@context"] = internalContext;
+const ServiceResource = (resourceType, httpEndpoint) => {
     this["@type"] = "ServiceResource";
     this.resourceType = resourceType;
     this.httpEndpoint = httpEndpoint;
 }
 
-function JobProfile(label, hasInputParameter, hasOutputParameter, hasOptionalInputParameter) {
-    this["@context"] = internalContext;
+const JobProfile = (name, inputParameters, outputParameters, optionalInputParameters) => {
     this["@type"] = "JobProfile";
-    this.label = label;
-    this.hasInputParameter = hasInputParameter;
-    this.hasOutputParameter = hasOutputParameter;
-    this.hasOptionalInputParameter = hasOptionalInputParameter;
+    this.name = name;
+    this.inputParameters = inputParameters;
+    this.outputParameters = outputParameters;
+    this.optionalInputParameters = optionalInputParameters;
 }
 
-function JobParameter(jobProperty, parameterType) {
-    this["@context"] = internalContext;
+const JobParameter = (parameterName, parameterType) => {
     this["@type"] = "JobParameter";
-    this.jobProperty = jobProperty;
+    this.parameterName = parameterName;
     this.parameterType = parameterType;
 }
 
-function JobParameterBag(jobParameters) {
-    this["@context"] = internalContext;
+const JobParameterBag = (jobParameters) => {
     this["@type"] = "JobParameterBag";
 
     if (jobParameters) {
@@ -380,8 +44,7 @@ function JobParameterBag(jobParameters) {
     }
 }
 
-function Locator(locatorProperties) {
-    this["@context"] = internalContext;
+const Locator = (locatorProperties) => {
     this["@type"] = "Locator";
 
     if (locatorProperties) {
@@ -391,100 +54,65 @@ function Locator(locatorProperties) {
     }
 }
 
-function AsyncEndpoint(success, failure) {
-    this["@context"] = internalContext;
+const AsyncEndpoint = (success, failure) => {
     this["@type"] = "AsyncEndpoint";
     this.asyncSuccess = success;
     this.asyncFailure = failure;
 }
 
-function AmeJob(jobProfile, jobInput, asyncEndpoint) {
-    this["@context"] = internalContext;
+const AmeJob = (jobProfile, jobInput, asyncEndpoint) => {
     this["@type"] = "AmeJob";
     this.jobProfile = jobProfile;
     this.jobInput = jobInput;
     this.asyncEndpoint = asyncEndpoint;
-
-    this.jobStatus = "NEW";
-    this.jobStatusMessage = null;
-    this.jobProcess = null;
-    this.jobOutput = null;
 }
 
-function CaptureJob(jobProfile, jobInput, asyncEndpoint) {
-    this["@context"] = internalContext;
+const CaptureJob = (jobProfile, jobInput, asyncEndpoint) => {
     this["@type"] = "CaptureJob";
     this.jobProfile = jobProfile;
     this.jobInput = jobInput;
     this.asyncEndpoint = asyncEndpoint;
-
-    this.jobStatus = "NEW";
-    this.jobStatusMessage = null;
-    this.jobProcess = null;
-    this.jobOutput = null;
 }
 
-function QAJob(jobProfile, jobInput, asyncEndpoint) {
-    this["@context"] = internalContext;
+const QAJob = (jobProfile, jobInput, asyncEndpoint) => {
     this["@type"] = "QAJob";
     this.jobProfile = jobProfile;
     this.jobInput = jobInput;
     this.asyncEndpoint = asyncEndpoint;
-
-    this.jobStatus = "NEW";
-    this.jobStatusMessage = null;
-    this.jobProcess = null;
-    this.jobOutput = null;
 }
 
-function TransferJob(jobProfile, jobInput, asyncEndpoint) {
-    this["@context"] = internalContext;
+const TransferJob = (jobProfile, jobInput, asyncEndpoint) => {
     this["@type"] = "TransferJob";
     this.jobProfile = jobProfile;
     this.jobInput = jobInput;
     this.asyncEndpoint = asyncEndpoint;
-
-    this.jobStatus = "NEW";
-    this.jobStatusMessage = null;
-    this.jobProcess = null;
-    this.jobOutput = null;
 }
 
-function TransformJob(jobProfile, jobInput, asyncEndpoint) {
-    this["@context"] = internalContext;
+const TransformJob = (jobProfile, jobInput, asyncEndpoint) => {
     this["@type"] = "TransformJob";
     this.jobProfile = jobProfile;
     this.jobInput = jobInput;
     this.asyncEndpoint = asyncEndpoint;
-
-    this.jobStatus = "NEW";
-    this.jobStatusMessage = null;
-    this.jobProcess = null;
-    this.jobOutput = null;
 }
 
-function JobProcess(job) {
-    this["@context"] = internalContext;
+const WorkflowJob = (jobProfile, jobInput, asyncEndpoint) => {
+    this["@type"] = "TransformJob";
+    this.jobProfile = jobProfile;
+    this.jobInput = jobInput;
+    this.asyncEndpoint = asyncEndpoint;
+}
+
+const JobProcess = (job) => {
     this["@type"] = "JobProcess";
     this.job = job;
-    this.jobAssignment = null;
-    this.jobProcessStatus = "NEW";
-    this.jobProcessStatusReason = null;
-    this.jobStart = null;
-    this.jobDuration = null;
-    this.jobEnd = null;
 }
 
-function JobAssignment(jobProcess) {
-    this["@context"] = internalContext;
+const JobAssignment = (job) => {
     this["@type"] = "JobAssignment";
-    this.jobProcess = jobProcess;
-    this.jobProcessStatus = "NEW";
-    this.jobProcessStatusReason = null;
+    this.job = job;
 }
 
-
-function httpGet(url, context, callback) {
+/*const httpGet = (url, context, callback) => {
     if (!callback && typeof (context) === 'function') {
         callback = context;
         context = defaultContextURL;
@@ -520,7 +148,7 @@ function httpGet(url, context, callback) {
     ], callback);
 }
 
-function httpPost(url, resource, context, callback) {
+const httpPost(url, resource, context, callback) {
     if (!callback && typeof (context) === 'function') {
         callback = context;
         context = defaultContextURL;
@@ -557,7 +185,7 @@ function httpPost(url, resource, context, callback) {
     ], callback);
 }
 
-function httpPut(url, resource, context, callback) {
+const httpPut(url, resource, context, callback) {
     if (!callback && typeof (context) === 'function') {
         callback = context;
         context = defaultContextURL;
@@ -594,7 +222,7 @@ function httpPut(url, resource, context, callback) {
     ], callback);
 }
 
-function httpDelete(url, context, callback) {
+const httpDelete(url, context, callback) {
     if (!callback && typeof (context) === 'function') {
         callback = context;
         context = defaultContextURL;
@@ -633,15 +261,15 @@ function httpDelete(url, context, callback) {
 
 var serviceRegistryServicesURL;
 
-function setServiceRegistryServicesURL(servicesURL) {
+const setServiceRegistryServicesURL(servicesURL) {
     serviceRegistryServicesURL = servicesURL;
 }
 
-function getServiceRegistryServicesURL() {
+const getServiceRegistryServicesURL() {
     return serviceRegistryServicesURL;
 }
 
-function getServices(context, callback) {
+const getServices(context, callback) {
     if (!serviceRegistryServicesURL) {
         callback("Service Registry Services URL not set");
     }
@@ -649,7 +277,7 @@ function getServices(context, callback) {
     httpGet(serviceRegistryServicesURL, context, callback);
 }
 
-function getResourceURLs(type, callback) {
+const getResourceURLs(type, callback) {
     async.waterfall([
         (callback) => {
             getServices(internalContext, callback);
@@ -672,7 +300,7 @@ function getResourceURLs(type, callback) {
     ], callback);
 }
 
-function getResource(object, context, callback) {
+const getResource(object, context, callback) {
     var type = typeof object;
 
     if (type === "object") {
@@ -702,7 +330,7 @@ function getResource(object, context, callback) {
     }
 }
 
-function postResource(type, resource, callback) {
+const postResource(type, resource, callback) {
     async.waterfall([
         (callback) => {
             return getResourceURLs(type, callback);
@@ -716,7 +344,7 @@ function postResource(type, resource, callback) {
     ], callback);
 }
 
-function isValidJob(job, callback) {
+const isValidJob(job, callback) {
     async.waterfall([
         (callback) => {
             return jsonld.compact(job, minimalContext, (err, job) => {
@@ -768,7 +396,7 @@ function isValidJob(job, callback) {
     ], callback)
 }
 
-function canServiceAcceptJob(service, job, callback) {
+const canServiceAcceptJob(service, job, callback) {
     async.waterfall([
         (callback) => {
             return jsonld.compact(service, minimalContext, (err, service) => {
@@ -822,7 +450,7 @@ function canServiceAcceptJob(service, job, callback) {
     ], callback);
 }
 
-function getJobProfilesByLabel(jobType, jobProfileLabel, callback) {
+const getJobProfilesByLabel(jobType, jobProfileLabel, callback) {
     var jobProfiles = [];
 
     async.waterfall([
@@ -878,23 +506,9 @@ function getJobProfilesByLabel(jobType, jobProfileLabel, callback) {
         return callback(err, jobProfiles);
     });
 }
+*/
 
 module.exports = {
-    getDefaultContext: getDefaultContext,
-    getDefaultContextURL: getDefaultContextURL,
-    setDefaultContextURL: setDefaultContextURL,
-    getContextCacheExpirationTime: getContextCacheExpirationTime,
-    setContextCacheExpirationTime: setContextCacheExpirationTime,
-    getContext: getContext,
-    putContext: putContext,
-    removeContext: removeContext,
-    compact: compact,
-    expand: expand,
-    flatten: flatten,
-    frame: frame,
-    normalize: normalize,
-    toRDF: toRDF,
-    fromRDF: fromRDF,
     Service: Service,
     ServiceResource: ServiceResource,
     JobProfile: JobProfile,
@@ -907,18 +521,19 @@ module.exports = {
     QAJob: QAJob,
     TransferJob: TransferJob,
     TransformJob: TransformJob,
+    WorkflowJob: WorkflowJob,
     JobProcess: JobProcess,
-    JobAssignment: JobAssignment,
-    httpGet: httpGet,
-    httpPost: httpPost,
-    httpPut: httpPut,
-    httpDelete: httpDelete,
-    getServiceRegistryServicesURL: getServiceRegistryServicesURL,
-    setServiceRegistryServicesURL: setServiceRegistryServicesURL,
-    getServices: getServices,
-    getResourceURLs: getResourceURLs,
-    postResource: postResource,
-    isValidJob: isValidJob,
-    canServiceAcceptJob: canServiceAcceptJob,
-    getJobProfilesByLabel: getJobProfilesByLabel
+    JobAssignment: JobAssignment
+    // httpGet: httpGet,
+    // httpPost: httpPost,
+    // httpPut: httpPut,
+    // httpDelete: httpDelete,
+    // getServiceRegistryServicesURL: getServiceRegistryServicesURL,
+    // setServiceRegistryServicesURL: setServiceRegistryServicesURL,
+    // getServices: getServices,
+    // getResourceURLs: getResourceURLs,
+    // postResource: postResource,
+    // isValidJob: isValidJob,
+    // canServiceAcceptJob: canServiceAcceptJob,
+    // getJobProfilesByLabel: getJobProfilesByLabel
 }

@@ -1,35 +1,38 @@
 {
-  "name": "mcma-aws",
-  "version": "0.0.1",
-  "description": "Node module with boilerplate code for setting up a REST controller for an API Gateway endpoint and a DynamoDB storage backend with support for EBU MCMA framework",
-  "main": "index.js",
-  "scripts": {
-    "test": "jasmine"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ebu/mcma-libraries.git"
-  },
-  "keywords": [
-    "ebu",
-    "mcma",
-    "aws",
-    "apigateway",
-    "lambda",
-    "dynamodb"
-  ],
-  "author": "Joost Rovers <joost.rovers@glookast.com>",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/ebu/mcma-libraries/issues"
-  },
-  "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-nodejs#readme",
-  "dependencies": {
-    "aws-sdk": "^2.270.1",
-    "dynamodb-doc": "^1.0.0",
-    "uri-templates": "^0.2.0"
-  },
-  "devDependencies": {
-    "jasmine": "^3.1.0"
-  }
+    "name": "mcma-aws",
+    "version": "0.0.2",
+    "description": "Node module with boilerplate code for setting up a REST controller for an API Gateway endpoint and a DynamoDB storage backend with support for EBU MCMA framework",
+    "engines": {
+        "node": "~8.10.0"
+    },
+    "main": "index.js",
+    "scripts": {
+        "test": "jasmine"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ebu/mcma-libraries.git"
+    },
+    "keywords": [
+        "ebu",
+        "mcma",
+        "aws",
+        "apigateway",
+        "lambda",
+        "dynamodb"
+    ],
+    "author": "Joost Rovers <joost.rovers@glookast.com>",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/ebu/mcma-libraries/issues"
+    },
+    "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-nodejs#readme",
+    "dependencies": {
+        "aws-sdk": "^2.270.1",
+        "dynamodb-doc": "^1.0.0",
+        "uri-templates": "^0.2.0"
+    },
+    "devDependencies": {
+        "jasmine": "^3.1.0"
+    }
 }
