@@ -155,7 +155,7 @@ function RestController() {
                     request.body = JSON.parse(request.body);
                 } catch (error) {
                     response.statusCode = HTTP_BAD_REQUEST;
-                    response.statusMessage = error.message;
+                    response.body = new ApiError(response.statusCode, error.message, event.path);
                     requestBodyOK = false;
                 }
             }

@@ -1,6 +1,6 @@
 {
   "name": "mcma-aws",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Node module with boilerplate code for setting up a REST controller for an API Gateway endpoint and a DynamoDB storage backend with support for EBU MCMA framework",
   "main": "index.js",
   "scripts": {
