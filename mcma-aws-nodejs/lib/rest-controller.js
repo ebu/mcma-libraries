@@ -137,12 +137,6 @@ function RestController() {
             body: event.body
         }
 
-        if (request.body) {
-            try {
-                request.body = JSON.parse(request.body);
-            } catch (error) { }
-        }
-
         let response = {
             statusCode: HTTP_OK,
             statusMessage: null,
@@ -154,33 +148,47 @@ function RestController() {
         let methodMatched = false;
 
         try {
-            for (let i = 0; i < routes.length; i++) {
-                let route = routes[i];
+            let requestBodyOK = true;
 
-                if (route.template.test(request.path, { strict: true })) {
-                    pathMatched = true;
-                    if (route.httpMethod === event.httpMethod) {
-                        methodMatched = true;
-
-                        request.pathVariables = route.template.fromUri(request.path, { strict: true });
-
-                        await route.handler(request, response);
-                        break;
-                    }
+            if (request.body) {
+                try {
+                    request.body = JSON.parse(request.body);
+                } catch (error) {
+                    response.statusCode = HTTP_BAD_REQUEST;
+                    response.statusMessage = error.message;
+                    requestBodyOK = false;
                 }
             }
 
-            if (!pathMatched) {
-                response.statusCode = HTTP_NOT_FOUND;
-                response.headers = getDefaultResponseHeaders();
-                response.body = new ApiError(response.statusCode, "Resource not found on path '" + event.path + "'.", event.path);
-            } else if (!methodMatched) {
-                response.statusCode = HTTP_BAD_METHOD;
-                response.headers = getDefaultResponseHeaders();
-                response.body = new ApiError(response.statusCode, "Method '" + event.httpMethod + "' not allowed on path '" + event.path + "'.", event.path);
-            } else if ((response.statusCode / 200 << 0) * 200 === 400) {
-                response.headers = getDefaultResponseHeaders();
-                response.body = new ApiError(response.statusCode, response.statusMessage, event.path);
+            if (requestBodyOK) {
+                for (let i = 0; i < routes.length; i++) {
+                    let route = routes[i];
+
+                    if (route.template.test(request.path, { strict: true })) {
+                        pathMatched = true;
+                        if (route.httpMethod === event.httpMethod) {
+                            methodMatched = true;
+
+                            request.pathVariables = route.template.fromUri(request.path, { strict: true });
+
+                            await route.handler(request, response);
+                            break;
+                        }
+                    }
+                }
+
+                if (!pathMatched) {
+                    response.statusCode = HTTP_NOT_FOUND;
+                    response.headers = getDefaultResponseHeaders();
+                    response.body = new ApiError(response.statusCode, "Resource not found on path '" + event.path + "'.", event.path);
+                } else if (!methodMatched) {
+                    response.statusCode = HTTP_BAD_METHOD;
+                    response.headers = getDefaultResponseHeaders();
+                    response.body = new ApiError(response.statusCode, "Method '" + event.httpMethod + "' not allowed on path '" + event.path + "'.", event.path);
+                } else if ((response.statusCode / 200 << 0) * 200 === 400) {
+                    response.headers = getDefaultResponseHeaders();
+                    response.body = new ApiError(response.statusCode, response.statusMessage, event.path);
+                }
             }
         } catch (error) {
             response.statusCode = HTTP_INTERNAL_ERROR;
