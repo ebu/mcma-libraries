@@ -26,6 +26,9 @@ describe("The Resource Manager", () => {
         services = await resourceManager.get("Service");
         console.log(JSON.stringify(services, null, 2));
 
+        service = await resourceManager.update(service);
+        console.log(service);
+
         for (let i = 0; i < services.length; i++) {
             await resourceManager.delete(services[i]);
         }

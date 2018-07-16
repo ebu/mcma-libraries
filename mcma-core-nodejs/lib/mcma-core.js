@@ -149,8 +149,11 @@ class ResourceManager {
         this.http = axios;
 
         this.init = async () => {
+            services.length = 0;
+
             let response = await axios.get(servicesURL);
-            services = response.data;
+
+            services.push(...(response.data));
 
             // in order to bootstrap the resource manager we have to make sure that the services array contains 
             // the entry for the service registry itself, even if it's not present in the service registry.
@@ -158,14 +161,14 @@ class ResourceManager {
 
             for (let i = 0; i < services.length; i++) {
                 for (let j = 0; j < services[i].resources.length; j++) {
-                    if (services[i].resources[j].type === "Service" && services[i].resources[j].httpEndpoint === servicesURL) {
+                    if (services[i].resources[j].resourceType === "Service" && services[i].resources[j].httpEndpoint === servicesURL) {
                         serviceRegistryPresent = true;
                     }
                 }
             }
-            
+
             if (!serviceRegistryPresent) {
-                services.push(new Service("Service Registry", [ new ServiceResource("Service", servicesURL)]));
+                services.push(new Service("Service Registry", [new ServiceResource("Service", servicesURL)]));
             }
         }
 
