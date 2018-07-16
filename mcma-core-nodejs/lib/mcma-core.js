@@ -1,263 +1,227 @@
 //"use strict";
 
-// var async = require("async");
-// var equal = require('fast-deep-equal');
-// var request = require("request");
+const equal = require('fast-deep-equal');
+const axios = require('axios');
 
-const Service = (name, resources, acceptsJobType, jobProfiles, inputLocations, outputLocations) => {
-    this["@type"] = "Service";
-    this.name = name;
-    this.resources = resources;
-    this.jobType = acceptsJobType;
-    this.jobProfiles = jobProfiles;
-    this.inputLocations = inputLocations;
-    this.outputLocations = outputLocations;
-}
 
-const ServiceResource = (resourceType, httpEndpoint) => {
-    this["@type"] = "ServiceResource";
-    this.resourceType = resourceType;
-    this.httpEndpoint = httpEndpoint;
-}
-
-const JobProfile = (name, inputParameters, outputParameters, optionalInputParameters) => {
-    this["@type"] = "JobProfile";
-    this.name = name;
-    this.inputParameters = inputParameters;
-    this.outputParameters = outputParameters;
-    this.optionalInputParameters = optionalInputParameters;
-}
-
-const JobParameter = (parameterName, parameterType) => {
-    this["@type"] = "JobParameter";
-    this.parameterName = parameterName;
-    this.parameterType = parameterType;
-}
-
-const JobParameterBag = (jobParameters) => {
-    this["@type"] = "JobParameterBag";
-
-    if (jobParameters) {
-        for (var prop in jobParameters) {
-            this[prop] = jobParameters[prop];
-        }
+class Service {
+    constructor(name, resources, jobType, jobProfiles, inputLocations, outputLocations) {
+        this["@type"] = "Service";
+        this.name = name;
+        this.resources = resources;
+        this.jobType = jobType;
+        this.jobProfiles = jobProfiles;
+        this.inputLocations = inputLocations;
+        this.outputLocations = outputLocations;
     }
 }
 
-const Locator = (locatorProperties) => {
-    this["@type"] = "Locator";
-
-    if (locatorProperties) {
-        for (var prop in locatorProperties) {
-            this[prop] = locatorProperties[prop];
-        }
+class ServiceResource {
+    constructor(resourceType, httpEndpoint) {
+        this["@type"] = "ServiceResource";
+        this.resourceType = resourceType;
+        this.httpEndpoint = httpEndpoint;
     }
 }
 
-const AsyncEndpoint = (success, failure) => {
-    this["@type"] = "AsyncEndpoint";
-    this.asyncSuccess = success;
-    this.asyncFailure = failure;
-}
-
-const AmeJob = (jobProfile, jobInput, asyncEndpoint) => {
-    this["@type"] = "AmeJob";
-    this.jobProfile = jobProfile;
-    this.jobInput = jobInput;
-    this.asyncEndpoint = asyncEndpoint;
-}
-
-const CaptureJob = (jobProfile, jobInput, asyncEndpoint) => {
-    this["@type"] = "CaptureJob";
-    this.jobProfile = jobProfile;
-    this.jobInput = jobInput;
-    this.asyncEndpoint = asyncEndpoint;
-}
-
-const QAJob = (jobProfile, jobInput, asyncEndpoint) => {
-    this["@type"] = "QAJob";
-    this.jobProfile = jobProfile;
-    this.jobInput = jobInput;
-    this.asyncEndpoint = asyncEndpoint;
-}
-
-const TransferJob = (jobProfile, jobInput, asyncEndpoint) => {
-    this["@type"] = "TransferJob";
-    this.jobProfile = jobProfile;
-    this.jobInput = jobInput;
-    this.asyncEndpoint = asyncEndpoint;
-}
-
-const TransformJob = (jobProfile, jobInput, asyncEndpoint) => {
-    this["@type"] = "TransformJob";
-    this.jobProfile = jobProfile;
-    this.jobInput = jobInput;
-    this.asyncEndpoint = asyncEndpoint;
-}
-
-const WorkflowJob = (jobProfile, jobInput, asyncEndpoint) => {
-    this["@type"] = "TransformJob";
-    this.jobProfile = jobProfile;
-    this.jobInput = jobInput;
-    this.asyncEndpoint = asyncEndpoint;
-}
-
-const JobProcess = (job) => {
-    this["@type"] = "JobProcess";
-    this.job = job;
-}
-
-const JobAssignment = (job) => {
-    this["@type"] = "JobAssignment";
-    this.job = job;
-}
-
-/*const httpGet = (url, context, callback) => {
-    if (!callback && typeof (context) === 'function') {
-        callback = context;
-        context = defaultContextURL;
+class JobProfile {
+    constructor(name, inputParameters, outputParameters, optionalInputParameters) {
+        this["@type"] = "JobProfile";
+        this.name = name;
+        this.inputParameters = inputParameters;
+        this.outputParameters = outputParameters;
+        this.optionalInputParameters = optionalInputParameters;
     }
+}
 
-    async.waterfall([
-        (callback) => {
-            request({
-                url: url,
-                method: "GET",
-                json: true
-            }, callback);
-        },
-        (response, body, callback) => {
-            if (response.statusCode !== 200) {
-                return callback(response.statusCode, body);
-            } else if (body) {
-                if (body.constructor === Array) {
-                    return async.map(body, (resource, callback) => {
-                        return jsonld.compact(resource, context, (err, response) => {
-                            callback(err, response);
-                        });
-                    }, callback);
-                } else {
-                    return jsonld.compact(body, context, (err, response) => {
-                        return callback(err, response);
-                    });
-                }
-            } else {
-                return callback();
+class JobParameter {
+    constructor(parameterName, parameterType) {
+        this["@type"] = "JobParameter";
+        this.parameterName = parameterName;
+        this.parameterType = parameterType;
+    }
+}
+
+class JobParameterBag {
+    constructor(jobParameters) {
+        this["@type"] = "JobParameterBag";
+
+        if (jobParameters) {
+            for (var prop in jobParameters) {
+                this[prop] = jobParameters[prop];
             }
         }
-    ], callback);
+    }
 }
 
-const httpPost(url, resource, context, callback) {
-    if (!callback && typeof (context) === 'function') {
-        callback = context;
-        context = defaultContextURL;
-    }
+class Locator {
+    constructor(locatorProperties) {
+        this["@type"] = "Locator";
 
-    async.waterfall([
-        (callback) => {
-            request({
-                url: url,
-                method: "POST",
-                json: true,
-                body: resource
-            }, callback);
-        },
-        (response, body, callback) => {
-            if (response.statusCode !== 201) {
-                return callback(response.statusCode, body);
-            } else if (body) {
-                if (body.constructor === Array) {
-                    return async.map(body, (resource, callback) => {
-                        return jsonld.compact(resource, context, (err, response) => {
-                            return callback(err, response);
-                        });
-                    }, callback);
-                } else {
-                    return jsonld.compact(body, context, (err, response) => {
-                        return callback(err, response);
-                    });
-                }
-            } else {
-                return callback();
+        if (locatorProperties) {
+            for (var prop in locatorProperties) {
+                this[prop] = locatorProperties[prop];
             }
         }
-    ], callback);
+    }
 }
 
-const httpPut(url, resource, context, callback) {
-    if (!callback && typeof (context) === 'function') {
-        callback = context;
-        context = defaultContextURL;
+class AsyncEndpoint {
+    constructor(success, failure) {
+        this["@type"] = "AsyncEndpoint";
+        this.asyncSuccess = success;
+        this.asyncFailure = failure;
     }
+}
 
-    async.waterfall([
-        (callback) => {
-            request({
-                url: url,
-                method: "PUT",
-                json: true,
-                body: resource
-            }, callback);
-        },
-        (response, body, callback) => {
-            if (response.statusCode !== 200) {
-                return callback(response.statusCode, body);
-            } else if (body) {
-                if (body.constructor === Array) {
-                    return async.map(body, (resource, callback) => {
-                        return jsonld.compact(resource, context, (err, response) => {
-                            return callback(err, response);
-                        });
-                    }, callback);
-                } else {
-                    return jsonld.compact(body, context, (err, response) => {
-                        return callback(err, response);
-                    });
+class AmeJob {
+    constructor(jobProfile, jobInput, asyncEndpoint) {
+        this["@type"] = "AmeJob";
+        this.jobProfile = jobProfile;
+        this.jobInput = jobInput;
+        this.asyncEndpoint = asyncEndpoint;
+    }
+}
+
+class CaptureJob {
+    constructor(jobProfile, jobInput, asyncEndpoint) {
+        this["@type"] = "CaptureJob";
+        this.jobProfile = jobProfile;
+        this.jobInput = jobInput;
+        this.asyncEndpoint = asyncEndpoint;
+    }
+}
+
+class QAJob {
+    constructor(jobProfile, jobInput, asyncEndpoint) {
+        this["@type"] = "QAJob";
+        this.jobProfile = jobProfile;
+        this.jobInput = jobInput;
+        this.asyncEndpoint = asyncEndpoint;
+    }
+}
+
+class TransferJob {
+    constructor(jobProfile, jobInput, asyncEndpoint) {
+        this["@type"] = "TransferJob";
+        this.jobProfile = jobProfile;
+        this.jobInput = jobInput;
+        this.asyncEndpoint = asyncEndpoint;
+    }
+}
+
+class TransformJob {
+    constructor(jobProfile, jobInput, asyncEndpoint) {
+        this["@type"] = "TransformJob";
+        this.jobProfile = jobProfile;
+        this.jobInput = jobInput;
+        this.asyncEndpoint = asyncEndpoint;
+    }
+}
+
+class WorkflowJob {
+    constructor(jobProfile, jobInput, asyncEndpoint) {
+        this["@type"] = "WorkflowJob";
+        this.jobProfile = jobProfile;
+        this.jobInput = jobInput;
+        this.asyncEndpoint = asyncEndpoint;
+    }
+}
+
+class JobProcess {
+    constructor(job) {
+        this["@type"] = "JobProcess";
+        this.job = job;
+    }
+}
+
+class JobAssignment {
+    constructor(job) {
+        this["@type"] = "JobAssignment";
+        this.job = job;
+    }
+}
+
+class ResourceManager {
+    constructor(servicesURL) {
+        let services = [];
+
+        this.http = axios;
+
+        this.init = async () => {
+            let response = await axios.get(servicesURL);
+            services = response.data;
+
+            // in order to bootstrap the resource manager we have to make sure that the services array contains 
+            // the entry for the service registry itself, even if it's not present in the service registry.
+            let serviceRegistryPresent = false;
+
+            for (let i = 0; i < services.length; i++) {
+                for (let j = 0; j < services[i].resources.length; j++) {
+                    if (services[i].resources[j].type === "Service" && services[i].resources[j].httpEndpoint === servicesURL) {
+                        serviceRegistryPresent = true;
+                    }
                 }
-            } else {
-                return callback();
+            }
+            
+            if (!serviceRegistryPresent) {
+                services.push(new Service("Service Registry", [ new ServiceResource("Service", servicesURL)]));
             }
         }
-    ], callback);
-}
 
-const httpDelete(url, context, callback) {
-    if (!callback && typeof (context) === 'function') {
-        callback = context;
-        context = defaultContextURL;
-    }
+        this.get = async (resourceType, filter) => {
+            if (services.length === 0) {
+                await this.init();
+            }
 
-    async.waterfall([
-        (callback) => {
-            request({
-                url: url,
-                method: "DELETE",
-                json: true
-            }, callback);
-        },
-        (response, body, callback) => {
-            if (response.statusCode !== 200) {
-                return callback(response.statusCode, body);
-            } else if (body) {
-                if (body.constructor === Array) {
-                    return async.map(body, (resource, callback) => {
-                        return jsonld.compact(resource, context, (err, response) => {
-                            return callback(err, response);
-                        });
-                    }, callback);
-                } else {
-                    return jsonld.compact(body, context, (err, response) => {
-                        return callback(err, response);
-                    });
+            let result = [];
+
+            for (let i = 0; i < services.length; i++) {
+                for (let j = 0; j < services[i].resources.length; j++) {
+                    if (services[i].resources[j].resourceType === resourceType) {
+                        try {
+                            let response = await axios.get(services[i].resources[j].httpEndpoint, { params: filter });
+                            result.push(...(response.data));
+                        } catch (error) {
+                            console.error("Failed to retrieve '" + resourceType + "' from endpoint '" + services[i].resources[j].httpEndpoint + "'");
+                        }
+                    }
                 }
-            } else {
-                return callback();
+            }
+
+            return result;
+        }
+
+        this.create = async (resource) => {
+            if (services.length === 0) {
+                await this.init();
+            }
+
+            for (let i = 0; i < services.length; i++) {
+                for (let j = 0; j < services[i].resources.length; j++) {
+                    if (services[i].resources[j].resourceType === resource["@type"]) {
+                        try {
+                            let response = await axios.post(services[i].resources[j].httpEndpoint, resource);
+                            return response.data;
+                        } catch (error) {
+                            console.error("Failed to create resource of type '" + resource["@type"] + "' at endpoint '" + services[i].resources[j].httpEndpoint + "'");
+                        }
+                    }
+                }
             }
         }
-    ], callback);
-}
 
+        this.update = async (resource) => {
+            let response = await axios.put(resource.id, resource);
+            return response.data;
+        }
+
+        this.delete = async (resource) => {
+            await axios.delete(resource.id);
+        }
+    }
+}
+/*
 
 var serviceRegistryServicesURL;
 
@@ -523,7 +487,8 @@ module.exports = {
     TransformJob: TransformJob,
     WorkflowJob: WorkflowJob,
     JobProcess: JobProcess,
-    JobAssignment: JobAssignment
+    JobAssignment: JobAssignment,
+    ResourceManager: ResourceManager
     // httpGet: httpGet,
     // httpPost: httpPost,
     // httpPut: httpPut,

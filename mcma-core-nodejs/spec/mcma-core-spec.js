@@ -1,20 +1,40 @@
-describe("The library", () => {
+const MCMA_CORE = require("../lib/mcma-core")
 
-    var core;
+const SERVICE_REGISTRY_BASE_URL = "";
+const SERVICE_REGISTRY_SERVICES_URL = SERVICE_REGISTRY_BASE_URL + "/services";
 
-    beforeEach(() => {
-        core = require("../lib/mcma-core")
-    })
+describe("The Resource Manager", () => {
 
-    it("has a default context url", () => {
-        expect(core.getDefaultContextURL()).toBeDefined();
+    beforeEach(function() {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+    });
+    
+    it("allows retrieving, setting and deleting resources", async () => {
+        let resourceManager = new MCMA_CORE.ResourceManager(SERVICE_REGISTRY_SERVICES_URL);
+
+        let service = new MCMA_CORE.Service("Service Registry", [
+            new MCMA_CORE.ServiceResource("Service", SERVICE_REGISTRY_BASE_URL + "/services"),
+            new MCMA_CORE.ServiceResource("JobProfile", SERVICE_REGISTRY_BASE_URL + "/job-profiles")
+        ]);
+
+        let services = await resourceManager.get("Service");
+        console.log(JSON.stringify(services, null, 2));
+
+        service = await resourceManager.create(service);        
+        console.log(service);
+
+        services = await resourceManager.get("Service");
+        console.log(JSON.stringify(services, null, 2));
+
+        for (let i = 0; i < services.length; i++) {
+            await resourceManager.delete(services[i]);
+        }
+
+        services = await resourceManager.get("Service");
+        console.log(JSON.stringify(services, null, 2));
     });
 
-    it("has a default context", () => {
-        expect(core.getDefaultContext()).toBeDefined();
-    });
-
-    it("allows creating a Job Profile", (callback) => {
+/*    it("allows creating a Job Profile", (callback) => {
         var jobProfile = new core.JobProfile(
             "ExtractThumbnail",
             [
@@ -327,5 +347,5 @@ describe("The library", () => {
 
             callback(err);
         });
-    });
+    });*/
 });
