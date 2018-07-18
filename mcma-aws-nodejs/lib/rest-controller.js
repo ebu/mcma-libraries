@@ -32,7 +32,7 @@ const HTTP_UNAVAILABLE = 503;
 const HTTP_GATEWAY_TIMEOUT = 504;
 const HTTP_VERSION = 505;
 
-var getStatusError = (statusCode) => {
+const getStatusError = (statusCode) => {
     switch (statusCode) {
         case HTTP_OK:
             return "OK";
@@ -97,114 +97,118 @@ var getStatusError = (statusCode) => {
     return "";
 }
 
-function ApiError(statusCode, message, path) {
-    this["@type"] = "ApiError";
-    this.timestamp = new Date().toISOString();
-    this.status = statusCode;
-    this.error = getStatusError(statusCode);
-    this.message = message;
-    this.path = path;
+class ApiError {
+    constructor(statusCode, message, path) {
+        this["@type"] = "ApiError";
+        this.timestamp = new Date().toISOString();
+        this.status = statusCode;
+        this.error = getStatusError(statusCode);
+        this.message = message;
+        this.path = path;
+    }
 }
 
-var getDefaultResponseHeaders = () => {
+const getDefaultResponseHeaders = () => {
     return {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
     }
 }
 
-function RestController() {
-    let routes = [];
+class RestController {
+    constructor() {
+        let routes = [];
 
-    this.addRoute = (httpMethod, path, handler) => {
-        routes.push({
-            httpMethod: httpMethod,
-            path: path,
-            template: uriTemplates(path),
-            handler: handler
-        });
-    }
-
-    this.handleRequest = async (event, context) => {
-
-        let request = {
-            path: event.path,
-            httpMethod: event.httpMethod,
-            headers: event.headers,
-            pathVariables: {},
-            queryStringParameters: event.queryStringParameters || {},
-            stageVariables: event.stageVariables || {},
-            body: event.body
+        this.addRoute = (httpMethod, path, handler) => {
+            routes.push({
+                httpMethod: httpMethod,
+                path: path,
+                template: uriTemplates(path),
+                handler: handler
+            });
         }
 
-        let response = {
-            statusCode: HTTP_OK,
-            statusMessage: null,
-            headers: getDefaultResponseHeaders(),
-            body: null
-        }
+        this.handleRequest = async (event, context) => {
 
-        let pathMatched = false;
-        let methodMatched = false;
-
-        try {
-            let requestBodyOK = true;
-
-            if (request.body) {
-                try {
-                    request.body = JSON.parse(request.body);
-                } catch (error) {
-                    response.statusCode = HTTP_BAD_REQUEST;
-                    response.body = new ApiError(response.statusCode, error.message, event.path);
-                    requestBodyOK = false;
-                }
+            let request = {
+                path: event.path,
+                httpMethod: event.httpMethod,
+                headers: event.headers,
+                pathVariables: {},
+                queryStringParameters: event.queryStringParameters || {},
+                stageVariables: event.stageVariables || {},
+                body: event.body
             }
 
-            if (requestBodyOK) {
-                for (let i = 0; i < routes.length; i++) {
-                    let route = routes[i];
+            let response = {
+                statusCode: HTTP_OK,
+                statusMessage: null,
+                headers: getDefaultResponseHeaders(),
+                body: null
+            }
 
-                    if (route.template.test(request.path, { strict: true })) {
-                        pathMatched = true;
-                        if (route.httpMethod === event.httpMethod) {
-                            methodMatched = true;
+            let pathMatched = false;
+            let methodMatched = false;
 
-                            request.pathVariables = route.template.fromUri(request.path, { strict: true });
+            try {
+                let requestBodyOK = true;
 
-                            await route.handler(request, response);
-                            break;
-                        }
+                if (request.body) {
+                    try {
+                        request.body = JSON.parse(request.body);
+                    } catch (error) {
+                        response.statusCode = HTTP_BAD_REQUEST;
+                        response.body = new ApiError(response.statusCode, error.message, event.path);
+                        requestBodyOK = false;
                     }
                 }
 
-                if (!pathMatched) {
-                    response.statusCode = HTTP_NOT_FOUND;
-                    response.headers = getDefaultResponseHeaders();
-                    response.body = new ApiError(response.statusCode, "Resource not found on path '" + event.path + "'.", event.path);
-                } else if (!methodMatched) {
-                    response.statusCode = HTTP_BAD_METHOD;
-                    response.headers = getDefaultResponseHeaders();
-                    response.body = new ApiError(response.statusCode, "Method '" + event.httpMethod + "' not allowed on path '" + event.path + "'.", event.path);
-                } else if ((response.statusCode / 200 << 0) * 200 === 400) {
-                    response.headers = getDefaultResponseHeaders();
-                    response.body = new ApiError(response.statusCode, response.statusMessage, event.path);
+                if (requestBodyOK) {
+                    for (let i = 0; i < routes.length; i++) {
+                        let route = routes[i];
+
+                        if (route.template.test(request.path, { strict: true })) {
+                            pathMatched = true;
+                            if (route.httpMethod === event.httpMethod) {
+                                methodMatched = true;
+
+                                request.pathVariables = route.template.fromUri(request.path, { strict: true });
+
+                                await route.handler(request, response);
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!pathMatched) {
+                        response.statusCode = HTTP_NOT_FOUND;
+                        response.headers = getDefaultResponseHeaders();
+                        response.body = new ApiError(response.statusCode, "Resource not found on path '" + event.path + "'.", event.path);
+                    } else if (!methodMatched) {
+                        response.statusCode = HTTP_BAD_METHOD;
+                        response.headers = getDefaultResponseHeaders();
+                        response.body = new ApiError(response.statusCode, "Method '" + event.httpMethod + "' not allowed on path '" + event.path + "'.", event.path);
+                    } else if ((response.statusCode / 200 << 0) * 200 === 400) {
+                        response.headers = getDefaultResponseHeaders();
+                        response.body = new ApiError(response.statusCode, response.statusMessage, event.path);
+                    }
                 }
+            } catch (error) {
+                response.statusCode = HTTP_INTERNAL_ERROR;
+                response.headers = getDefaultResponseHeaders();
+                response.body = new ApiError(response.statusCode, error.message, event.path);
             }
-        } catch (error) {
-            response.statusCode = HTTP_INTERNAL_ERROR;
-            response.headers = getDefaultResponseHeaders();
-            response.body = new ApiError(response.statusCode, error.message, event.path);
-        }
 
-        let serializedBody = null;
-        if (response.body) {
-            serializedBody = JSON.stringify(response.body);
-        }
+            let serializedBody = null;
+            if (response.body) {
+                serializedBody = JSON.stringify(response.body);
+            }
 
-        return {
-            statusCode: response.statusCode,
-            headers: response.headers,
-            body: serializedBody
+            return {
+                statusCode: response.statusCode,
+                headers: response.headers,
+                body: serializedBody
+            }
         }
     }
 }

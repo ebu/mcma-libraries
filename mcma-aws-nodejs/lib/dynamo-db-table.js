@@ -1,79 +1,81 @@
 const util = require('util');
 
-function DynamoDbTable(AWS, tableName) {
-    let docClient = new AWS.DynamoDB.DocumentClient();
-    const dcQuery = util.promisify(docClient.query.bind(docClient));
-    const dcGet = util.promisify(docClient.get.bind(docClient));
-    const dcPut = util.promisify(docClient.put.bind(docClient));
-    const dcDelete = util.promisify(docClient.delete.bind(docClient));
+class DynamoDbTable {
+    constructor(AWS, tableName) {
+        let docClient = new AWS.DynamoDB.DocumentClient();
+        const dcQuery = util.promisify(docClient.query.bind(docClient));
+        const dcGet = util.promisify(docClient.get.bind(docClient));
+        const dcPut = util.promisify(docClient.put.bind(docClient));
+        const dcDelete = util.promisify(docClient.delete.bind(docClient));
 
-    this.getAll = async (type) => {
-        var params = {
-            TableName: tableName,
-            KeyConditionExpression: "#rs = :rs1",
-            ExpressionAttributeNames: {
-                "#rs": "resource_type"
-            },
-            ExpressionAttributeValues: {
-                ":rs1": type
+        this.getAll = async (type) => {
+            var params = {
+                TableName: tableName,
+                KeyConditionExpression: "#rs = :rs1",
+                ExpressionAttributeNames: {
+                    "#rs": "resource_type"
+                },
+                ExpressionAttributeValues: {
+                    ":rs1": type
+                }
+            };
+
+            let data = await dcQuery(params);
+
+            let items = [];
+
+            if (data.Items) {
+                for (let i = 0; i < data.Items.length; i++) {
+                    items.push(data.Items[i].resource);
+                }
             }
-        };
 
-        let data = await dcQuery(params);
-
-        let items = [];
-
-        if (data.Items) {
-            for (let i = 0; i < data.Items.length; i++) {
-                items.push(data.Items[i].resource);
-            }
+            return items;
         }
 
-        return items;
-    }
+        this.get = async (type, id) => {
+            var params = {
+                TableName: tableName,
+                Key: {
+                    "resource_type": type,
+                    "resource_id": id,
+                }
+            };
 
-    this.get = async (type, id) => {
-        var params = {
-            TableName: tableName,
-            Key: {
-                "resource_type": type,
-                "resource_id": id,
+            let data = await dcGet(params);
+
+            if (!data || !data.Item || !data.Item.resource) {
+                return null;
             }
-        };
-
-        let data = await dcGet(params);
-
-        if (!data || !data.Item || !data.Item.resource) {
-            return null;
+            return data.Item.resource;
         }
-        return data.Item.resource;
-    }
 
-    this.put = async (type, id, resource) => {
-        var item = {
-            "resource_type": type,
-            "resource_id": id,
-            "resource": resource
-        };
-
-        var params = {
-            TableName: tableName,
-            Item: item
-        };
-
-        await dcPut(params);
-    }
-
-    this.delete = async (type, id) => {
-        var params = {
-            TableName: tableName,
-            Key: {
+        this.put = async (type, id, resource) => {
+            var item = {
                 "resource_type": type,
                 "resource_id": id,
-            }
-        };
+                "resource": resource
+            };
 
-        await dcDelete(params);
+            var params = {
+                TableName: tableName,
+                Item: item
+            };
+
+            await dcPut(params);
+        }
+
+        this.delete = async (type, id) => {
+            var params = {
+                TableName: tableName,
+                Key: {
+                    "resource_type": type,
+                    "resource_id": id,
+                }
+            };
+
+            await dcDelete(params);
+        }
     }
 }
 
