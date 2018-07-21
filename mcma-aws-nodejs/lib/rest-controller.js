@@ -129,7 +129,6 @@ class RestController {
         }
 
         this.handleRequest = async (event, context) => {
-
             let request = {
                 path: event.path,
                 httpMethod: event.httpMethod,
@@ -164,9 +163,7 @@ class RestController {
                 }
 
                 if (requestBodyOK) {
-                    for (let i = 0; i < routes.length; i++) {
-                        let route = routes[i];
-
+                    for (const route of routes) {
                         if (route.template.test(request.path, { strict: true })) {
                             pathMatched = true;
                             if (route.httpMethod === event.httpMethod) {

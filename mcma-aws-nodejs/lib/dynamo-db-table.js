@@ -25,8 +25,8 @@ class DynamoDbTable {
             let items = [];
 
             if (data.Items) {
-                for (let i = 0; i < data.Items.length; i++) {
-                    items.push(data.Items[i].resource);
+                for (const item of data.Items) {
+                    items.push(item.resource);
                 }
             }
 
