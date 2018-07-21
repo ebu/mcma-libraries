@@ -64,81 +64,99 @@ class Locator {
     }
 }
 
-class AsyncEndpoint {
-    constructor(success, failure) {
-        this["@type"] = "AsyncEndpoint";
-        this.asyncSuccess = success;
-        this.asyncFailure = failure;
+class AIJob {
+    constructor(jobProfile, jobInput, notificationEndpoint) {
+        this["@type"] = "AIJob";
+        this.jobProfile = jobProfile;
+        this.jobInput = jobInput;
+        this.notificationEndpoint = notificationEndpoint;
     }
 }
 
 class AmeJob {
-    constructor(jobProfile, jobInput, asyncEndpoint) {
+    constructor(jobProfile, jobInput, notificationEndpoint) {
         this["@type"] = "AmeJob";
         this.jobProfile = jobProfile;
         this.jobInput = jobInput;
-        this.asyncEndpoint = asyncEndpoint;
+        this.notificationEndpoint = notificationEndpoint;
     }
 }
 
 class CaptureJob {
-    constructor(jobProfile, jobInput, asyncEndpoint) {
+    constructor(jobProfile, jobInput, notificationEndpoint) {
         this["@type"] = "CaptureJob";
         this.jobProfile = jobProfile;
         this.jobInput = jobInput;
-        this.asyncEndpoint = asyncEndpoint;
+        this.notificationEndpoint = notificationEndpoint;
     }
 }
 
 class QAJob {
-    constructor(jobProfile, jobInput, asyncEndpoint) {
+    constructor(jobProfile, jobInput, notificationEndpoint) {
         this["@type"] = "QAJob";
         this.jobProfile = jobProfile;
         this.jobInput = jobInput;
-        this.asyncEndpoint = asyncEndpoint;
+        this.notificationEndpoint = notificationEndpoint;
     }
 }
 
 class TransferJob {
-    constructor(jobProfile, jobInput, asyncEndpoint) {
+    constructor(jobProfile, jobInput, notificationEndpoint) {
         this["@type"] = "TransferJob";
         this.jobProfile = jobProfile;
         this.jobInput = jobInput;
-        this.asyncEndpoint = asyncEndpoint;
+        this.notificationEndpoint = notificationEndpoint;
     }
 }
 
 class TransformJob {
-    constructor(jobProfile, jobInput, asyncEndpoint) {
+    constructor(jobProfile, jobInput, notificationEndpoint) {
         this["@type"] = "TransformJob";
         this.jobProfile = jobProfile;
         this.jobInput = jobInput;
-        this.asyncEndpoint = asyncEndpoint;
+        this.notificationEndpoint = notificationEndpoint;
     }
 }
 
 class WorkflowJob {
-    constructor(jobProfile, jobInput, asyncEndpoint) {
+    constructor(jobProfile, jobInput, notificationEndpoint) {
         this["@type"] = "WorkflowJob";
         this.jobProfile = jobProfile;
         this.jobInput = jobInput;
-        this.asyncEndpoint = asyncEndpoint;
+        this.notificationEndpoint = notificationEndpoint;
     }
 }
 
 class JobProcess {
-    constructor(job) {
+    constructor(job, notificationEndpoint) {
         this["@type"] = "JobProcess";
         this.job = job;
+        this.notificationEndpoint = notificationEndpoint;
     }
 }
 
 class JobAssignment {
-    constructor(job) {
+    constructor(job, notificationEndpoint) {
         this["@type"] = "JobAssignment";
         this.job = job;
+        this.notificationEndpoint = notificationEndpoint;
     }
 }
+
+class Notification {
+    constructor(source, content) {
+        this["@type"] = "Notification";
+        this.source = source;
+        this.content = content;
+    }
+}
+
+class NotificationEndpoint {
+    constructor(httpEndpoint) {
+        this["@type"] = "NotificationEndpoint";
+        this.httpEndpoint = httpEndpoint;
+    }    
+}    
 
 class ResourceManager {
     constructor(servicesURL) {
@@ -209,7 +227,7 @@ class ResourceManager {
                                 return response.data;
                             } catch (error) {
                                 console.error("Failed to create resource of type '" + resource["@type"] + "' at endpoint '" + serviceResource.httpEndpoint + "'");
-                            }    
+                            }
                         }
                     }
                 }
@@ -234,7 +252,7 @@ module.exports = {
     JobParameter: JobParameter,
     JobParameterBag: JobParameterBag,
     Locator: Locator,
-    AsyncEndpoint: AsyncEndpoint,
+    AIJob: AIJob,
     AmeJob: AmeJob,
     CaptureJob: CaptureJob,
     QAJob: QAJob,
@@ -243,6 +261,8 @@ module.exports = {
     WorkflowJob: WorkflowJob,
     JobProcess: JobProcess,
     JobAssignment: JobAssignment,
+    Notification: Notification,
+    NotificationEndpoint: NotificationEndpoint,
     ResourceManager: ResourceManager,
     HTTP: axios
 }
