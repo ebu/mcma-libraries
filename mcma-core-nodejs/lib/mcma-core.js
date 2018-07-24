@@ -232,6 +232,8 @@ class ResourceManager {
                     }
                 }
             }
+
+            throw new Error("Failed to find service to create resource of type '" + resource["@type"] + "'.");
         }
 
         this.update = async (resource) => {
