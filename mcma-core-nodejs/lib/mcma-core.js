@@ -242,6 +242,22 @@ class ResourceManager {
         this.delete = async (resource) => {
             await axios.delete(resource.id);
         }
+
+        this.sendNotification = async (resource) => {
+            if (resource.notificationEndpoint) {
+                let notificationEndpoint = resource.notificationEndpoint;
+
+                if (typeof notificationEndpoint === "string") {
+                    let response = await axios.get(notificationEndpoint);
+                    notificationEndpoint = response.data;
+                }
+
+                if (notificationEndpoint.httpEndpoint) {
+                    let notification = new Notification(resource.id, resource);
+                    await axios.post(notificationEndpoint.httpEndpoint, notification);
+                }
+            }
+        }
     }
 }
 
