@@ -115,7 +115,7 @@ const getDefaultResponseHeaders = () => {
     }
 }
 
-class RestController {
+class ApiGatewayRestController {
     constructor() {
         let routes = [];
 
@@ -213,7 +213,7 @@ class RestController {
 }
 
 module.exports = {
-    RestController: RestController,
+    ApiGatewayRestController: ApiGatewayRestController,
     HTTP_OK: HTTP_OK,
     HTTP_CREATED: HTTP_CREATED,
     HTTP_ACCEPTED: HTTP_ACCEPTED,
