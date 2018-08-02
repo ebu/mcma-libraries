@@ -191,6 +191,8 @@ class RestController {
                     }
                 }
             } catch (error) {
+                console.error(error);
+
                 response.statusCode = HTTP_INTERNAL_ERROR;
                 response.headers = getDefaultResponseHeaders();
                 response.body = new ApiError(response.statusCode, error.message, event.path);

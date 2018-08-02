@@ -1,5 +1,27 @@
 const util = require('util');
 
+const removeEmptyStrings = (object) => {
+    if (object) {
+        if (Array.isArray(object)) {
+            for (let i = object.length - 1; i >= 0; i--) {
+                if (object[i] === "") {
+                    object.splice(i, 1);
+                } else if (typeof object[i] === "object") {
+                    removeEmptyStrings(object[i]);
+                }
+            }
+        } else if (typeof object === "object") {
+            for (let prop in object) {
+                if (object[prop] === "") {
+                    delete object[prop];
+                } else if (typeof object[prop] === "object") {
+                    removeEmptyStrings(object[prop]);
+                }
+            }
+        }
+    }
+}
+
 class DynamoDbTable {
     constructor(AWS, tableName) {
         let docClient = new AWS.DynamoDB.DocumentClient();
@@ -51,6 +73,8 @@ class DynamoDbTable {
         }
 
         this.put = async (type, id, resource) => {
+            removeEmptyStrings(resource);
+
             var item = {
                 "resource_type": type,
                 "resource_id": id,
