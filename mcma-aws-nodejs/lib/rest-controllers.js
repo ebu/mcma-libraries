@@ -198,7 +198,7 @@ class ApiGatewayRestController {
                             methodsAllowed += "OPTIONS";
                         }
 
-                        if (event.httpmethod === "OPTIONS") {
+                        if (event.httpMethod === "OPTIONS") {
                             response.statusCode = HTTP_OK;
                             response.headers = getDefaultResponseHeaders();
 
@@ -215,11 +215,11 @@ class ApiGatewayRestController {
                                 }
                             }
 
-                            if (corsMethod) { // handling CORS request
+                            if (corsMethod) { // handling CORS pre-flight request
                                 response.headers["Access-Control-Allow-Methods"] = methodsAllowed;
 
                                 if (corsHeaders) {
-                                    response.headers["Access-Control-Allow-Headers"] = corsheaders;
+                                    response.headers["Access-Control-Allow-Headers"] = corsHeaders;
                                 }
                             } else { // handling regular OPTIONS request
                                 response.headers["Allow"] = methodsAllowed;
