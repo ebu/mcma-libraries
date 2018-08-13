@@ -191,7 +191,7 @@ class ApiGatewayRestController {
                         response.headers = getDefaultResponseHeaders();
                         response.body = new ApiError(response.statusCode, "Resource not found on path '" + event.path + "'.", event.path);
                     } else if (!methodMatched) {
-                        if (!methodsAllowed.contains("OPTIONS")) {
+                        if (!methodsAllowed.includes("OPTIONS")) {
                             if (methodsAllowed) {
                                 methodsAllowed += ", ";
                             }
