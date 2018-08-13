@@ -22,6 +22,54 @@ class ServiceResource {
     }
 }
 
+class BMContent {
+    constructor(properties) {
+        this["@type"] = "BMContent";
+
+        if (properties) {
+            for (const prop in properties) {
+                this[prop] = properties[prop];
+            }
+        }
+    }
+}
+
+class BMEssence {
+    constructor(properties) {
+        this["@type"] = "BMEssence";
+
+        if (properties) {
+            for (const prop in properties) {
+                this[prop] = properties[prop];
+            }
+        }
+    }
+}
+
+class DescriptiveMetadata {
+    constructor(properties) {
+        this["@type"] = "DescriptiveMetadata";
+
+        if (properties) {
+            for (const prop in properties) {
+                this[prop] = properties[prop];
+            }
+        }
+    }
+}
+
+class TechnicalMetadata {
+    constructor(properties) {
+        this["@type"] = "TechnicalMetadata";
+
+        if (properties) {
+            for (const prop in properties) {
+                this[prop] = properties[prop];
+            }
+        }
+    }
+}
+
 class JobProfile {
     constructor(name, inputParameters, outputParameters, optionalInputParameters) {
         this["@type"] = "JobProfile";
@@ -45,7 +93,7 @@ class JobParameterBag {
         this["@type"] = "JobParameterBag";
 
         if (jobParameters) {
-            for (var prop in jobParameters) {
+            for (const prop in jobParameters) {
                 this[prop] = jobParameters[prop];
             }
         }
@@ -53,12 +101,12 @@ class JobParameterBag {
 }
 
 class Locator {
-    constructor(locatorProperties) {
+    constructor(properties) {
         this["@type"] = "Locator";
 
-        if (locatorProperties) {
-            for (var prop in locatorProperties) {
-                this[prop] = locatorProperties[prop];
+        if (properties) {
+            for (const prop in properties) {
+                this[prop] = properties[prop];
             }
         }
     }
@@ -155,8 +203,8 @@ class NotificationEndpoint {
     constructor(httpEndpoint) {
         this["@type"] = "NotificationEndpoint";
         this.httpEndpoint = httpEndpoint;
-    }    
-}    
+    }
+}
 
 class ResourceManager {
     constructor(servicesURL) {
@@ -266,6 +314,10 @@ class ResourceManager {
 module.exports = {
     Service: Service,
     ServiceResource: ServiceResource,
+    BMContent: BMContent,
+    BMEssence: BMEssence,
+    DescriptiveMetadata: DescriptiveMetadata,
+    TechnicalMetadata: TechnicalMetadata,
     JobProfile: JobProfile,
     JobParameter: JobParameter,
     JobParameterBag: JobParameterBag,
