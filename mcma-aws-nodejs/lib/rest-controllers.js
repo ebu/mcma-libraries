@@ -110,6 +110,7 @@ class ApiError {
 
 const getDefaultResponseHeaders = () => {
     return {
+        "Date": new Date().toUTCString(),
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
     }
@@ -163,9 +164,17 @@ class ApiGatewayRestController {
                 }
 
                 if (requestBodyOK) {
+                    let methodsAllowed = "";
+
                     for (const route of routes) {
                         if (route.template.test(request.path, { strict: true })) {
                             pathMatched = true;
+
+                            if (methodsAllowed) {
+                                methodsAllowed += ", ";
+                            }
+                            methodsAllowed += route.httpMethod;
+
                             if (route.httpMethod === event.httpMethod) {
                                 methodMatched = true;
 
@@ -182,9 +191,45 @@ class ApiGatewayRestController {
                         response.headers = getDefaultResponseHeaders();
                         response.body = new ApiError(response.statusCode, "Resource not found on path '" + event.path + "'.", event.path);
                     } else if (!methodMatched) {
-                        response.statusCode = HTTP_BAD_METHOD;
-                        response.headers = getDefaultResponseHeaders();
-                        response.body = new ApiError(response.statusCode, "Method '" + event.httpMethod + "' not allowed on path '" + event.path + "'.", event.path);
+                        if (!methodsAllowed.contains("OPTIONS")) {
+                            if (methodsAllowed) {
+                                methodsAllowed += ", ";
+                            }
+                            methodsAllowed += "OPTIONS";
+                        }
+
+                        if (event.httpmethod === "OPTIONS") {
+                            response.statusCode = HTTP_OK;
+                            response.headers = getDefaultResponseHeaders();
+
+                            let corsMethod;
+                            let corsHeaders;
+
+                            // checking if its a CORS pre-flight request
+                            for (const prop in request.headers) {
+                                if (prop.toLowerCase() === "access-control-request-method") {
+                                    corsMethod = request.headers[prop];
+                                }
+                                if (prop.toLowerCase() === "access-control-request-headers") {
+                                    corsHeaders = request.headers[prop];
+                                }
+                            }
+
+                            if (corsMethod) { // handling CORS request
+                                response.headers["Access-Control-Allow-Methods"] = methodsAllowed;
+
+                                if (corsHeaders) {
+                                    response.headers["Access-Control-Allow-Headers"] = corsheaders;
+                                }
+                            } else { // handling regular OPTIONS request
+                                response.headers["Allow"] = methodsAllowed;
+                            }
+                        } else {
+                            response.statusCode = HTTP_BAD_METHOD;
+                            response.headers = getDefaultResponseHeaders();
+                            response.headers["Allow"] = methodsAllowed;
+                            response.body = new ApiError(response.statusCode, "Method '" + event.httpMethod + "' not allowed on path '" + event.path + "'.", event.path);
+                        }
                     } else if ((response.statusCode / 200 << 0) * 200 === 400) {
                         response.headers = getDefaultResponseHeaders();
                         response.body = new ApiError(response.statusCode, response.statusMessage, event.path);
