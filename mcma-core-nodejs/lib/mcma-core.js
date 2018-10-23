@@ -1,6 +1,8 @@
 //"use strict";
 
 const axios = require('axios');
+const aws4  = require('aws4');
+const AWS = require("aws-sdk");
 
 class Service {
     constructor(name, resources, jobType, jobProfiles, inputLocations, outputLocations) {
@@ -311,6 +313,115 @@ class ResourceManager {
     }
 }
 
+
+
+
+class httpAws4 {
+
+     static async getAws4(url,config) {
+            let result ;
+            try {
+                let response = await axios.get(url, config);
+                result = response;
+            } catch (error) {
+                console.error("Failed to retrieve '" + url + "' error message : " + error );
+            }
+
+          return result;
+        }
+        
+        
+       static   extractHostname(url) {
+            var hostname;
+            if (url.indexOf("//") > -1) {
+                hostname = url.split('/')[2];
+            }
+            else {
+                hostname = url.split('/')[0];
+            }
+            hostname = hostname.split(':')[0];
+            hostname = hostname.split('?')[0];
+            return hostname;
+        }
+        
+
+        static async post(url,data)  {
+              return await httpAws4.makeRequestAws4(url,data, 'POST');
+        }
+  
+        static async put(url,data)  {
+              return await httpAws4.makeRequestAws4(url,data, 'PUT');
+        }
+  
+        static async get(url)  {
+              return await httpAws4.makeRequestAws4(url,'', 'GET');
+        }
+  
+        static async delete(url)  {
+              return await httpAws4.makeRequestAws4(url,'', 'DELETE');
+        }
+  
+        static async patch(url,data)  {
+              return await httpAws4.makeRequestAws4(url,'', 'PATCH');
+        }
+  
+      
+        
+        
+        static async makeRequestAws4(url,data, httpOperation)  {
+            let result ;
+            try {
+               
+                
+                let hostname = httpAws4.extractHostname(url);
+                let path = url.replace("http://","").replace("https://","").replace(hostname,"");
+
+                console.log("hostname ==>", hostname);
+                console.log("path",path);
+
+
+                let request = {
+                    host: hostname ,
+                    method: httpOperation,
+                    url: url,
+                    data: data, // object describing the foo
+                    body: JSON.stringify(data), // aws4 looks for body; axios for data
+                    path: path ,
+                    headers: {
+                      'content-type': 'application/json'
+                    }
+                }
+  
+                let signedRequest = aws4.sign(request,
+                    {
+                      // assumes user has authenticated and we have called
+                      // AWS.config.credentials.get to retrieve keys and
+                      // session tokens
+                      secretAccessKey: AWS.config.credentials.secretAccessKey,
+                      accessKeyId: AWS.config.credentials.accessKeyId,
+                      sessionToken: AWS.config.credentials.sessionToken
+                })
+                  
+                delete signedRequest.headers['Host']; 
+                delete signedRequest.headers['Content-Length'];
+                  
+                let response = await axios(signedRequest);
+               
+                
+//                let response = await axios.get(url,data, config);
+                result = response;
+            } catch (error) {
+                console.error("Failed to post '" + url + "' error message : " + error );
+            }
+
+          return result;
+        }     
+        
+        
+
+}
+
+
 module.exports = {
     Service: Service,
     ServiceResource: ServiceResource,
@@ -334,5 +445,6 @@ module.exports = {
     Notification: Notification,
     NotificationEndpoint: NotificationEndpoint,
     ResourceManager: ResourceManager,
-    HTTP: axios
+    HTTP: axios,
+    HTTPAWS4: httpAws4
 }
