@@ -2,7 +2,7 @@
 
 const axios = require('axios');
 const aws4  = require('aws4');
-const AWS = require("aws-sdk");
+
 
 class Service {
     constructor(name, resources, jobType, jobProfiles, inputLocations, outputLocations) {
@@ -209,13 +209,13 @@ class NotificationEndpoint {
 }
 
 class ResourceManager {
-    constructor(servicesURL) {
+    constructor(servicesURL,authenticationToken) {
         let services = [];
-
+       
         this.init = async () => {
             services.length = 0;
-
-            let response = await axios.get(servicesURL);
+            
+            let response = await httpAws4.get(servicesURL,authenticationToken);
 
             services.push(...(response.data));
 
@@ -250,7 +250,12 @@ class ResourceManager {
                     for (const serviceResource of service.resources) {
                         if (serviceResource.resourceType === resourceType) {
                             try {
-                                let response = await axios.get(serviceResource.httpEndpoint, { params: filter });
+//                              let response = await axios.get(serviceResource.httpEndpoint, { params: filter });
+                            
+                                let request = await httpAws4.generateSignedRequestAws4(serviceResource.httpEndpoint,null, 'GET',authenticationToken)   // need to modify the request before executing the GET
+                                request.params = filter;  // add the filter parameter                             
+                                let response = await axios(request);
+                                
                                 result.push(...(response.data));
                             } catch (error) {
                                 console.error("Failed to retrieve '" + resourceType + "' from endpoint '" + serviceResource.httpEndpoint + "'");
@@ -273,7 +278,7 @@ class ResourceManager {
                     for (const serviceResource of service.resources) {
                         if (serviceResource.resourceType === resource["@type"]) {
                             try {
-                                let response = await axios.post(serviceResource.httpEndpoint, resource);
+                                let response = await httpAws4.post(serviceResource.httpEndpoint, resource,authenticationToken);
                                 return response.data;
                             } catch (error) {
                                 console.error("Failed to create resource of type '" + resource["@type"] + "' at endpoint '" + serviceResource.httpEndpoint + "'");
@@ -287,12 +292,12 @@ class ResourceManager {
         }
 
         this.update = async (resource) => {
-            let response = await axios.put(resource.id, resource);
+            let response = await httpAws4.put(resource.id, resource,authenticationToken);
             return response.data;
         }
 
         this.delete = async (resource) => {
-            await axios.delete(resource.id);
+            await httpAws4.delete(resource.id,authenticationToken);
         }
 
         this.sendNotification = async (resource) => {
@@ -300,13 +305,13 @@ class ResourceManager {
                 let notificationEndpoint = resource.notificationEndpoint;
 
                 if (typeof notificationEndpoint === "string") {
-                    let response = await axios.get(notificationEndpoint);
+                    let response = await httpAws4.get(notificationEndpoint,authenticationToken);
                     notificationEndpoint = response.data;
                 }
 
                 if (notificationEndpoint.httpEndpoint) {
                     let notification = new Notification(resource.id, resource);
-                    await axios.post(notificationEndpoint.httpEndpoint, notification);
+                    await httpAws4.post(notificationEndpoint.httpEndpoint, notification,authenticationToken);
                 }
             }
         }
@@ -318,18 +323,6 @@ class ResourceManager {
 
 class httpAws4 {
 
-     static async getAws4(url,config) {
-            let result ;
-            try {
-                let response = await axios.get(url, config);
-                result = response;
-            } catch (error) {
-                console.error("Failed to retrieve '" + url + "' error message : " + error );
-            }
-
-          return result;
-        }
-        
         
        static   extractHostname(url) {
             var hostname;
@@ -345,46 +338,48 @@ class httpAws4 {
         }
         
 
-        static async post(url,data)  {
-              return await httpAws4.makeRequestAws4(url,data, 'POST');
+        static async post(url,data,authenticationToken)  {
+              return await httpAws4.makeRequestAws4(url,data, 'POST',authenticationToken);
         }
   
-        static async put(url,data)  {
-              return await httpAws4.makeRequestAws4(url,data, 'PUT');
+        static async put(url,data,authenticationToken)  {
+              return await httpAws4.makeRequestAws4(url,data, 'PUT',authenticationToken);
         }
   
-        static async get(url)  {
-              return await httpAws4.makeRequestAws4(url,'', 'GET');
+        static async get(url,authenticationToken)  {
+              return await httpAws4.makeRequestAws4(url,'', 'GET',authenticationToken);
         }
   
-        static async delete(url)  {
-              return await httpAws4.makeRequestAws4(url,'', 'DELETE');
+        static async delete(url,authenticationToken)  {
+              return await httpAws4.makeRequestAws4(url,'', 'DELETE',authenticationToken);
         }
   
-        static async patch(url,data)  {
-              return await httpAws4.makeRequestAws4(url,'', 'PATCH');
+        static async patch(url,data,authenticationToken)  {
+              return await httpAws4.makeRequestAws4(url,'', 'PATCH',authenticationToken);
         }
   
       
-        
-        
-        static async makeRequestAws4(url,data, httpOperation)  {
-            let result ;
+      
+       static async generateSignedRequestAws4(url,data, httpOperation,authenticationToken)  {
+            let signedRequest ;
+            let useAuthenticationToken = false;
             try {
                
+                
+               if ( typeof authenticationToken !== 'undefined' && authenticationToken ) {
+                     useAuthenticationToken = true;
+                } else {
+                    console.log("WARNING: Trying to make a secure request to " + url + " without passing an authenticationToken") 
+                }
                 
                 let hostname = httpAws4.extractHostname(url);
                 let path = url.replace("http://","").replace("https://","").replace(hostname,"");
 
-                console.log("hostname ==>", hostname);
-                console.log("path",path);
-
-
-                let request = {
+               let request = {
                     host: hostname ,
                     method: httpOperation,
                     url: url,
-                    data: data, // object describing the foo
+                    data: data, // payload
                     body: JSON.stringify(data), // aws4 looks for body; axios for data
                     path: path ,
                     headers: {
@@ -392,26 +387,46 @@ class httpAws4 {
                     }
                 }
   
-                let signedRequest = aws4.sign(request,
-                    {
-                      // assumes user has authenticated and we have called
-                      // AWS.config.credentials.get to retrieve keys and
-                      // session tokens
-                      secretAccessKey: AWS.config.credentials.secretAccessKey,
-                      accessKeyId: AWS.config.credentials.accessKeyId,
-                      sessionToken: AWS.config.credentials.sessionToken
-                })
+  
+                if (useAuthenticationToken == true) {
+     
+                     signedRequest = aws4.sign(request,
+                        {
+                          // assumes user has authenticated and we have called
+                          // AWS.config.credentials.get to retrieve keys and
+                          // session tokens
+                          secretAccessKey: authenticationToken.secretAccessKey,
+                          accessKeyId: authenticationToken.accessKeyId,
+                          sessionToken: authenticationToken.sessionToken
+                    })
+                      
+                    delete signedRequest.headers['Host']; 
+                    delete signedRequest.headers['Content-Length'];
                   
-                delete signedRequest.headers['Host']; 
-                delete signedRequest.headers['Content-Length'];
+                } else {
+                    signedRequest = request;
+                }
                   
+            } catch (error) {
+                console.error("Failed to generate request : " + error );
+            }
+
+          return signedRequest;
+        }     
+      
+      
+        
+        
+        static async makeRequestAws4(url,data, httpOperation,authenticationToken)  {
+            let result ;
+            
+            try {
+                let signedRequest = await httpAws4.generateSignedRequestAws4(url,data, httpOperation,authenticationToken);
+                //  console.log("signedRequest==>",signedRequest); // uncomment to debug
                 let response = await axios(signedRequest);
-               
-                
-//                let response = await axios.get(url,data, config);
                 result = response;
             } catch (error) {
-                console.error("Failed to post '" + url + "' error message : " + error );
+                console.error("Failed to " + httpOperation + " for " + url + "' error message : " + error );
             }
 
           return result;
