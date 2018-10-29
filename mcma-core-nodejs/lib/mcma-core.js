@@ -380,7 +380,7 @@ class httpAws4 {
                     method: httpOperation,
                     url: url,
                     data: data, // payload
-                    body: JSON.stringify(data), // aws4 looks for body; axios for data
+                    body: data ? JSON.stringify(data) : undefined,
                     path: path ,
                     headers: {
                       'content-type': 'application/json'
