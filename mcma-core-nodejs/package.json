@@ -24,8 +24,7 @@
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs#readme",
     "dependencies": {
         "axios": "^0.18.0",
-        "aws4": "^1.8.0",
-        "aws-sdk": "^2.291.0"
+        "crypto-js": "^3.1.9-1"
     },
     "devDependencies": {
         "jasmine": "^3.2.0"

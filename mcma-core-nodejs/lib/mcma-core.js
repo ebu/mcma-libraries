@@ -1,8 +1,6 @@
 //"use strict";
 
 const axios = require('axios');
-const aws4  = require('aws4');
-
 
 class Service {
     constructor(name, resources, jobType, jobProfiles, inputLocations, outputLocations) {
@@ -209,13 +207,15 @@ class NotificationEndpoint {
 }
 
 class ResourceManager {
-    constructor(servicesURL,authenticationToken) {
+    constructor(servicesURL, authenticator) {
         let services = [];
+
+        this.authenticatedHttp = new AuthenticatedHttp(authenticator);
        
         this.init = async () => {
             services.length = 0;
             
-            let response = await httpAws4.get(servicesURL,authenticationToken);
+            let response = await this.authenticatedHttp.get(servicesURL);
 
             services.push(...(response.data));
 
@@ -250,12 +250,7 @@ class ResourceManager {
                     for (const serviceResource of service.resources) {
                         if (serviceResource.resourceType === resourceType) {
                             try {
-//                              let response = await axios.get(serviceResource.httpEndpoint, { params: filter });
-                            
-                                let request = await httpAws4.generateSignedRequestAws4(serviceResource.httpEndpoint,null, 'GET',authenticationToken)   // need to modify the request before executing the GET
-                                request.params = filter;  // add the filter parameter                             
-                                let response = await axios(request);
-                                
+                                let response = await this.authenticatedHttp.get(serviceResource.httpEndpoint, filter);
                                 result.push(...(response.data));
                             } catch (error) {
                                 console.error("Failed to retrieve '" + resourceType + "' from endpoint '" + serviceResource.httpEndpoint + "'");
@@ -278,7 +273,7 @@ class ResourceManager {
                     for (const serviceResource of service.resources) {
                         if (serviceResource.resourceType === resource["@type"]) {
                             try {
-                                let response = await httpAws4.post(serviceResource.httpEndpoint, resource,authenticationToken);
+                                let response = await this.authenticatedHttp.post(serviceResource.httpEndpoint, resource);
                                 return response.data;
                             } catch (error) {
                                 console.error("Failed to create resource of type '" + resource["@type"] + "' at endpoint '" + serviceResource.httpEndpoint + "'");
@@ -292,12 +287,12 @@ class ResourceManager {
         }
 
         this.update = async (resource) => {
-            let response = await httpAws4.put(resource.id, resource,authenticationToken);
+            let response = await this.authenticatedHttp.put(resource.id, resource);
             return response.data;
         }
 
         this.delete = async (resource) => {
-            await httpAws4.delete(resource.id,authenticationToken);
+            await this.authenticatedHttp.delete(resource.id);
         }
 
         this.sendNotification = async (resource) => {
@@ -305,137 +300,79 @@ class ResourceManager {
                 let notificationEndpoint = resource.notificationEndpoint;
 
                 if (typeof notificationEndpoint === "string") {
-                    let response = await httpAws4.get(notificationEndpoint,authenticationToken);
+                    let response = await this.authenticatedHttp.get(notificationEndpoint);
                     notificationEndpoint = response.data;
                 }
 
                 if (notificationEndpoint.httpEndpoint) {
                     let notification = new Notification(resource.id, resource);
-                    await httpAws4.post(notificationEndpoint.httpEndpoint, notification,authenticationToken);
+                    await this.authenticatedHttp.post(notificationEndpoint.httpEndpoint, notification);
                 }
             }
         }
     }
 }
 
+class AuthenticatedHttp {
+    constructor(authenticator) {
+        async function sendAuthenticatedRequest(method, url, data, params)  {
+            // build request
+            const request = { method, url, data, params };
 
+            // content type is always JSON? will this always be true?
+            request.headers = { 'Content-Type': 'application/json' };
 
-
-class httpAws4 {
-
-        
-       static   extractHostname(url) {
-            var hostname;
-            if (url.indexOf("//") > -1) {
-                hostname = url.split('/')[2];
-            }
-            else {
-                hostname = url.split('/')[0];
-            }
-            hostname = hostname.split(':')[0];
-            hostname = hostname.split('?')[0];
-            return hostname;
-        }
-        
-
-        static async post(url,data,authenticationToken)  {
-              return await httpAws4.makeRequestAws4(url,data, 'POST',authenticationToken);
-        }
-  
-        static async put(url,data,authenticationToken)  {
-              return await httpAws4.makeRequestAws4(url,data, 'PUT',authenticationToken);
-        }
-  
-        static async get(url,authenticationToken)  {
-              return await httpAws4.makeRequestAws4(url,'', 'GET',authenticationToken);
-        }
-  
-        static async delete(url,authenticationToken)  {
-              return await httpAws4.makeRequestAws4(url,'', 'DELETE',authenticationToken);
-        }
-  
-        static async patch(url,data,authenticationToken)  {
-              return await httpAws4.makeRequestAws4(url,'', 'PATCH',authenticationToken);
-        }
-  
-      
-      
-       static async generateSignedRequestAws4(url,data, httpOperation,authenticationToken)  {
-            let signedRequest ;
-            let useAuthenticationToken = false;
-            try {
-               
-                
-               if ( typeof authenticationToken !== 'undefined' && authenticationToken ) {
-                     useAuthenticationToken = true;
-                } else {
-                    console.log("WARNING: Trying to make a secure request to " + url + " without passing an authenticationToken") 
+            // allow requests without authentication, but log a warning
+            if (!authenticator) {
+                console.warn("WARNING: Trying to make a secure request to " + url + " without passing an authenticator") 
+            } else {
+                // if an authenticator was provided, ensure that it's valid
+                if (typeof authenticator.sign !== 'function') {
+                    throw new Error('Provided authenticator does not define the required sign() function.');
                 }
-                
-                let hostname = httpAws4.extractHostname(url);
-                let path = url.replace("http://","").replace("https://","").replace(hostname,"");
 
-               let request = {
-                    host: hostname ,
-                    method: httpOperation,
-                    url: url,
-                    data: data, // payload
-                    body: data ? JSON.stringify(data) : undefined,
-                    path: path ,
-                    headers: {
-                      'content-type': 'application/json'
-                    }
+                console.log('Signing request with authenticator', authenticator);
+                try {
+                    // use the authenticator to sign the request
+                    authenticator.sign(request);
+                } catch (e) {
+                    console.error('Failed to sign request with authenticator', authenticator, e);
                 }
-  
-  
-                if (useAuthenticationToken == true) {
-     
-                     signedRequest = aws4.sign(request,
-                        {
-                          // assumes user has authenticated and we have called
-                          // AWS.config.credentials.get to retrieve keys and
-                          // session tokens
-                          secretAccessKey: authenticationToken.secretAccessKey,
-                          accessKeyId: authenticationToken.accessKeyId,
-                          sessionToken: authenticationToken.sessionToken
-                    })
-                      
-                    delete signedRequest.headers['Host']; 
-                    delete signedRequest.headers['Content-Length'];
-                  
-                } else {
-                    signedRequest = request;
-                }
-                  
-            } catch (error) {
-                console.error("Failed to generate request : " + error );
             }
 
-          return signedRequest;
-        }     
-      
-      
-        
-        
-        static async makeRequestAws4(url,data, httpOperation,authenticationToken)  {
-            let result ;
-            
-            try {
-                let signedRequest = await httpAws4.generateSignedRequestAws4(url,data, httpOperation,authenticationToken);
-                //  console.log("signedRequest==>",signedRequest); // uncomment to debug
-                let response = await axios(signedRequest);
-                result = response;
-            } catch (error) {
-                console.error("Failed to " + httpOperation + " for " + url + "' error message : " + error );
+            // send request using axios
+            const response = await axios(request);
+
+            if (response.status >= 400) {
+                console.error('Failed to send request to ' + request.url + '. Response code is ' + response.status);
+                throw new Error('HTTP request failed with status code (' + response.status + ') ' + response.statusText);
             }
 
-          return result;
-        }     
-        
-        
+            return response;
+        }
 
+        this.post = async (url, data) => {
+            console.log('AuthenticatedHttp.post()');
+            return await sendAuthenticatedRequest('POST', url, data);
+        };
+        this.put = async (url, data) => {
+            console.log('AuthenticatedHttp.put()');
+            return await sendAuthenticatedRequest('PUT', url, data);
+        };
+        this.get = async (url, params) => {
+            console.log('AuthenticatedHttp.get()');
+            return await sendAuthenticatedRequest('GET', url, '', params);
+        };
+        this.delete = async (url) => {
+            console.log('AuthenticatedHttp.delete()');
+            return await sendAuthenticatedRequest('DELETE', url, '');
+        };
+        this.patch = async (url, data) => {
+            console.log('AuthenticatedHttp.patch()');
+            return await sendAuthenticatedRequest('PATCH', url, data);
+        };
+    }
 }
-
 
 module.exports = {
     Service: Service,
@@ -461,5 +398,5 @@ module.exports = {
     NotificationEndpoint: NotificationEndpoint,
     ResourceManager: ResourceManager,
     HTTP: axios,
-    HTTPAWS4: httpAws4
+    AuthenticatedHttp: AuthenticatedHttp
 }
