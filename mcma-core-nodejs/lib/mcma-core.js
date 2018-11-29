@@ -211,10 +211,10 @@ class ResourceManager {
         let services = [];
 
         this.authenticatedHttp = new AuthenticatedHttp(authenticator);
-       
+
         this.init = async () => {
             services.length = 0;
-            
+
             let response = await this.authenticatedHttp.get(servicesURL);
 
             services.push(...(response.data));
@@ -315,7 +315,7 @@ class ResourceManager {
 
 class AuthenticatedHttp {
     constructor(authenticator) {
-        async function sendAuthenticatedRequest(method, url, data, params)  {
+        async function sendAuthenticatedRequest(method, url, data, params) {
             // build request
             const request = { method, url, data, params };
 
@@ -324,14 +324,13 @@ class AuthenticatedHttp {
 
             // allow requests without authentication, but log a warning
             if (!authenticator) {
-                console.warn("WARNING: Trying to make a secure request to " + url + " without passing an authenticator") 
+                console.warn("WARNING: Trying to make a signed request to " + url + " without passing an authenticator")
             } else {
                 // if an authenticator was provided, ensure that it's valid
                 if (typeof authenticator.sign !== 'function') {
                     throw new Error('Provided authenticator does not define the required sign() function.');
                 }
 
-                console.log('Signing request with authenticator', authenticator);
                 try {
                     // use the authenticator to sign the request
                     authenticator.sign(request);
@@ -341,34 +340,22 @@ class AuthenticatedHttp {
             }
 
             // send request using axios
-            const response = await axios(request);
-
-            if (response.status >= 400) {
-                console.error('Failed to send request to ' + request.url + '. Response code is ' + response.status);
-                throw new Error('HTTP request failed with status code (' + response.status + ') ' + response.statusText);
-            }
-
-            return response;
+            return await axios(request);
         }
 
         this.post = async (url, data) => {
-            console.log('AuthenticatedHttp.post()');
             return await sendAuthenticatedRequest('POST', url, data);
         };
         this.put = async (url, data) => {
-            console.log('AuthenticatedHttp.put()');
             return await sendAuthenticatedRequest('PUT', url, data);
         };
         this.get = async (url, params) => {
-            console.log('AuthenticatedHttp.get()');
             return await sendAuthenticatedRequest('GET', url, '', params);
         };
         this.delete = async (url) => {
-            console.log('AuthenticatedHttp.delete()');
             return await sendAuthenticatedRequest('DELETE', url, '');
         };
         this.patch = async (url, data) => {
-            console.log('AuthenticatedHttp.patch()');
             return await sendAuthenticatedRequest('PATCH', url, data);
         };
     }

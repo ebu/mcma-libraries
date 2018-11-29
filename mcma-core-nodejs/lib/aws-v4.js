@@ -1,4 +1,5 @@
 const CryptoJS = require('crypto-js');
+const URL = require('url').URL;
 
 const AWS_SHA_256 = 'AWS4-HMAC-SHA256';
 const AWS4_REQUEST = 'aws4_request';
@@ -17,19 +18,12 @@ function hexEncode(value) {
 }
 
 function hmac(secret, value) {
-    return CryptoJS.HmacSHA256(value, secret, {asBytes: true});
+    return CryptoJS.HmacSHA256(value, secret, { asBytes: true });
 }
 
-function extractHostname(url) {
-    let hostname = url.split('/')[url.indexOf("//") > -1 ? 2 : 0];
-    hostname = hostname.split(':')[0];
-    hostname = hostname.split('?')[0];
-    return hostname;
-}
-
-function buildCanonicalRequest(request) {
+function buildCanonicalRequest(request, url) {
     return request.method + '\n' +
-        buildCanonicalUri(request.path) + '\n' +
+        buildCanonicalUri(url.pathname) + '\n' +
         buildCanonicalQueryString(request.params) + '\n' +
         buildCanonicalHeaders(request.headers) + '\n' +
         buildCanonicalSignedHeaders(request.headers) + '\n' +
@@ -64,9 +58,9 @@ function buildCanonicalQueryString(queryParams) {
     return canonicalQueryString.substr(0, canonicalQueryString.length - 1);
 }
 
-function fixedEncodeURIComponent (str) {
-    return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
-    return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+function fixedEncodeURIComponent(str) {
+    return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
+        return '%' + c.charCodeAt(0).toString(16).toUpperCase();
     });
 }
 
@@ -126,7 +120,7 @@ function signRequest(request, credentials) {
         return;
     }
 
-    // check for alternate names for access key & secrey key 
+    // check for alternate names for access key & secret key 
     credentials.accessKey = credentials.accessKey || credentials.accessKeyId;
     credentials.secretKey = credentials.secretKey || credentials.secretAccessKey;
 
@@ -140,17 +134,19 @@ function signRequest(request, credentials) {
     // capture request datetime
     const datetime = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/[:\-]|\.\d{3}/g, '');
     request.headers[X_AMZ_DATE] = datetime;
-    
+
     // add host header if missing
+    let url = new URL(request.url);
+
     if (!request.host) {
-        request.host = extractHostname(request.url);
+        request.host = url.host;
     }
     if (!request.headers[HOST]) {
         request.headers[HOST] = request.host;
     }
 
     // build signature
-    const canonicalRequest = buildCanonicalRequest(request);
+    const canonicalRequest = buildCanonicalRequest(request, url);
     const hashedCanonicalRequest = hashCanonicalRequest(canonicalRequest);
     const credentialScope = buildCredentialScope(datetime, credentials.region, credentials.serviceName);
     const stringToSign = buildStringToSign(datetime, credentialScope, hashedCanonicalRequest);
@@ -159,7 +155,7 @@ function signRequest(request, credentials) {
 
     // add authorization header with signature
     request.headers[AUTHORIZATION] = buildAuthorizationHeader(credentials.accessKey, credentialScope, request.headers, signature);
-    
+
     // add security token (for temporary credentials)
     if (credentials.sessionToken) {
         request.headers[X_AMZ_SECURITY_TOKEN] = credentials.sessionToken;
