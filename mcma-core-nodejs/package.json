@@ -14,7 +14,8 @@
         "url": "git+https://github.com/ebu/mcma-libraries/mcma-core-nodejs.git"
     },
     "keywords": [
-        "mcma"
+        "mcma",
+        "awsv4"
     ],
     "author": "Joost Rovers <joost.rovers@glookast.com>",
     "license": "Apache-2.0",
@@ -27,6 +28,6 @@
         "crypto-js": "^3.1.9-1"
     },
     "devDependencies": {
-        "jasmine": "^3.2.0"
+        "jasmine": "^3.3.0"
     }
 }
