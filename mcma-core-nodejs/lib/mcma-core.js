@@ -315,9 +315,9 @@ class ResourceManager {
 
 class AuthenticatedHttp {
     constructor(authenticator) {
-        async function sendAuthenticatedRequest(method, url, data, params)  {
+        async function sendAuthenticatedRequest(method, url, data)  {
             // build request
-            const request = { method, url, data, params };
+            const request = { method, url, data };
 
             // content type is always JSON? will this always be true?
             request.headers = { 'Content-Type': 'application/json' };
@@ -359,9 +359,9 @@ class AuthenticatedHttp {
             console.log('AuthenticatedHttp.put()');
             return await sendAuthenticatedRequest('PUT', url, data);
         };
-        this.get = async (url, params) => {
+        this.get = async (url) => {
             console.log('AuthenticatedHttp.get()');
-            return await sendAuthenticatedRequest('GET', url, '', params);
+            return await sendAuthenticatedRequest('GET', url, '');
         };
         this.delete = async (url) => {
             console.log('AuthenticatedHttp.delete()');
