@@ -2,207 +2,404 @@
 
 const axios = require('axios');
 
-class Service {
-    constructor(name, resources, jobType, jobProfiles, inputLocations, outputLocations) {
-        this["@type"] = "Service";
-        this.name = name;
-        this.resources = resources;
-        this.jobType = jobType;
-        this.jobProfiles = jobProfiles;
-        this.inputLocations = inputLocations;
-        this.outputLocations = outputLocations;
+const validUrl = new RegExp('^(https?:\\/\\/)?' + // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locater
+
+const checkProperty = (object, propertyName, expectedType, required) => {
+    const propertyValue = object[propertyName];
+    const propertyType = typeof propertyValue;
+
+    if (propertyValue === undefined || propertyValue === null) {
+        if (required) {
+            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to be defined");
+        }
+        return;
+    }
+
+    if (expectedType === "resource") { // special MCMA type that can either be a URL referencing a resource or embedded object
+        if ((propertyType !== "string" && propertyType !== "object") ||
+            (propertyType === "string" && !validUrl.test(propertyValue)) ||
+            (propertyType === "object" && Array.isArray(propertyValue))) {
+            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have a valid URL or an object");
+        }
+    } else if (expectedType === "url") {
+        if (propertyType !== "string" || !validUrl.test(propertyValue)) {
+            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have a valid URL");
+        }
+    } else if (expectedType === "Array") {
+        if (!Array.isArray(propertyValue)) {
+            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type Array");
+        }
+    } else if (expectedType === "object") {
+        if (propertyType !== "object" || Array.isArray(propertyValue)) {
+            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type object");
+        }
+    } else {
+        if (expectedType !== propertyType) {
+            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type " + expectedType);
+        }
     }
 }
 
-class ServiceResource {
-    constructor(resourceType, httpEndpoint) {
-        this["@type"] = "ServiceResource";
-        this.resourceType = resourceType;
-        this.httpEndpoint = httpEndpoint;
-    }
-}
-
-class BMContent {
-    constructor(properties) {
-        this["@type"] = "BMContent";
+class Resource {
+    constructor(type, properties) {
+        this["@type"] = type;
 
         if (properties) {
             for (const prop in properties) {
-                this[prop] = properties[prop];
+                if (prop !== "@type") {
+                    this[prop] = properties[prop];
+                }
             }
         }
     }
 }
 
-class BMEssence {
+class Service extends Resource {
+    constructor(properties, authProvider) {
+        super("Service", properties);
+
+        checkProperty(this, "name", "string", true);
+        checkProperty(this, "resources", "Array", true);
+        checkProperty(this, "authType", "string", false);
+        checkProperty(this, "jobType", "string", false);
+        checkProperty(this, "jobProfiles", "Array", false);
+
+        const endpointsMap = {};
+
+        for (let i = 0; i < this.resources.length; i++) {
+            const resourceEndpoint = new ResourceEndpoint(this.resources[i], authProvider, this.authType, this.authContext);
+            endpointsMap[resourceEndpoint.resourceType] = resourceEndpoint;
+            this.resources[i] = resourceEndpoint;
+        }
+
+        if (this.jobProfiles !== undefined) {
+            for (let i = 0; i < this.jobProfiles.length; i++) {
+                if (typeof jobProfile === "object") {
+                    this.jobProfiles[i] = new JobProfile(this.jobProfiles[i]);
+                }
+            }
+        }
+
+        this.hasResourceEndpoint = (resourceType) => {
+            return endpointsMap[resourceType] !== undefined;
+        }
+
+        this.getResourceEndpoint = (resourceType) => {
+            return endpointsMap[resourceType];
+        }
+    }
+}
+
+class ResourceEndpoint extends Resource {
+    constructor(properties, authProvider, serviceAuthType, serviceAuthContext) {
+        super("ResourceEndpoint", properties)
+
+        checkProperty(this, "resourceType", "string", true);
+        checkProperty(this, "httpEndpoint", "url", true);
+        checkProperty(this, "authType", "string", false);
+
+        this.request = async (config) => {
+            if (!config) {
+                throw new Error("Missing configuration for making HTTP request");
+            }
+            if (config.method === undefined) {
+                config.method = "GET";
+            }
+
+            if ((config.url.indexOf('http://') !== 0 && config.url.indexOf('https://') !== 0)) {
+                config.url = config.baseURL + config.url;
+            }
+
+            if (!config.url.startsWith(this.httpEndpoint)) {
+                console.warn("Making " + config.method + " request to URL '" + config.url + "' which is not managed by this Resource Endpoint '" + this.httpEndpoint + "'");
+            }
+
+            if (authProvider) {
+                if (typeof authProvider.getAuthenticator !== 'function') {
+                    throw new Error('Provided authProvider does not define the required getAuthenticator(authType, authContext) function.');
+                }
+
+                const authenticator = await authProvider.getAuthenticator(this.authType || serviceAuthType, this.authContext || serviceAuthContext);
+
+                if (authenticator) {
+                    // if an authenticator was provided, ensure that it's valid
+                    if (typeof authenticator.sign !== 'function') {
+                        throw new Error('Provided authenticator does not define the required sign() function.');
+                    }
+
+                    authenticator.sign(config);
+                }
+            }
+
+            // send request using axios
+            return await axios(config);
+        }
+
+        this.get = async (url, config) => {
+            if (typeof url === "object" && config === undefined) {
+                config = url;
+                url = undefined;
+            }
+
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+            config.url = url;
+            config.method = "GET";
+            config.baseURL = this.httpEndpoint;
+            return await this.request(config)
+        }
+
+        this.post = async (url, data, config) => {
+            if (typeof url === "object" && config === undefined) {
+                config = data;
+                data = url;
+                url = undefined;
+            }
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+            config.url = url;
+            config.method = "POST";
+            config.baseURL = this.httpEndpoint;
+            config.data = data;
+            return await this.request(config)
+        }
+
+        this.put = async (url, data, config) => {
+            if (typeof url === "object" && config === undefined) {
+                config = data;
+                data = url;
+                url = undefined;
+            }
+            if (url === undefined) {
+                url = data.id;
+            }
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+            config.url = url;
+            config.method = "PUT";
+            config.baseURL = this.httpEndpoint;
+            config.data = data;
+            return await this.request(config)
+        }
+
+        this.patch = async (url, data, config) => {
+            if (typeof url === "object" && typeof data === "object" && config === undefined) {
+                config = data;
+                data = url;
+                url = undefined;
+            }
+            if (url === undefined) {
+                url = data.id;
+            }
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+            config.url = url;
+            config.method = "PATCH";
+            config.baseURL = this.httpEndpoint;
+            config.data = data;
+            return await this.request(config)
+        }
+
+        this.delete = async (url, config) => {
+            if (typeof url === "object" && config === undefined) {
+                config = url;
+                url = undefined;
+            }
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+            config.url = url;
+            config.method = "DELETE";
+            config.baseURL = this.httpEndpoint;
+            return await this.request(config)
+        }
+    }
+}
+
+class JobProfile extends Resource {
     constructor(properties) {
-        this["@type"] = "BMEssence";
+        super("JobProfile", properties)
 
-        if (properties) {
-            for (const prop in properties) {
-                this[prop] = properties[prop];
-            }
-        }
+        checkProperty(this, "inputParameters", "Array", false);
+        checkProperty(this, "outputParameters", "Array", false);
+        checkProperty(this, "optionalInputParameters", "Array", false);
     }
 }
 
-class DescriptiveMetadata {
+class JobParameter extends Resource {
     constructor(properties) {
-        this["@type"] = "DescriptiveMetadata";
+        super("JobParameter", properties)
 
-        if (properties) {
-            for (const prop in properties) {
-                this[prop] = properties[prop];
-            }
-        }
+        checkProperty(this, "parameterName", "string", true);
+        checkProperty(this, "parameterType", "string", false);
     }
 }
 
-class TechnicalMetadata {
+class JobParameterBag extends Resource {
     constructor(properties) {
-        this["@type"] = "TechnicalMetadata";
-
-        if (properties) {
-            for (const prop in properties) {
-                this[prop] = properties[prop];
-            }
-        }
+        super("JobParameterBag", properties)
     }
 }
 
-class JobProfile {
-    constructor(name, inputParameters, outputParameters, optionalInputParameters) {
-        this["@type"] = "JobProfile";
-        this.name = name;
-        this.inputParameters = inputParameters;
-        this.outputParameters = outputParameters;
-        this.optionalInputParameters = optionalInputParameters;
-    }
-}
-
-class JobParameter {
-    constructor(parameterName, parameterType) {
-        this["@type"] = "JobParameter";
-        this.parameterName = parameterName;
-        this.parameterType = parameterType;
-    }
-}
-
-class JobParameterBag {
-    constructor(jobParameters) {
-        this["@type"] = "JobParameterBag";
-
-        if (jobParameters) {
-            for (const prop in jobParameters) {
-                this[prop] = jobParameters[prop];
-            }
-        }
-    }
-}
-
-class Locator {
+class Locator extends Resource {
     constructor(properties) {
-        this["@type"] = "Locator";
+        super("Locator", properties)
+    }
+}
 
-        if (properties) {
-            for (const prop in properties) {
-                this[prop] = properties[prop];
-            }
+class Job extends Resource {
+    constructor(type, properties) {
+        super(type, properties);
+
+        checkProperty(this, "jobProfile", "resource", true);
+        checkProperty(this, "jobInput", "resource", true);
+        checkProperty(this, "notificationEndpoint", "resource", false);
+        checkProperty(this, "status", "string", false);
+        checkProperty(this, "statusMessage", "string", false)
+        checkProperty(this, "jobOutput", "resource", false);
+
+        if (typeof this.jobProfile === "object") {
+            this.jobProfile = new JobProfile(this.jobProfile);
+        }
+        if (typeof this.jobInput === "object") {
+            this.jobInput = new JobParameterBag(this.jobInput);
+        }
+        if (typeof this.notificationEndpoint === "object") {
+            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
         }
     }
 }
 
-class AIJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "AIJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class AIJob extends Job {
+    constructor(properties) {
+        super("AIJob", properties)
     }
 }
 
-class AmeJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "AmeJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class AmeJob extends Job {
+    constructor(properties) {
+        super("AmeJob", properties)
     }
 }
 
-class CaptureJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "CaptureJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class CaptureJob extends Job {
+    constructor(properties) {
+        super("CaptureJob", properties)
     }
 }
 
-class QAJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "QAJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class QAJob extends Job {
+    constructor(properties) {
+        super("QAJob", properties)
     }
 }
 
-class TransferJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "TransferJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class TransferJob extends Job {
+    constructor(properties) {
+        super("TransferJob", properties)
     }
 }
 
-class TransformJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "TransformJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class TransformJob extends Job {
+    constructor(properties) {
+        super("TransformJob", properties)
     }
 }
 
-class WorkflowJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "WorkflowJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class WorkflowJob extends Job {
+    constructor(properties) {
+        super("WorkflowJob", properties)
     }
 }
 
-class JobProcess {
-    constructor(job, notificationEndpoint) {
-        this["@type"] = "JobProcess";
-        this.job = job;
-        this.notificationEndpoint = notificationEndpoint;
+class JobProcess extends Resource {
+    constructor(properties) {
+        super("JobProcess", properties)
+
+        checkProperty(this, "job", "resource");
+        checkProperty(this, "notificationEndpoint", "resource");
+
+        if (typeof this.notificationEndpoint === "object") {
+            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
+        }
     }
 }
 
-class JobAssignment {
-    constructor(job, notificationEndpoint) {
-        this["@type"] = "JobAssignment";
-        this.job = job;
-        this.notificationEndpoint = notificationEndpoint;
+class JobAssignment extends Resource {
+    constructor(properties) {
+        super("JobAssignment", properties)
+
+        checkProperty(this, "job", "resource");
+        checkProperty(this, "notificationEndpoint", "resource");
+
+        if (typeof this.notificationEndpoint === "object") {
+            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
+        }
     }
 }
 
-class Notification {
-    constructor(source, content) {
-        this["@type"] = "Notification";
-        this.source = source;
-        this.content = content;
+class Notification extends Resource {
+    constructor(properties) {
+        super("Notification", properties)
+
+        checkProperty(this, "source", "string", false)
+        checkProperty(this, "content", "resource", true)
     }
 }
 
-class NotificationEndpoint {
-    constructor(httpEndpoint) {
-        this["@type"] = "NotificationEndpoint";
-        this.httpEndpoint = httpEndpoint;
+class NotificationEndpoint extends Resource {
+    constructor(properties) {
+        super("NotificationEndpoint", properties)
+
+        checkProperty(this, "httpEndpoint", "url", true)
+    }
+}
+
+class BMContent extends Resource {
+    constructor(properties) {
+        super("BMContent", properties)
+    }
+}
+
+class BMEssence extends Resource {
+    constructor(properties) {
+        super("BMEssence", properties)
+    }
+}
+
+class DescriptiveMetadata extends Resource {
+    constructor(properties) {
+        super("DescriptiveMetadata", properties)
+    }
+}
+
+class TechnicalMetadata extends Resource {
+    constructor(properties) {
+        super("TechnicalMetadata", properties)
     }
 }
 
@@ -217,7 +414,9 @@ class ResourceManager {
 
             let response = await this.authenticatedHttp.get(servicesURL);
 
-            services.push(...(response.data));
+            for (const service of response.data) {
+                services.push(new Service(service));
+            }
 
             // in order to bootstrap the resource manager we have to make sure that the services array contains 
             // the entry for the service registry itself, even if it's not present in the service registry.
@@ -234,7 +433,7 @@ class ResourceManager {
             }
 
             if (!serviceRegistryPresent) {
-                services.push(new Service("Service Registry", [new ServiceResource("Service", servicesURL)]));
+                services.push(new Service({ name: "Service Registry", resources: [new ResourceEndpoint({ resourceType: "Service", httpEndpoint: servicesURL })] }));
             }
         }
 
@@ -313,6 +512,193 @@ class ResourceManager {
     }
 }
 
+class ResourceManager2 {
+    constructor(authProvider, servicesURL, servicesAuthType, servicesAuthContext) {
+        const services = [];
+
+        this.init = async () => {
+            services.length = 0;
+
+            let serviceRegistry = new Service({
+                name: "Service Registry",
+                resources: [
+                    new ResourceEndpoint({
+                        resourceType: "Service",
+                        httpEndpoint: servicesURL,
+                        authType: servicesAuthType,
+                        authContext: servicesAuthContext
+                    })
+                ]
+            }, authProvider);
+
+            services.push(serviceRegistry);
+
+            let servicesEndpoint = serviceRegistry.getResourceEndpoint("Service");
+
+            let response = await servicesEndpoint.get();
+
+            for (const service of response.data) {
+                services.push(new Service(service, authProvider));
+            }
+        }
+
+        this.get = async (resourceType, filter) => {
+            if (services.length === 0) {
+                await this.init();
+            }
+
+            let result = [];
+
+            let usedHttpEndpoints = {};
+
+            for (const service of services) {
+                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                if (resourceEndpoint === undefined) {
+                    continue;
+                }
+
+                try {
+                    if (!usedHttpEndpoints[resourceEndpoint.httpEndpoint]) {
+                        let response = await resourceEndpoint.get({ params: filter });
+                        result.push(...(response.data));
+                    }
+
+                    usedHttpEndpoints[resourceEndpoint.httpEndpoint] = true;
+                } catch (error) {
+                    console.error("Failed to retrieve '" + resourceType + "' from endpoint '" + resourceEndpoint.httpEndpoint + "'");
+                }
+            }
+
+            return result;
+        }
+
+        this.create = async (resource) => {
+            if (services.length === 0) {
+                await this.init();
+            }
+
+            let resourceType = resource["@type"];
+
+            for (const service of services) {
+                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                if (resourceEndpoint === undefined) {
+                    continue;
+                }
+
+                let response = await resourceEndpoint.post(resource);
+                return response.data;
+            }
+
+            throw new Error("Failed to find service to create resource of type '" + resourceType + "'.");
+        }
+
+        this.update = async (resource) => {
+            if (services.length === 0) {
+                await this.init();
+            }
+
+            let resourceType = resource["@type"];
+
+            for (const service of services) {
+                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                if (resourceEndpoint === undefined) {
+                    continue;
+                }
+
+                if (resource.id.startsWith(resourceEndpoint.httpEndpoint)) {
+                    let response = await resourceEndpoint.put(resource);
+                    return response.data;
+                }
+            }
+
+            let response = axios.put(resource.id, resource);
+            return response.data;
+        }
+
+        this.delete = async (resource) => {
+            if (services.length === 0) {
+                await this.init();
+            }
+
+            let resourceType = resource["@type"];
+
+            for (const service of services) {
+                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                if (resourceEndpoint === undefined) {
+                    continue;
+                }
+
+                if (resource.id.startsWith(resourceEndpoint.httpEndpoint)) {
+                    let response = await resourceEndpoint.delete(resource.id);
+                    return response.data;
+                }
+            }
+
+            let response = axios.delete(resource.id);
+            return response.data;
+        }
+
+        this.getResourceEndpoint = async (url) => {
+            if (services.length === 0) {
+                await this.init();
+            }
+
+            for (const service of services) {
+                for (const resourceEndpoint of service.resources) {
+                    if (url.startsWith(resourceEndpoint.httpEndpoint)) {
+                        return resourceEndpoint;
+                    }
+                }
+            }
+            return undefined;
+        }
+
+        this.resolve = async (resource) => {
+            let resolvedResource;
+
+            if (typeof resource === "string") {
+                let http = await this.getResourceEndpoint(resource)
+                if (http === undefined) {
+                    http = axios;
+                }
+                try {
+                    let response = http.get(resource);
+                    resolvedResource = response.data;
+                } catch (error) {
+                    throw new Error("Failed to resolve resource from URL '" + resource + "'");
+                }
+            } else {
+                resolvedResource = resource;
+            }
+
+            let resolvedType = typeof resolvedResource;
+            if (resolvedType === "object") {
+                if (Array.isArray(resolvedResource)) {
+                    throw new Error("Resolved resource has illegal type 'Array'");
+                }
+            } else {
+                throw new Error("Resolved resource has illegal type '" + resolvedType + "'");
+            }
+
+            return resolvedResource;
+        }
+
+        this.sendNotification = async (resource) => {
+            if (resource.notificationEndpoint) {
+                let notificationEndpoint = await this.resolve(resource.notificationEndpoint);
+
+                let http = await this.getResourceEndpoint(notificationEndpoint.httpEndpoint);
+                if (http === undefined) {
+                    http = axios;
+                }
+
+                let notification = new Notification(resource.id, resource);
+                await http.post(notificationEndpoint.httpEndpoint, notification);
+            }
+        }
+    }
+}
+
 class AuthenticatedHttp {
     constructor(authenticator) {
         async function sendAuthenticatedRequest(method, url, data, params) {
@@ -363,7 +749,7 @@ class AuthenticatedHttp {
 
 module.exports = {
     Service: Service,
-    ServiceResource: ServiceResource,
+    ResourceEndpoint: ResourceEndpoint,
     BMContent: BMContent,
     BMEssence: BMEssence,
     DescriptiveMetadata: DescriptiveMetadata,
@@ -384,6 +770,6 @@ module.exports = {
     Notification: Notification,
     NotificationEndpoint: NotificationEndpoint,
     ResourceManager: ResourceManager,
-    HTTP: axios,
+    ResourceManager2: ResourceManager2,
     AuthenticatedHttp: AuthenticatedHttp
 }

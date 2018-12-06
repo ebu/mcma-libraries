@@ -131,18 +131,23 @@ function signRequest(request, credentials) {
 
     credentials.serviceName = credentials.serviceName || 'execute-api';
 
-    // capture request datetime
-    const datetime = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/[:\-]|\.\d{3}/g, '');
-    request.headers[X_AMZ_DATE] = datetime;
-
-    // add host header if missing
     let url = new URL(request.url);
 
-    if (!request.host) {
-        request.host = url.host;
+    // create headers object in case missing
+    request.headers = request.headers || {};
+
+    // add host to header
+    if (request.headers[HOST] === undefined) {
+        request.headers[HOST] = url.host;
     }
-    if (!request.headers[HOST]) {
-        request.headers[HOST] = request.host;
+    
+    // add datetime to header
+    let datetime;
+    if (request.headers[X_AMZ_DATE] === undefined) {
+        datetime = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/[:\-]|\.\d{3}/g, '');
+        request.headers[X_AMZ_DATE] = datetime;
+    } else {
+        datetime = request.headers[X_AMZ_DATE];
     }
 
     // build signature
