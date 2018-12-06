@@ -116,7 +116,7 @@ class ResourceEndpoint extends Resource {
             }
 
             if (!config.url.startsWith(this.httpEndpoint)) {
-                console.warn("Making " + config.method + " request to URL '" + config.url + "' which is not managed by this Resource Endpoint '" + this.httpEndpoint + "'");
+                throw new Error("Making " + config.method + " request to URL '" + config.url + "' which is not managed by this Resource Endpoint '" + this.httpEndpoint + "'");
             }
 
             if (authProvider) {
@@ -538,7 +538,11 @@ class ResourceManager2 {
             let response = await servicesEndpoint.get();
 
             for (const service of response.data) {
-                services.push(new Service(service, authProvider));
+                try {
+                    services.push(new Service(service, authProvider));
+                } catch (error) {
+                    console.warning("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
+                }
             }
         }
 
@@ -662,7 +666,7 @@ class ResourceManager2 {
                     http = axios;
                 }
                 try {
-                    let response = http.get(resource);
+                    let response = await http.get(resource);
                     resolvedResource = response.data;
                 } catch (error) {
                     throw new Error("Failed to resolve resource from URL '" + resource + "'");
