@@ -1,5 +1,5 @@
 const CryptoJS = require('crypto-js');
-const URL = require('url').URL;
+const url = require('url');
 
 const AWS_SHA_256 = 'AWS4-HMAC-SHA256';
 const AWS4_REQUEST = 'aws4_request';
@@ -21,10 +21,10 @@ function hmac(secret, value) {
     return CryptoJS.HmacSHA256(value, secret, { asBytes: true });
 }
 
-function buildCanonicalRequest(request, url) {
+function buildCanonicalRequest(request, requestUrl) {
     return request.method + '\n' +
-        buildCanonicalUri(url.pathname) + '\n' +
-        buildCanonicalQueryString(request.params) + '\n' +
+        buildCanonicalUri(requestUrl.pathname) + '\n' +
+        buildCanonicalQueryString(requestUrl.query) + '\n' +
         buildCanonicalHeaders(request.headers) + '\n' +
         buildCanonicalSignedHeaders(request.headers) + '\n' +
         hexEncode(hash(typeof request.data === 'string' ? request.data : JSON.stringify(request.data)));
@@ -44,10 +44,8 @@ function buildCanonicalQueryString(queryParams) {
     }
 
     var sortedQueryParams = [];
-    for (var property in queryParams) {
-        if (queryParams.hasOwnProperty(property)) {
-            sortedQueryParams.push(property);
-        }
+    for (var property of Object.keys(queryParams)) {
+        sortedQueryParams.push(property);
     }
     sortedQueryParams.sort();
 
@@ -67,10 +65,8 @@ function fixedEncodeURIComponent(str) {
 function buildCanonicalHeaders(headers) {
     var canonicalHeaders = '';
     var sortedKeys = [];
-    for (var property in headers) {
-        if (headers.hasOwnProperty(property)) {
-            sortedKeys.push(property);
-        }
+    for (var property of Object.keys(headers)) {
+        sortedKeys.push(property);
     }
     sortedKeys.sort();
 
@@ -82,10 +78,8 @@ function buildCanonicalHeaders(headers) {
 
 function buildCanonicalSignedHeaders(headers) {
     var sortedKeys = [];
-    for (var property in headers) {
-        if (headers.hasOwnProperty(property)) {
-            sortedKeys.push(property.toLowerCase());
-        }
+    for (var property of Object.keys(headers)) {
+        sortedKeys.push(property.toLowerCase());
     }
     sortedKeys.sort();
 
@@ -131,27 +125,22 @@ function signRequest(request, credentials) {
 
     credentials.serviceName = credentials.serviceName || 'execute-api';
 
-    let url = new URL(request.url);
-
     // create headers object in case missing
     request.headers = request.headers || {};
 
-    // add host to header
-    if (request.headers[HOST] === undefined) {
-        request.headers[HOST] = url.host;
-    }
-    
-    // add datetime to header
-    let datetime;
-    if (request.headers[X_AMZ_DATE] === undefined) {
-        datetime = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/[:\-]|\.\d{3}/g, '');
-        request.headers[X_AMZ_DATE] = datetime;
-    } else {
-        datetime = request.headers[X_AMZ_DATE];
+    // capture request datetime
+    const datetime = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/[:\-]|\.\d{3}/g, '');
+    request.headers[X_AMZ_DATE] = datetime;
+
+    const requestUrl = url.parse(request.url, true);
+
+    // add host header if missing
+    if (!request.headers[HOST]) {
+        request.headers[HOST] = requestUrl.host;
     }
 
     // build signature
-    const canonicalRequest = buildCanonicalRequest(request, url);
+    const canonicalRequest = buildCanonicalRequest(request, requestUrl);
     const hashedCanonicalRequest = hashCanonicalRequest(canonicalRequest);
     const credentialScope = buildCredentialScope(datetime, credentials.region, credentials.serviceName);
     const stringToSign = buildStringToSign(datetime, credentialScope, hashedCanonicalRequest);
@@ -165,6 +154,9 @@ function signRequest(request, credentials) {
     if (credentials.sessionToken) {
         request.headers[X_AMZ_SECURITY_TOKEN] = credentials.sessionToken;
     }
+
+    // need to remove the host header if we're in the browser as it's protected and cannot be set
+    delete request.headers[HOST];
 }
 
 class AwsV4Authenticator {
