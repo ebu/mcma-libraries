@@ -21,10 +21,10 @@ function hmac(secret, value) {
     return CryptoJS.HmacSHA256(value, secret, { asBytes: true });
 }
 
-function buildCanonicalRequest(request, requestUrl) {
+function buildCanonicalRequest(request, requestUrl, requestQuery) {
     return request.method + '\n' +
         buildCanonicalUri(requestUrl.pathname) + '\n' +
-        buildCanonicalQueryString(requestUrl.query) + '\n' +
+        buildCanonicalQueryString(requestQuery) + '\n' +
         buildCanonicalHeaders(request.headers) + '\n' +
         buildCanonicalSignedHeaders(request.headers) + '\n' +
         hexEncode(hash(typeof request.data === 'string' ? request.data : JSON.stringify(request.data)));
@@ -131,13 +131,16 @@ function signRequest(request, credentials) {
 
     const requestUrl = url.parse(request.url, true);
 
+    // build full set of query params, both from the url and from the params property of the request, into a single object
+    const requestQuery = Object.assign({}, requestUrl.query || {}, request.params || {});
+
     // add host header if missing
     if (!request.headers[HOST]) {
         request.headers[HOST] = requestUrl.host;
     }
 
     // build signature
-    const canonicalRequest = buildCanonicalRequest(request, requestUrl);
+    const canonicalRequest = buildCanonicalRequest(request, requestUrl, requestQuery);
     const hashedCanonicalRequest = hashCanonicalRequest(canonicalRequest);
     const credentialScope = buildCredentialScope(datetime, credentials.region, credentials.serviceName);
     const stringToSign = buildStringToSign(datetime, credentialScope, hashedCanonicalRequest);
