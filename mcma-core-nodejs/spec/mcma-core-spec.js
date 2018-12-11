@@ -1,4 +1,4 @@
-const MCMA_CORE = require("../lib/mcma-core")
+const MCMA_CORE = require("../index");
 
 const SERVICE_REGISTRY_BASE_URL = "";
 const SERVICE_REGISTRY_SERVICES_URL = SERVICE_REGISTRY_BASE_URL + "/services";
@@ -37,4 +37,35 @@ describe("The Resource Manager", () => {
         console.log(JSON.stringify(services, null, 2));
     });
 
+});
+
+describe("The AWS V4 Presigned Url Generator", () => {
+
+    beforeEach(function() {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+    });
+    
+    it("generates a usable presigned url for the service registry", async (done) => {
+        // set access key and secret key here
+        const creds = {
+            accessKey: 'xxx',
+            secretKey: 'xxx',
+            region: 'us-east-1'
+        };
+
+        const presignedUrlGenerator = new MCMA_CORE.AwsV4PresignedUrlGenerator(creds);
+
+        const presignedUrl = presignedUrlGenerator.generatePresignedUrl('GET', 'https://9whdbavs8k.execute-api.us-east-1.amazonaws.com/dev/services');
+        
+        let resp;
+        try {
+            resp = await MCMA_CORE.HTTP.get(presignedUrl);
+            console.log('success', resp);
+        } catch (e) {
+            console.error('failed', e);
+            throw e;
+        }
+
+        done();
+    });
 });

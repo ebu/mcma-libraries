@@ -9,6 +9,13 @@ const X_AMZ_SECURITY_TOKEN = 'x-amz-security-token';
 const HOST = 'host';
 const AUTHORIZATION = 'Authorization';
 
+const X_AMZ_DATE_QUERY_PARAM = 'X-Amz-Date';
+const X_AMZ_SECURITY_TOKEN_QUERY_PARAM = 'X-Amz-Security-Token';
+const X_AMZ_ALGORITHM_QUERY_PARAM = 'X-Amz-Algorithm';
+const X_AMZ_CREDENTIAL_QUERY_PARAM = 'X-Amz-Credential';
+const X_AMZ_SIGNEDHEADERS_QUERY_PARAM = 'X-Amz-SignedHeaders';
+const X_AMZ_SIGNATURE_QUERY_PARAM = 'X-Amz-Signature';
+
 function hash(value) {
     return CryptoJS.SHA256(value);
 }
@@ -105,15 +112,35 @@ function calculateSignature(key, stringToSign) {
     return hexEncode(hmac(key, stringToSign));
 }
 
-function buildAuthorizationHeader(accessKey, credentialScope, headers, signature) {
-    return AWS_SHA_256 + ' Credential=' + accessKey + '/' + credentialScope + ', SignedHeaders=' + buildCanonicalSignedHeaders(headers) + ', Signature=' + signature;
+function buildAuthorizationHeader(signature, credentialScope, signedHeaders) {
+    return AWS_SHA_256 + ' Credential=' + credentialScope + ', SignedHeaders=' + signedHeaders + ', Signature=' + signature;
 }
 
-function signRequest(request, credentials) {
+function generateSignature(request, credentials, datetime, credentialScope) {
     if (!credentials) {
         return;
     }
 
+    // parse the url and create a params object from the query string, if any
+    const requestUrl = url.parse(request.url, true);
+
+    // build full set of query params, both from the url and from the params property of the request, into a single object
+    const requestQuery = Object.assign({}, requestUrl.query || {}, request.params || {});
+
+    // build signature
+    const canonicalRequest = buildCanonicalRequest(request, requestUrl, requestQuery);
+    const hashedCanonicalRequest = hashCanonicalRequest(canonicalRequest);
+    const stringToSign = buildStringToSign(datetime, credentialScope, hashedCanonicalRequest);
+    const signingKey = calculateSigningKey(credentials.secretKey, datetime, credentials.region, credentials.serviceName);
+
+    return calculateSignature(signingKey, stringToSign);
+}
+
+function getAwsDate() {
+    return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/[:\-]|\.\d{3}/g, '');
+}
+
+function conformCredentials(credentials) {
     // check for alternate names for access key & secret key 
     credentials.accessKey = credentials.accessKey || credentials.accessKeyId;
     credentials.secretKey = credentials.secretKey || credentials.secretAccessKey;
@@ -122,49 +149,90 @@ function signRequest(request, credentials) {
     if (!credentials.accessKey || !credentials.secretKey) {
         return;
     }
-
+    
+    // if no service name was provided, we'll assume this is an API Gateway request
     credentials.serviceName = credentials.serviceName || 'execute-api';
 
-    // capture request datetime
-    const datetime = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/[:\-]|\.\d{3}/g, '');
-    request.headers[X_AMZ_DATE] = datetime;
-
-    const requestUrl = url.parse(request.url, true);
-
-    // build full set of query params, both from the url and from the params property of the request, into a single object
-    const requestQuery = Object.assign({}, requestUrl.query || {}, request.params || {});
-
-    // add host header if missing
-    if (!request.headers[HOST]) {
-        request.headers[HOST] = requestUrl.host;
-    }
-
-    // build signature
-    const canonicalRequest = buildCanonicalRequest(request, requestUrl, requestQuery);
-    const hashedCanonicalRequest = hashCanonicalRequest(canonicalRequest);
-    const credentialScope = buildCredentialScope(datetime, credentials.region, credentials.serviceName);
-    const stringToSign = buildStringToSign(datetime, credentialScope, hashedCanonicalRequest);
-    const signingKey = calculateSigningKey(credentials.secretKey, datetime, credentials.region, credentials.serviceName);
-    const signature = calculateSignature(signingKey, stringToSign);
-
-    // add authorization header with signature
-    request.headers[AUTHORIZATION] = buildAuthorizationHeader(credentials.accessKey, credentialScope, request.headers, signature);
-
-    // add security token (for temporary credentials)
-    if (credentials.sessionToken) {
-        request.headers[X_AMZ_SECURITY_TOKEN] = credentials.sessionToken;
-    }
-
-    // need to remove the host header if we're in the browser as it's protected and cannot be set
-    delete request.headers[HOST];
+    return credentials;
 }
 
 class AwsV4Authenticator {
     constructor(credentials) {
+        credentials = conformCredentials(credentials);
+
         this.sign = (request) => {
-            signRequest(request, credentials);
+            const requestUrlParsed = url.parse(request.url, true);
+
+            // capture request datetime
+            const datetime = getAwsDate();
+            request.headers[X_AMZ_DATE] = datetime;
+        
+            // add host header if missing
+            if (!request.headers[HOST]) {
+                request.headers[HOST] = requestUrlParsed.host;
+            }
+            
+            const credentialScope = buildCredentialScope(datetime, credentials.region, credentials.serviceName);
+            const signedHeaders = buildCanonicalSignedHeaders(request.headers);
+        
+            const signature = generateSignature(request, credentials, datetime, credentialScope);
+        
+            // add authorization header with signature
+            request.headers[AUTHORIZATION] = buildAuthorizationHeader(signature, credentials.accessKey + '/' + credentialScope, signedHeaders);
+        
+            // add security token (for temporary credentials)
+            if (credentials.sessionToken) {
+                request.headers[X_AMZ_SECURITY_TOKEN] = credentials.sessionToken;
+            }
+        
+            // need to remove the host header if we're in the browser as it's protected and cannot be set
+            delete request.headers[HOST];
         };
     }
 }
 
-module.exports = AwsV4Authenticator;
+class AwsV4PresignedUrlGenerator {
+    constructor(credentials) {
+        credentials = conformCredentials(credentials);
+
+        this.generatePresignedUrl = (method, requestUrl) => {
+            // parse the url we want to sign so we can work with the query string
+            const requestUrlParsed = url.parse(requestUrl, true);
+
+            // gather inputs for generating the signature
+            const headers = { host: requestUrlParsed.host };
+            const datetime = getAwsDate();
+            const credentialScope = buildCredentialScope(datetime, credentials.region, credentials.serviceName);
+            const signedHeaders = buildCanonicalSignedHeaders(headers);
+
+            // add parameters for signing
+            requestUrlParsed.query[X_AMZ_DATE_QUERY_PARAM] = datetime;
+            requestUrlParsed.query[X_AMZ_ALGORITHM_QUERY_PARAM] = AWS_SHA_256;
+            requestUrlParsed.query[X_AMZ_CREDENTIAL_QUERY_PARAM] = credentials.accessKey + '/' + credentialScope;
+            requestUrlParsed.query[X_AMZ_SIGNEDHEADERS_QUERY_PARAM] = signedHeaders;
+
+            // not sure if this should be added before or after we generate the signature...
+            if (credentials.sessionToken) {
+                requestUrlParsed.query[X_AMZ_SECURITY_TOKEN_QUERY_PARAM] = credentials.sessionToken;
+            }
+
+            // build a mock request to use to generat the signature
+            const mockRequest = {
+                method,
+                url: requestUrl,
+                params: requestUrlParsed.query,
+                headers: headers
+            };
+
+            // add the signature to the existing query object
+            requestUrlParsed.query[X_AMZ_SIGNATURE_QUERY_PARAM] = generateSignature(mockRequest, credentials, datetime, credentialScope);
+
+            return requestUrlParsed.format();
+        };
+    }
+}
+
+module.exports = {
+    AwsV4Authenticator,
+    AwsV4PresignedUrlGenerator
+};
