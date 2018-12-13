@@ -1,4 +1,5 @@
 const MCMA_CORE = require("../index");
+const creds = require("./aws-credentials.json");
 
 const SERVICE_REGISTRY_BASE_URL = "";
 const SERVICE_REGISTRY_SERVICES_URL = SERVICE_REGISTRY_BASE_URL + "/services";
@@ -46,17 +47,10 @@ describe("The AWS V4 Presigned Url Generator", () => {
     });
     
     it("generates a usable presigned url for the service registry", async (done) => {
-        // set access key and secret key here
-        const creds = {
-            accessKey: 'xxx',
-            secretKey: 'xxx',
-            region: 'us-east-1'
-        };
-
         const presignedUrlGenerator = new MCMA_CORE.AwsV4PresignedUrlGenerator(creds);
 
-        const presignedUrl = presignedUrlGenerator.generatePresignedUrl('GET', 'https://9whdbavs8k.execute-api.us-east-1.amazonaws.com/dev/services');
-        
+        const presignedUrl = presignedUrlGenerator.generatePresignedUrl('GET', 'https://d30k22ahlf.execute-api.us-east-1.amazonaws.com/dev/services', 7200);
+        console.log(presignedUrl);
         let resp;
         try {
             resp = await MCMA_CORE.HTTP.get(presignedUrl);

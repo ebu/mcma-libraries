@@ -15,6 +15,7 @@ const X_AMZ_ALGORITHM_QUERY_PARAM = 'X-Amz-Algorithm';
 const X_AMZ_CREDENTIAL_QUERY_PARAM = 'X-Amz-Credential';
 const X_AMZ_SIGNEDHEADERS_QUERY_PARAM = 'X-Amz-SignedHeaders';
 const X_AMZ_SIGNATURE_QUERY_PARAM = 'X-Amz-Signature';
+const X_AMZ_EXPIRES_QUERY_PARAM = 'X-Amz-Expires';
 
 function hash(value) {
     return CryptoJS.SHA256(value);
@@ -195,7 +196,7 @@ class AwsV4PresignedUrlGenerator {
     constructor(credentials) {
         credentials = conformCredentials(credentials);
 
-        this.generatePresignedUrl = (method, requestUrl) => {
+        this.generatePresignedUrl = (method, requestUrl, expires = 300) => {
             // parse the url we want to sign so we can work with the query string
             const requestUrlParsed = url.parse(requestUrl, true);
 
@@ -206,9 +207,10 @@ class AwsV4PresignedUrlGenerator {
             const signedHeaders = buildCanonicalSignedHeaders(headers);
 
             // add parameters for signing
-            requestUrlParsed.query[X_AMZ_DATE_QUERY_PARAM] = datetime;
             requestUrlParsed.query[X_AMZ_ALGORITHM_QUERY_PARAM] = AWS_SHA_256;
             requestUrlParsed.query[X_AMZ_CREDENTIAL_QUERY_PARAM] = credentials.accessKey + '/' + credentialScope;
+            requestUrlParsed.query[X_AMZ_DATE_QUERY_PARAM] = datetime;
+            requestUrlParsed.query[X_AMZ_EXPIRES_QUERY_PARAM] = expires;
             requestUrlParsed.query[X_AMZ_SIGNEDHEADERS_QUERY_PARAM] = signedHeaders;
 
             // not sure if this should be added before or after we generate the signature...
