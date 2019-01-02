@@ -103,41 +103,25 @@ class ResourceEndpoint extends Resource {
         checkProperty(this, "httpEndpoint", "url", true);
         checkProperty(this, "authType", "string", false);
 
+        const http = new AuthenticatedHttp2();
+
+        const getAuthenticator = async () => {
+            if (!authProvider) {
+                return null;
+            }
+
+            if (typeof authProvider.getAuthenticator !== 'function') {
+                throw new Error('Provided authProvider does not define the required getAuthenticator(authType, authContext) function.');
+            }
+
+            return await authProvider.getAuthenticator(this.authType || serviceAuthType, this.authContext || serviceAuthContext);
+        }
+
         this.request = async (config) => {
-            if (!config) {
-                throw new Error("Missing configuration for making HTTP request");
-            }
-            if (config.method === undefined) {
-                config.method = "GET";
-            }
+            config.baseURL = this.httpEndpoint;
 
-            if ((config.url.indexOf('http://') !== 0 && config.url.indexOf('https://') !== 0)) {
-                config.url = config.baseURL + config.url;
-            }
-
-            if (!config.url.startsWith(this.httpEndpoint)) {
-                throw new Error("Making " + config.method + " request to URL '" + config.url + "' which is not managed by this Resource Endpoint '" + this.httpEndpoint + "'");
-            }
-
-            if (authProvider) {
-                if (typeof authProvider.getAuthenticator !== 'function') {
-                    throw new Error('Provided authProvider does not define the required getAuthenticator(authType, authContext) function.');
-                }
-
-                const authenticator = await authProvider.getAuthenticator(this.authType || serviceAuthType, this.authContext || serviceAuthContext);
-
-                if (authenticator) {
-                    // if an authenticator was provided, ensure that it's valid
-                    if (typeof authenticator.sign !== 'function') {
-                        throw new Error('Provided authenticator does not define the required sign() function.');
-                    }
-
-                    authenticator.sign(config);
-                }
-            }
-
-            // send request using axios
-            return await axios(config);
+            http.authenticator = await getAuthenticator();
+            return await http.request(config);
         }
 
         this.get = async (url, config) => {
@@ -145,17 +129,17 @@ class ResourceEndpoint extends Resource {
                 config = url;
                 url = undefined;
             }
-
             if (url === undefined) {
                 url = "";
             }
             if (config === undefined) {
                 config = {};
             }
-            config.url = url;
-            config.method = "GET";
+
             config.baseURL = this.httpEndpoint;
-            return await this.request(config)
+
+            http.authenticator = await getAuthenticator();
+            return await http.get(url, config);
         }
 
         this.post = async (url, data, config) => {
@@ -170,11 +154,11 @@ class ResourceEndpoint extends Resource {
             if (config === undefined) {
                 config = {};
             }
-            config.url = url;
-            config.method = "POST";
+
             config.baseURL = this.httpEndpoint;
-            config.data = data;
-            return await this.request(config)
+
+            http.authenticator = await getAuthenticator();
+            return await http.post(url, data, config);
         }
 
         this.put = async (url, data, config) => {
@@ -192,11 +176,10 @@ class ResourceEndpoint extends Resource {
             if (config === undefined) {
                 config = {};
             }
-            config.url = url;
-            config.method = "PUT";
             config.baseURL = this.httpEndpoint;
-            config.data = data;
-            return await this.request(config)
+
+            http.authenticator = await getAuthenticator();
+            return await http.put(url, data, config);
         }
 
         this.patch = async (url, data, config) => {
@@ -214,11 +197,9 @@ class ResourceEndpoint extends Resource {
             if (config === undefined) {
                 config = {};
             }
-            config.url = url;
-            config.method = "PATCH";
             config.baseURL = this.httpEndpoint;
-            config.data = data;
-            return await this.request(config)
+            http.authenticator = await getAuthenticator();
+            return await http.patch(url, data, config);
         }
 
         this.delete = async (url, config) => {
@@ -232,10 +213,9 @@ class ResourceEndpoint extends Resource {
             if (config === undefined) {
                 config = {};
             }
-            config.url = url;
-            config.method = "DELETE";
             config.baseURL = this.httpEndpoint;
-            return await this.request(config)
+            http.authenticator = await getAuthenticator();
+            return await http.delete(url, config);
         }
     }
 }
@@ -705,7 +685,7 @@ class ResourceManager2 {
 
 class AuthenticatedHttp {
     constructor(authenticator) {
-        async function sendAuthenticatedRequest(method, url, data, params)  {
+        async function sendAuthenticatedRequest(method, url, data, params) {
             // build request
             const request = { method, url, data, params };
 
@@ -751,6 +731,86 @@ class AuthenticatedHttp {
     }
 }
 
+class AuthenticatedHttp2 {
+    constructor(authenticator) {
+        this.authenticator = authenticator;
+    }
+
+    async request(config) {
+        if (!config) {
+            throw new Error("Missing configuration for making HTTP request");
+        }
+        
+        if (config.method === undefined) {
+            config.method = "GET";
+        }
+
+        if (config.baseURL) {
+            if (!config.url) {
+                config.url = config.baseURL;
+            } else if (config.url.indexOf('http://') !== 0 && config.url.indexOf('https://') !== 0) {
+                config.url = config.baseURL + config.url;
+            } else if (!config.url.startsWith(config.baseURL)) {
+                throw new Error("Making " + config.method + " request to URL '" + config.url + "' which does not match baseURL '" + config.baseURL + "'");
+            }
+        }
+
+        if (!config.url) {
+            throw new Error("Missing url in request config")
+        }
+
+        if (this.authenticator) {
+            // if an authenticator was provided, ensure that it's valid
+            if (typeof this.authenticator.sign !== 'function') {
+                throw new Error('Provided authenticator does not define the required sign() function.');
+            }
+
+            this.authenticator.sign(config);
+        }
+
+        // send request using axios
+        return await axios(config);
+    }
+
+    async get(url, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "GET";
+        return await this.request(config)
+    }
+
+    async post(url, data, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "POST";
+        config.data = data;
+        return await this.request(config)
+    }
+
+    async put(url, data, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "PUT";
+        config.data = data;
+        return await this.request(config)
+    }
+
+    async patch(url, data, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "PATCH";
+        config.data = data;
+        return await this.request(config)
+    }
+
+    async delete(url, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "DELETE";
+        return await this.request(config)
+    }
+}
+
 module.exports = {
     Service: Service,
     ResourceEndpoint: ResourceEndpoint,
@@ -775,5 +835,6 @@ module.exports = {
     NotificationEndpoint: NotificationEndpoint,
     ResourceManager: ResourceManager,
     ResourceManager2: ResourceManager2,
-    AuthenticatedHttp: AuthenticatedHttp
+    AuthenticatedHttp: AuthenticatedHttp,
+    AuthenticatedHttp2: AuthenticatedHttp2
 }
