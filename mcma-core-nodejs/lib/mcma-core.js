@@ -103,7 +103,7 @@ class ResourceEndpoint extends Resource {
         checkProperty(this, "httpEndpoint", "url", true);
         checkProperty(this, "authType", "string", false);
 
-        const http = new AuthenticatedHttp2();
+        const httpClient = new HttpClient();
 
         const getAuthenticator = async () => {
             if (!authProvider) {
@@ -120,8 +120,8 @@ class ResourceEndpoint extends Resource {
         this.request = async (config) => {
             config.baseURL = this.httpEndpoint;
 
-            http.authenticator = await getAuthenticator();
-            return await http.request(config);
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.request(config);
         }
 
         this.get = async (url, config) => {
@@ -138,8 +138,8 @@ class ResourceEndpoint extends Resource {
 
             config.baseURL = this.httpEndpoint;
 
-            http.authenticator = await getAuthenticator();
-            return await http.get(url, config);
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.get(url, config);
         }
 
         this.post = async (url, data, config) => {
@@ -157,8 +157,8 @@ class ResourceEndpoint extends Resource {
 
             config.baseURL = this.httpEndpoint;
 
-            http.authenticator = await getAuthenticator();
-            return await http.post(url, data, config);
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.post(url, data, config);
         }
 
         this.put = async (url, data, config) => {
@@ -178,8 +178,8 @@ class ResourceEndpoint extends Resource {
             }
             config.baseURL = this.httpEndpoint;
 
-            http.authenticator = await getAuthenticator();
-            return await http.put(url, data, config);
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.put(url, data, config);
         }
 
         this.patch = async (url, data, config) => {
@@ -198,8 +198,8 @@ class ResourceEndpoint extends Resource {
                 config = {};
             }
             config.baseURL = this.httpEndpoint;
-            http.authenticator = await getAuthenticator();
-            return await http.patch(url, data, config);
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.patch(url, data, config);
         }
 
         this.delete = async (url, config) => {
@@ -214,8 +214,8 @@ class ResourceEndpoint extends Resource {
                 config = {};
             }
             config.baseURL = this.httpEndpoint;
-            http.authenticator = await getAuthenticator();
-            return await http.delete(url, config);
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.delete(url, config);
         }
     }
 }
@@ -384,115 +384,6 @@ class TechnicalMetadata extends Resource {
 }
 
 class ResourceManager {
-    constructor(servicesURL, authenticator) {
-        let services = [];
-
-        this.authenticatedHttp = new AuthenticatedHttp(authenticator);
-
-        this.init = async () => {
-            services.length = 0;
-
-            let response = await this.authenticatedHttp.get(servicesURL);
-
-            for (const service of response.data) {
-                services.push(new Service(service));
-            }
-
-            // in order to bootstrap the resource manager we have to make sure that the services array contains 
-            // the entry for the service registry itself, even if it's not present in the service registry.
-            let serviceRegistryPresent = false;
-
-            for (const service of services) {
-                if (service.resources) {
-                    for (const serviceResource of service.resources) {
-                        if (serviceResource.resourceType === "Service" && serviceResource.httpEndpoint === servicesURL) {
-                            serviceRegistryPresent = true;
-                        }
-                    }
-                }
-            }
-
-            if (!serviceRegistryPresent) {
-                services.push(new Service({ name: "Service Registry", resources: [new ResourceEndpoint({ resourceType: "Service", httpEndpoint: servicesURL })] }));
-            }
-        }
-
-        this.get = async (resourceType, filter) => {
-            if (services.length === 0) {
-                await this.init();
-            }
-
-            let result = [];
-
-            for (const service of services) {
-                if (service.resources) {
-                    for (const serviceResource of service.resources) {
-                        if (serviceResource.resourceType === resourceType) {
-                            try {
-                                let response = await this.authenticatedHttp.get(serviceResource.httpEndpoint, filter);
-                                result.push(...(response.data));
-                            } catch (error) {
-                                console.error("Failed to retrieve '" + resourceType + "' from endpoint '" + serviceResource.httpEndpoint + "'");
-                            }
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        this.create = async (resource) => {
-            if (services.length === 0) {
-                await this.init();
-            }
-
-            for (const service of services) {
-                if (service.resources) {
-                    for (const serviceResource of service.resources) {
-                        if (serviceResource.resourceType === resource["@type"]) {
-                            try {
-                                let response = await this.authenticatedHttp.post(serviceResource.httpEndpoint, resource);
-                                return response.data;
-                            } catch (error) {
-                                console.error("Failed to create resource of type '" + resource["@type"] + "' at endpoint '" + serviceResource.httpEndpoint + "'");
-                            }
-                        }
-                    }
-                }
-            }
-
-            throw new Error("Failed to find service to create resource of type '" + resource["@type"] + "'.");
-        }
-
-        this.update = async (resource) => {
-            let response = await this.authenticatedHttp.put(resource.id, resource);
-            return response.data;
-        }
-
-        this.delete = async (resource) => {
-            await this.authenticatedHttp.delete(resource.id);
-        }
-
-        this.sendNotification = async (resource) => {
-            if (resource.notificationEndpoint) {
-                let notificationEndpoint = resource.notificationEndpoint;
-
-                if (typeof notificationEndpoint === "string") {
-                    let response = await this.authenticatedHttp.get(notificationEndpoint);
-                    notificationEndpoint = response.data;
-                }
-
-                if (notificationEndpoint.httpEndpoint) {
-                    let notification = new Notification(resource.id, resource);
-                    await this.authenticatedHttp.post(notificationEndpoint.httpEndpoint, notification);
-                }
-            }
-        }
-    }
-}
-
-class ResourceManager2 {
     constructor(authProvider, servicesURL, servicesAuthType, servicesAuthContext) {
         const services = [];
 
@@ -683,55 +574,7 @@ class ResourceManager2 {
     }
 }
 
-class AuthenticatedHttp {
-    constructor(authenticator) {
-        async function sendAuthenticatedRequest(method, url, data, params) {
-            // build request
-            const request = { method, url, data, params };
-
-            // content type is always JSON? will this always be true?
-            request.headers = { 'Content-Type': 'application/json' };
-
-            // allow requests without authentication, but log a warning
-            if (!authenticator) {
-                console.warn("WARNING: Trying to make a signed request to " + url + " without passing an authenticator")
-            } else {
-                // if an authenticator was provided, ensure that it's valid
-                if (typeof authenticator.sign !== 'function') {
-                    throw new Error('Provided authenticator does not define the required sign() function.');
-                }
-
-                try {
-                    // use the authenticator to sign the request
-                    authenticator.sign(request);
-                } catch (e) {
-                    console.error('Failed to sign request with authenticator', authenticator, e);
-                }
-            }
-
-            // send request using axios
-            return await axios(request);
-        }
-
-        this.post = async (url, data) => {
-            return await sendAuthenticatedRequest('POST', url, data);
-        };
-        this.put = async (url, data) => {
-            return await sendAuthenticatedRequest('PUT', url, data);
-        };
-        this.get = async (url, params) => {
-            return await sendAuthenticatedRequest('GET', url, '', params);
-        };
-        this.delete = async (url) => {
-            return await sendAuthenticatedRequest('DELETE', url, '');
-        };
-        this.patch = async (url, data) => {
-            return await sendAuthenticatedRequest('PATCH', url, data);
-        };
-    }
-}
-
-class AuthenticatedHttp2 {
+class HttpClient {
     constructor(authenticator) {
         this.authenticator = authenticator;
     }
@@ -834,7 +677,5 @@ module.exports = {
     Notification: Notification,
     NotificationEndpoint: NotificationEndpoint,
     ResourceManager: ResourceManager,
-    ResourceManager2: ResourceManager2,
-    AuthenticatedHttp: AuthenticatedHttp,
-    AuthenticatedHttp2: AuthenticatedHttp2
+    HttpClient: HttpClient
 }
