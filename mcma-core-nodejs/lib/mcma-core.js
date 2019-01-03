@@ -416,7 +416,7 @@ class ResourceManager {
                 try {
                     services.push(new Service(service, config.authProvider));
                 } catch (error) {
-                    console.warning("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
+                    console.warn("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
                 }
             }
         }
@@ -571,7 +571,10 @@ class ResourceManager {
                     http = axios;
                 }
 
-                let notification = new Notification(resource.id, resource);
+                let notification = new Notification({
+                    source: resource.id, 
+                    content: resource
+                });
                 await http.post(notificationEndpoint.httpEndpoint, notification);
             }
         }
