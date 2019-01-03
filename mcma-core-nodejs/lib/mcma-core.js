@@ -384,8 +384,12 @@ class TechnicalMetadata extends Resource {
 }
 
 class ResourceManager {
-    constructor(authProvider, servicesURL, servicesAuthType, servicesAuthContext) {
+    constructor(config) {
         const services = [];
+
+        if (!config.servicesUrl) {
+            throw new Error("Missing property 'servicesUrl' in ResourceManager config")
+        }
 
         this.init = async () => {
             services.length = 0;
@@ -395,12 +399,12 @@ class ResourceManager {
                 resources: [
                     new ResourceEndpoint({
                         resourceType: "Service",
-                        httpEndpoint: servicesURL,
-                        authType: servicesAuthType,
-                        authContext: servicesAuthContext
+                        httpEndpoint: config.servicesUrl,
+                        authType: config.servicesAuthType,
+                        authContext: config.servicesAuthContext
                     })
                 ]
-            }, authProvider);
+            }, config.authProvider);
 
             services.push(serviceRegistry);
 
@@ -410,7 +414,7 @@ class ResourceManager {
 
             for (const service of response.data) {
                 try {
-                    services.push(new Service(service, authProvider));
+                    services.push(new Service(service, config.authProvider));
                 } catch (error) {
                     console.warning("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
                 }
@@ -583,7 +587,7 @@ class HttpClient {
         if (!config) {
             throw new Error("Missing configuration for making HTTP request");
         }
-        
+
         if (config.method === undefined) {
             config.method = "GET";
         }
@@ -654,6 +658,12 @@ class HttpClient {
     }
 }
 
+class AuthenticatorProvider {
+    constructor(getAuthenticator) {
+        this.getAuthenticator = getAuthenticator;
+    }
+}
+
 module.exports = {
     Service: Service,
     ResourceEndpoint: ResourceEndpoint,
@@ -677,5 +687,6 @@ module.exports = {
     Notification: Notification,
     NotificationEndpoint: NotificationEndpoint,
     ResourceManager: ResourceManager,
-    HttpClient: HttpClient
+    HttpClient: HttpClient,
+    AuthenticatorProvider: AuthenticatorProvider
 }
