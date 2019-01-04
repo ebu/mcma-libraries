@@ -167,7 +167,7 @@ class ResourceEndpoint extends Resource {
                 data = url;
                 url = undefined;
             }
-            if (url === undefined) {
+            if (url === undefined && typeof data === "object") {
                 url = data.id;
             }
             if (url === undefined) {
@@ -572,7 +572,7 @@ class ResourceManager {
                 }
 
                 let notification = new Notification({
-                    source: resource.id, 
+                    source: resource.id,
                     content: resource
                 });
                 await http.post(notificationEndpoint.httpEndpoint, notification);
