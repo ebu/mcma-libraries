@@ -636,7 +636,7 @@ class HttpClient {
         try {
             return await axios(config);
         } catch (error) {
-            throw new Exception("HttpClient: " + config.method + " request to " + config.url + " responded with error " + error.message, error);
+            throw new Exception("HttpClient: " + config.method + " request to " + config.url + " failed!", error, { config, response: error.response.data });
         }
     }
 
@@ -686,15 +686,15 @@ class AuthenticatorProvider {
 }
 
 class Exception extends Error {
-    constructor(message, cause, source) {
-        if (typeof message === 'object' && source === undefined) {
-            source = cause;
+    constructor(message, cause, context) {
+        if (typeof message === 'object' && context === undefined) {
+            context = cause;
             cause = message;
             message = null;
         }
         super(message)
         this.cause = cause;
-        this.source = source;
+        this.context = context;
     }
 
     toString() {
@@ -708,8 +708,8 @@ class Exception extends Error {
                 ret += "Error: " + c.message;
             }
 
-            if (c.source) {
-                ret += "\nSource:\n" + JSON.stringify(this.source, null, 2)
+            if (c.context) {
+                ret += "\nContext:\n" + JSON.stringify(c.context, null, 2)
             }
 
             c = c.cause;

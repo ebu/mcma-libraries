@@ -33,13 +33,13 @@ function hmac(secret, value) {
     return CryptoJS.HmacSHA256(value, secret, { asBytes: true });
 }
 
-function buildCanonicalRequest(request, requestUrl, requestQuery) {
-    return request.method + '\n' +
-        buildCanonicalUri(requestUrl.pathname) + '\n' +
-        buildCanonicalQueryString(requestQuery) + '\n' +
-        buildCanonicalHeaders(request.headers) + '\n' +
-        buildCanonicalSignedHeaders(request.headers) + '\n' +
-        hexEncode(hash(typeof request.data === 'string' ? request.data : JSON.stringify(request.data)));
+function buildCanonicalRequest(method, pathname, queryParams, headers, data) {
+    return method + '\n' +
+        buildCanonicalUri(pathname) + '\n' +
+        buildCanonicalQueryString(queryParams) + '\n' +
+        buildCanonicalHeaders(headers) + '\n' +
+        buildCanonicalSignedHeaders(headers) + '\n' +
+        hexEncode(hash(typeof data === 'string' ? data : JSON.stringify(data)));
 }
 
 function hashCanonicalRequest(request) {
@@ -129,11 +129,16 @@ function generateSignature(request, credentials, datetime, credentialScope) {
     // parse the url and create a params object from the query string, if any
     const requestUrl = new URL(request.url);
 
+    let requestQueryParams = {}
+    for (let entry of requestUrl.searchParams.entries()) {
+        requestQueryParams[entry[0]] = entry[1];
+    }
+
     // build full set of query params, both from the url and from the params property of the request, into a single object
-    const requestQuery = Object.assign({}, requestUrl.query || {}, request.params || {});
+    const queryParams = Object.assign({}, requestQueryParams, request.params || {});
 
     // build signature
-    const canonicalRequest = buildCanonicalRequest(request, requestUrl, requestQuery);
+    const canonicalRequest = buildCanonicalRequest(request.method, requestUrl.pathname, queryParams, request.headers, request.data);
     const hashedCanonicalRequest = hashCanonicalRequest(canonicalRequest);
     const stringToSign = buildStringToSign(datetime, credentialScope, hashedCanonicalRequest);
     const signingKey = calculateSigningKey(credentials.secretKey, datetime, credentials.region, credentials.serviceName);
