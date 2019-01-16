@@ -1,65 +1,61 @@
 const MCMA_CORE = require("../index");
-const creds = require("./aws-credentials.json");
+const axios = require("axios");
 
-const SERVICE_REGISTRY_BASE_URL = "";
-const SERVICE_REGISTRY_SERVICES_URL = SERVICE_REGISTRY_BASE_URL + "/services";
-
-describe("The Resource Manager", () => {
-
-    beforeEach(function() {
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-    });
-    
-    it("allows retrieving, setting and deleting resources", async () => {
-        let resourceManager = new MCMA_CORE.ResourceManager(SERVICE_REGISTRY_SERVICES_URL);
-
-        let service = new MCMA_CORE.Service("Service Registry", [
-            new MCMA_CORE.ServiceResource("Service", SERVICE_REGISTRY_BASE_URL + "/services"),
-            new MCMA_CORE.ServiceResource("JobProfile", SERVICE_REGISTRY_BASE_URL + "/job-profiles")
-        ]);
-
-        let services = await resourceManager.get("Service");
-        console.log(JSON.stringify(services, null, 2));
-
-        service = await resourceManager.create(service);        
-        console.log(service);
-
-        services = await resourceManager.get("Service");
-        console.log(JSON.stringify(services, null, 2));
-
-        service = await resourceManager.update(service);
-        console.log(service);
-
-        for (let i = 0; i < services.length; i++) {
-            await resourceManager.delete(services[i]);
-        }
-
-        services = await resourceManager.get("Service");
-        console.log(JSON.stringify(services, null, 2));
-    });
-
-});
+const creds = require("../aws-credentials.json");
+const url = ""
 
 describe("The AWS V4 Presigned Url Generator", () => {
 
-    beforeEach(function() {
+    beforeEach(function () {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
     });
-    
-    it("generates a usable presigned url for the service registry", async (done) => {
+
+    it("generates a usable presigned url to make a GET request", async () => {
         const presignedUrlGenerator = new MCMA_CORE.AwsV4PresignedUrlGenerator(creds);
 
-        const presignedUrl = presignedUrlGenerator.generatePresignedUrl('GET', 'https://d30k22ahlf.execute-api.us-east-1.amazonaws.com/dev/services', 7200);
-        console.log(presignedUrl);
-        let resp;
-        try {
-            resp = await MCMA_CORE.HTTP.get(presignedUrl);
-            console.log('success', resp);
-        } catch (e) {
-            console.error('failed', e);
-            throw e;
-        }
+        const presignedUrl = presignedUrlGenerator.generatePresignedUrl('GET', url, 7200);
 
-        done();
+        try {
+            let response = await axios.get(presignedUrl);
+        } catch (error) {
+            console.log(error.message);
+            if (error.response && error.response.data) {
+                console.log(error.response.data.message);
+            }
+            fail();
+        }
     });
-});
+
+    it("generates a usable presigned url to make a POST request with UNSIGNED PAYLOAD", async () => {
+        const presignedUrlGenerator = new MCMA_CORE.AwsV4PresignedUrlGenerator(creds);
+
+        const presignedUrl = presignedUrlGenerator.generatePresignedUrl('POST', url, 7200);
+
+        const headers = { "X-Amz-Content-Sha256": "UNSIGNED-PAYLOAD" }
+
+        try {
+            let response = await axios.post(presignedUrl, {}, { headers });
+        } catch (error) {
+            console.log(error.message);
+            if (error.response && error.response.data) {
+                console.log(error.response.data.message);
+            }
+            fail();
+        }
+    });
+
+})
+
+describe("The MCMA_CORE.Exception class can ", () => {
+
+    it("print a stack trace", async () => {
+        
+        let test1 = new MCMA_CORE.Exception("test1");
+
+        let test2 = new MCMA_CORE.Exception("test2", test1);
+
+        let test3 = new MCMA_CORE.Exception(test2, { hello: "World"});
+
+        console.log(test3.toString());
+    });
+})

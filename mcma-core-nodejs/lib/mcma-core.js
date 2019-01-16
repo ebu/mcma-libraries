@@ -2,239 +2,432 @@
 
 const axios = require('axios');
 
-class Service {
-    constructor(name, resources, jobType, jobProfiles, inputLocations, outputLocations) {
-        this["@type"] = "Service";
-        this.name = name;
-        this.resources = resources;
-        this.jobType = jobType;
-        this.jobProfiles = jobProfiles;
-        this.inputLocations = inputLocations;
-        this.outputLocations = outputLocations;
+const validUrl = new RegExp('^(https?:\\/\\/)?' + // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locater
+
+const checkProperty = (object, propertyName, expectedType, required) => {
+    const propertyValue = object[propertyName];
+    const propertyType = typeof propertyValue;
+
+    if (propertyValue === undefined || propertyValue === null) {
+        if (required) {
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to be defined", null, object);
+        }
+        return;
+    }
+
+    if (expectedType === "resource") { // special MCMA type that can either be a URL referencing a resource or embedded object
+        if ((propertyType !== "string" && propertyType !== "object") ||
+            (propertyType === "string" && !validUrl.test(propertyValue)) ||
+            (propertyType === "object" && Array.isArray(propertyValue))) {
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have a valid URL or an object", null, object);
+        }
+    } else if (expectedType === "url") {
+        if (propertyType !== "string" || !validUrl.test(propertyValue)) {
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have a valid URL", null, object);
+        }
+    } else if (expectedType === "Array") {
+        if (!Array.isArray(propertyValue)) {
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type Array", null, object);
+        }
+    } else if (expectedType === "object") {
+        if (propertyType !== "object" || Array.isArray(propertyValue)) {
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type object", null, object);
+        }
+    } else {
+        if (expectedType !== propertyType) {
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type " + expectedType, null, object);
+        }
     }
 }
 
-class ServiceResource {
-    constructor(resourceType, httpEndpoint) {
-        this["@type"] = "ServiceResource";
-        this.resourceType = resourceType;
-        this.httpEndpoint = httpEndpoint;
-    }
-}
-
-class BMContent {
-    constructor(properties) {
-        this["@type"] = "BMContent";
+class Resource {
+    constructor(type, properties) {
+        this["@type"] = type;
 
         if (properties) {
             for (const prop in properties) {
-                this[prop] = properties[prop];
+                if (prop !== "@type") {
+                    this[prop] = properties[prop];
+                }
             }
         }
     }
 }
 
-class BMEssence {
+class Service extends Resource {
+    constructor(properties, authProvider) {
+        super("Service", properties);
+
+        checkProperty(this, "name", "string", true);
+        checkProperty(this, "resources", "Array", true);
+        checkProperty(this, "authType", "string", false);
+        checkProperty(this, "jobType", "string", false);
+        checkProperty(this, "jobProfiles", "Array", false);
+
+        const endpointsMap = {};
+
+        for (let i = 0; i < this.resources.length; i++) {
+            const resourceEndpoint = new ResourceEndpoint(this.resources[i], authProvider, this.authType, this.authContext);
+            endpointsMap[resourceEndpoint.resourceType] = resourceEndpoint;
+            this.resources[i] = resourceEndpoint;
+        }
+
+        if (this.jobProfiles !== undefined) {
+            for (let i = 0; i < this.jobProfiles.length; i++) {
+                if (typeof jobProfile === "object") {
+                    this.jobProfiles[i] = new JobProfile(this.jobProfiles[i]);
+                }
+            }
+        }
+
+        this.hasResourceEndpoint = (resourceType) => {
+            return endpointsMap[resourceType] !== undefined;
+        }
+
+        this.getResourceEndpoint = (resourceType) => {
+            return endpointsMap[resourceType];
+        }
+    }
+}
+
+class ResourceEndpoint extends Resource {
+    constructor(properties, authProvider, serviceAuthType, serviceAuthContext) {
+        super("ResourceEndpoint", properties)
+
+        checkProperty(this, "resourceType", "string", true);
+        checkProperty(this, "httpEndpoint", "url", true);
+        checkProperty(this, "authType", "string", false);
+
+        const httpClient = new HttpClient();
+
+        const getAuthenticator = async () => {
+            if (!authProvider) {
+                return null;
+            }
+
+            if (typeof authProvider.getAuthenticator !== "function") {
+                throw new Exception("ResourceEndpoint: Provided authProvider does not define the required getAuthenticator(authType, authContext) function.", null, this);
+            }
+
+            try {
+                return await authProvider.getAuthenticator(this.authType || serviceAuthType, this.authContext || serviceAuthContext);
+            } catch (error) {
+                throw new Exception("ResourceEndpoint: Error occurred while getting authenticator", error, this);
+            }
+        }
+
+        this.request = async (config) => {
+            config.baseURL = this.httpEndpoint;
+
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.request(config);
+        }
+
+        this.get = async (url, config) => {
+            if (typeof url === "object" && config === undefined) {
+                config = url;
+                url = undefined;
+            }
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+
+            config.baseURL = this.httpEndpoint;
+
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.get(url, config);
+        }
+
+        this.post = async (url, data, config) => {
+            if (typeof url === "object" && config === undefined) {
+                config = data;
+                data = url;
+                url = undefined;
+            }
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+
+            config.baseURL = this.httpEndpoint;
+
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.post(url, data, config);
+        }
+
+        this.put = async (url, data, config) => {
+            if (typeof url === "object" && config === undefined) {
+                config = data;
+                data = url;
+                url = undefined;
+            }
+            if (url === undefined && typeof data === "object") {
+                url = data.id;
+            }
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+            config.baseURL = this.httpEndpoint;
+
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.put(url, data, config);
+        }
+
+        this.patch = async (url, data, config) => {
+            if (typeof url === "object" && typeof data === "object" && config === undefined) {
+                config = data;
+                data = url;
+                url = undefined;
+            }
+            if (url === undefined) {
+                url = data.id;
+            }
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+            config.baseURL = this.httpEndpoint;
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.patch(url, data, config);
+        }
+
+        this.delete = async (url, config) => {
+            if (typeof url === "object" && config === undefined) {
+                config = url;
+                url = undefined;
+            }
+            if (url === undefined) {
+                url = "";
+            }
+            if (config === undefined) {
+                config = {};
+            }
+            config.baseURL = this.httpEndpoint;
+            httpClient.authenticator = await getAuthenticator();
+            return await httpClient.delete(url, config);
+        }
+    }
+}
+
+class JobProfile extends Resource {
     constructor(properties) {
-        this["@type"] = "BMEssence";
+        super("JobProfile", properties)
 
-        if (properties) {
-            for (const prop in properties) {
-                this[prop] = properties[prop];
-            }
-        }
+        checkProperty(this, "inputParameters", "Array", false);
+        checkProperty(this, "outputParameters", "Array", false);
+        checkProperty(this, "optionalInputParameters", "Array", false);
     }
 }
 
-class DescriptiveMetadata {
+class JobParameter extends Resource {
     constructor(properties) {
-        this["@type"] = "DescriptiveMetadata";
+        super("JobParameter", properties)
 
-        if (properties) {
-            for (const prop in properties) {
-                this[prop] = properties[prop];
-            }
-        }
+        checkProperty(this, "parameterName", "string", true);
+        checkProperty(this, "parameterType", "string", false);
     }
 }
 
-class TechnicalMetadata {
+class JobParameterBag extends Resource {
     constructor(properties) {
-        this["@type"] = "TechnicalMetadata";
-
-        if (properties) {
-            for (const prop in properties) {
-                this[prop] = properties[prop];
-            }
-        }
+        super("JobParameterBag", properties)
     }
 }
 
-class JobProfile {
-    constructor(name, inputParameters, outputParameters, optionalInputParameters) {
-        this["@type"] = "JobProfile";
-        this.name = name;
-        this.inputParameters = inputParameters;
-        this.outputParameters = outputParameters;
-        this.optionalInputParameters = optionalInputParameters;
-    }
-}
-
-class JobParameter {
-    constructor(parameterName, parameterType) {
-        this["@type"] = "JobParameter";
-        this.parameterName = parameterName;
-        this.parameterType = parameterType;
-    }
-}
-
-class JobParameterBag {
-    constructor(jobParameters) {
-        this["@type"] = "JobParameterBag";
-
-        if (jobParameters) {
-            for (const prop in jobParameters) {
-                this[prop] = jobParameters[prop];
-            }
-        }
-    }
-}
-
-class Locator {
+class Locator extends Resource {
     constructor(properties) {
-        this["@type"] = "Locator";
+        super("Locator", properties)
+    }
+}
 
-        if (properties) {
-            for (const prop in properties) {
-                this[prop] = properties[prop];
-            }
+class Job extends Resource {
+    constructor(type, properties) {
+        super(type, properties);
+
+        checkProperty(this, "jobProfile", "resource", true);
+        checkProperty(this, "jobInput", "resource", true);
+        checkProperty(this, "notificationEndpoint", "resource", false);
+        checkProperty(this, "status", "string", false);
+        checkProperty(this, "statusMessage", "string", false)
+        checkProperty(this, "jobOutput", "resource", false);
+
+        if (typeof this.jobProfile === "object") {
+            this.jobProfile = new JobProfile(this.jobProfile);
+        }
+        if (typeof this.jobInput === "object") {
+            this.jobInput = new JobParameterBag(this.jobInput);
+        }
+        if (typeof this.notificationEndpoint === "object") {
+            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
         }
     }
 }
 
-class AIJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "AIJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class AIJob extends Job {
+    constructor(properties) {
+        super("AIJob", properties)
     }
 }
 
-class AmeJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "AmeJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class AmeJob extends Job {
+    constructor(properties) {
+        super("AmeJob", properties)
     }
 }
 
-class CaptureJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "CaptureJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class CaptureJob extends Job {
+    constructor(properties) {
+        super("CaptureJob", properties)
     }
 }
 
-class QAJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "QAJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class QAJob extends Job {
+    constructor(properties) {
+        super("QAJob", properties)
     }
 }
 
-class TransferJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "TransferJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class TransferJob extends Job {
+    constructor(properties) {
+        super("TransferJob", properties)
     }
 }
 
-class TransformJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "TransformJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class TransformJob extends Job {
+    constructor(properties) {
+        super("TransformJob", properties)
     }
 }
 
-class WorkflowJob {
-    constructor(jobProfile, jobInput, notificationEndpoint) {
-        this["@type"] = "WorkflowJob";
-        this.jobProfile = jobProfile;
-        this.jobInput = jobInput;
-        this.notificationEndpoint = notificationEndpoint;
+class WorkflowJob extends Job {
+    constructor(properties) {
+        super("WorkflowJob", properties)
     }
 }
 
-class JobProcess {
-    constructor(job, notificationEndpoint) {
-        this["@type"] = "JobProcess";
-        this.job = job;
-        this.notificationEndpoint = notificationEndpoint;
+class JobProcess extends Resource {
+    constructor(properties) {
+        super("JobProcess", properties)
+
+        checkProperty(this, "job", "resource");
+        checkProperty(this, "notificationEndpoint", "resource");
+
+        if (typeof this.notificationEndpoint === "object") {
+            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
+        }
     }
 }
 
-class JobAssignment {
-    constructor(job, notificationEndpoint) {
-        this["@type"] = "JobAssignment";
-        this.job = job;
-        this.notificationEndpoint = notificationEndpoint;
+class JobAssignment extends Resource {
+    constructor(properties) {
+        super("JobAssignment", properties)
+
+        checkProperty(this, "job", "resource");
+        checkProperty(this, "notificationEndpoint", "resource");
+
+        if (typeof this.notificationEndpoint === "object") {
+            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
+        }
     }
 }
 
-class Notification {
-    constructor(source, content) {
-        this["@type"] = "Notification";
-        this.source = source;
-        this.content = content;
+class Notification extends Resource {
+    constructor(properties) {
+        super("Notification", properties)
+
+        checkProperty(this, "source", "string", false)
+        checkProperty(this, "content", "resource", true)
     }
 }
 
-class NotificationEndpoint {
-    constructor(httpEndpoint) {
-        this["@type"] = "NotificationEndpoint";
-        this.httpEndpoint = httpEndpoint;
+class NotificationEndpoint extends Resource {
+    constructor(properties) {
+        super("NotificationEndpoint", properties)
+
+        checkProperty(this, "httpEndpoint", "url", true)
+    }
+}
+
+class BMContent extends Resource {
+    constructor(properties) {
+        super("BMContent", properties)
+    }
+}
+
+class BMEssence extends Resource {
+    constructor(properties) {
+        super("BMEssence", properties)
+    }
+}
+
+class DescriptiveMetadata extends Resource {
+    constructor(properties) {
+        super("DescriptiveMetadata", properties)
+    }
+}
+
+class TechnicalMetadata extends Resource {
+    constructor(properties) {
+        super("TechnicalMetadata", properties)
     }
 }
 
 class ResourceManager {
-    constructor(servicesURL, authenticator) {
-        let services = [];
+    constructor(config) {
+        const httpClient = new HttpClient();
 
-        this.authenticatedHttp = new AuthenticatedHttp(authenticator);
+        const services = [];
+
+        if (!config.servicesUrl) {
+            throw new Exception("Missing property 'servicesUrl' in ResourceManager config")
+        }
 
         this.init = async () => {
-            services.length = 0;
+            try {
+                services.length = 0;
 
-            let response = await this.authenticatedHttp.get(servicesURL);
+                let serviceRegistry = new Service({
+                    name: "Service Registry",
+                    resources: [
+                        new ResourceEndpoint({
+                            resourceType: "Service",
+                            httpEndpoint: config.servicesUrl,
+                            authType: config.servicesAuthType,
+                            authContext: config.servicesAuthContext
+                        })
+                    ]
+                }, config.authProvider);
 
-            services.push(...(response.data));
+                services.push(serviceRegistry);
 
-            // in order to bootstrap the resource manager we have to make sure that the services array contains 
-            // the entry for the service registry itself, even if it's not present in the service registry.
-            let serviceRegistryPresent = false;
+                let servicesEndpoint = serviceRegistry.getResourceEndpoint("Service");
 
-            for (const service of services) {
-                if (service.resources) {
-                    for (const serviceResource of service.resources) {
-                        if (serviceResource.resourceType === "Service" && serviceResource.httpEndpoint === servicesURL) {
-                            serviceRegistryPresent = true;
-                        }
+                let response = await servicesEndpoint.get();
+
+                for (const service of response.data) {
+                    try {
+                        services.push(new Service(service, config.authProvider));
+                    } catch (error) {
+                        console.warn("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
                     }
                 }
-            }
-
-            if (!serviceRegistryPresent) {
-                services.push(new Service("Service Registry", [new ServiceResource("Service", servicesURL)]));
+            } catch (error) {
+                throw new Exception("ResourceManager: Failed to initialize", error);
             }
         }
 
@@ -245,18 +438,23 @@ class ResourceManager {
 
             let result = [];
 
+            let usedHttpEndpoints = {};
+
             for (const service of services) {
-                if (service.resources) {
-                    for (const serviceResource of service.resources) {
-                        if (serviceResource.resourceType === resourceType) {
-                            try {
-                                let response = await this.authenticatedHttp.get(serviceResource.httpEndpoint, filter);
-                                result.push(...(response.data));
-                            } catch (error) {
-                                console.error("Failed to retrieve '" + resourceType + "' from endpoint '" + serviceResource.httpEndpoint + "'");
-                            }
-                        }
+                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                if (resourceEndpoint === undefined) {
+                    continue;
+                }
+
+                try {
+                    if (!usedHttpEndpoints[resourceEndpoint.httpEndpoint]) {
+                        let response = await resourceEndpoint.get({ params: filter });
+                        result.push(...(response.data));
                     }
+
+                    usedHttpEndpoints[resourceEndpoint.httpEndpoint] = true;
+                } catch (error) {
+                    console.error("Failed to retrieve '" + resourceType + "' from endpoint '" + resourceEndpoint.httpEndpoint + "'");
                 }
             }
 
@@ -268,102 +466,265 @@ class ResourceManager {
                 await this.init();
             }
 
+            let resourceType = resource["@type"];
+
             for (const service of services) {
-                if (service.resources) {
-                    for (const serviceResource of service.resources) {
-                        if (serviceResource.resourceType === resource["@type"]) {
-                            try {
-                                let response = await this.authenticatedHttp.post(serviceResource.httpEndpoint, resource);
-                                return response.data;
-                            } catch (error) {
-                                console.error("Failed to create resource of type '" + resource["@type"] + "' at endpoint '" + serviceResource.httpEndpoint + "'");
-                            }
-                        }
-                    }
+                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                if (resourceEndpoint === undefined) {
+                    continue;
                 }
+
+                let response = await resourceEndpoint.post(resource);
+                return response.data;
             }
 
-            throw new Error("Failed to find service to create resource of type '" + resource["@type"] + "'.");
+            throw new Exception("ResourceManager: Failed to find service to create resource of type '" + resourceType + "'.");
         }
 
         this.update = async (resource) => {
-            let response = await this.authenticatedHttp.put(resource.id, resource);
+            if (services.length === 0) {
+                await this.init();
+            }
+
+            let resourceType = resource["@type"];
+
+            for (const service of services) {
+                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                if (resourceEndpoint === undefined) {
+                    continue;
+                }
+
+                if (resource.id.startsWith(resourceEndpoint.httpEndpoint)) {
+                    let response = await resourceEndpoint.put(resource);
+                    return response.data;
+                }
+            }
+
+            let response = await httpClient.put(resource.id, resource);
             return response.data;
         }
 
         this.delete = async (resource) => {
-            await this.authenticatedHttp.delete(resource.id);
+            if (services.length === 0) {
+                await this.init();
+            }
+
+            let resourceType = resource["@type"];
+
+            for (const service of services) {
+                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                if (resourceEndpoint === undefined) {
+                    continue;
+                }
+
+                if (resource.id.startsWith(resourceEndpoint.httpEndpoint)) {
+                    let response = await resourceEndpoint.delete(resource.id);
+                    return response.data;
+                }
+            }
+
+            let response = await httpClient.delete(resource.id);
+            return response.data;
+        }
+
+        this.getResourceEndpoint = async (url) => {
+            if (services.length === 0) {
+                await this.init();
+            }
+
+            for (const service of services) {
+                for (const resourceEndpoint of service.resources) {
+                    if (url.startsWith(resourceEndpoint.httpEndpoint)) {
+                        return resourceEndpoint;
+                    }
+                }
+            }
+            return undefined;
+        }
+
+        this.resolve = async (resource) => {
+            let resolvedResource;
+
+            if (typeof resource === "string") {
+                let http = await this.getResourceEndpoint(resource)
+                if (http === undefined) {
+                    http = httpClient;
+                }
+                try {
+                    let response = await http.get(resource);
+                    resolvedResource = response.data;
+                } catch (error) {
+                    throw new Exception("ResourceManager: Failed to resolve resource from URL '" + resource + "'", error);
+                }
+            } else {
+                resolvedResource = resource;
+            }
+
+            let resolvedType = typeof resolvedResource;
+            if (resolvedType === "object") {
+                if (Array.isArray(resolvedResource)) {
+                    throw new Exception("ResourceManager: Resolved resource on URL '" + resource + "' has illegal type 'Array'");
+                }
+            } else {
+                throw new Exception("ResourceManager: Resolved resource has illegal type '" + resolvedType + "'");
+            }
+
+            return resolvedResource;
         }
 
         this.sendNotification = async (resource) => {
             if (resource.notificationEndpoint) {
-                let notificationEndpoint = resource.notificationEndpoint;
+                try {
+                    let notificationEndpoint = await this.resolve(resource.notificationEndpoint);
 
-                if (typeof notificationEndpoint === "string") {
-                    let response = await this.authenticatedHttp.get(notificationEndpoint);
-                    notificationEndpoint = response.data;
-                }
+                    let http = await this.getResourceEndpoint(notificationEndpoint.httpEndpoint);
+                    if (http === undefined) {
+                        http = httpClient;
+                    }
 
-                if (notificationEndpoint.httpEndpoint) {
-                    let notification = new Notification(resource.id, resource);
-                    await this.authenticatedHttp.post(notificationEndpoint.httpEndpoint, notification);
+                    let notification = new Notification({
+                        source: resource.id,
+                        content: resource
+                    });
+                    await http.post(notificationEndpoint.httpEndpoint, notification);
+                } catch (error) {
+                    throw new Exception("ResourceManager: Failed to send notification.", error);
                 }
             }
         }
     }
 }
 
-class AuthenticatedHttp {
+class HttpClient {
     constructor(authenticator) {
-        async function sendAuthenticatedRequest(method, url, data, params)  {
-            // build request
-            const request = { method, url, data, params };
+        this.authenticator = authenticator;
+    }
 
-            // content type is always JSON? will this always be true?
-            request.headers = { 'Content-Type': 'application/json' };
-
-            // allow requests without authentication, but log a warning
-            if (!authenticator) {
-                console.warn("WARNING: Trying to make a signed request to " + url + " without passing an authenticator")
-            } else {
-                // if an authenticator was provided, ensure that it's valid
-                if (typeof authenticator.sign !== 'function') {
-                    throw new Error('Provided authenticator does not define the required sign() function.');
-                }
-
-                try {
-                    // use the authenticator to sign the request
-                    authenticator.sign(request);
-                } catch (e) {
-                    console.error('Failed to sign request with authenticator', authenticator, e);
-                }
-            }
-
-            // send request using axios
-            return await axios(request);
+    async request(config) {
+        if (!config) {
+            throw new Exception("HttpClient: Missing configuration for making HTTP request");
         }
 
-        this.post = async (url, data) => {
-            return await sendAuthenticatedRequest('POST', url, data);
-        };
-        this.put = async (url, data) => {
-            return await sendAuthenticatedRequest('PUT', url, data);
-        };
-        this.get = async (url, params) => {
-            return await sendAuthenticatedRequest('GET', url, '', params);
-        };
-        this.delete = async (url) => {
-            return await sendAuthenticatedRequest('DELETE', url, '');
-        };
-        this.patch = async (url, data) => {
-            return await sendAuthenticatedRequest('PATCH', url, data);
-        };
+        if (config.method === undefined) {
+            config.method = "GET";
+        }
+
+        if (config.baseURL) {
+            if (!config.url) {
+                config.url = config.baseURL;
+            } else if (config.url.indexOf('http://') !== 0 && config.url.indexOf('https://') !== 0) {
+                config.url = config.baseURL + config.url;
+            } else if (!config.url.startsWith(config.baseURL)) {
+                throw new Exception("HttpClient: Making " + config.method + " request to URL '" + config.url + "' which does not match baseURL '" + config.baseURL + "'");
+            }
+        }
+
+        if (!config.url) {
+            throw new Exception("HttpClient: Missing url in request config");
+        }
+
+        if (this.authenticator) {
+            // if an authenticator was provided, ensure that it's valid
+            if (typeof this.authenticator.sign !== "function") {
+                throw new Exception("HttpClient: Provided authenticator does not define the required sign() function.");
+            }
+
+            this.authenticator.sign(config);
+        }
+
+        // send request using axios
+        try {
+            return await axios(config);
+        } catch (error) {
+            throw new Exception("HttpClient: " + config.method + " request to " + config.url + " failed!", error, { config, response: error.response.data });
+        }
+    }
+
+    async get(url, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "GET";
+        return await this.request(config)
+    }
+
+    async post(url, data, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "POST";
+        config.data = data;
+        return await this.request(config)
+    }
+
+    async put(url, data, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "PUT";
+        config.data = data;
+        return await this.request(config)
+    }
+
+    async patch(url, data, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "PATCH";
+        config.data = data;
+        return await this.request(config)
+    }
+
+    async delete(url, config) {
+        config = config || {};
+        config.url = url;
+        config.method = "DELETE";
+        return await this.request(config)
+    }
+}
+
+class AuthenticatorProvider {
+    constructor(getAuthenticator) {
+        this.getAuthenticator = getAuthenticator;
+    }
+}
+
+class Exception extends Error {
+    constructor(message, cause, context) {
+        if (typeof message === 'object' && context === undefined) {
+            context = cause;
+            cause = message;
+            message = null;
+        }
+        super(message)
+        this.cause = cause;
+        this.context = context;
+    }
+
+    toString() {
+        let ret = "";
+
+        let c = this
+        while (c) {
+            if (c.stack) {
+                ret += c.stack;
+            } else {
+                ret += "Error: " + c.message;
+            }
+
+            if (c.context) {
+                ret += "\nContext:\n" + JSON.stringify(c.context, null, 2)
+            }
+
+            c = c.cause;
+            if (c) {
+                ret += "\nCaused by:\n";
+            }
+        }
+
+        return ret;
     }
 }
 
 module.exports = {
     Service: Service,
-    ServiceResource: ServiceResource,
+    ResourceEndpoint: ResourceEndpoint,
     BMContent: BMContent,
     BMEssence: BMEssence,
     DescriptiveMetadata: DescriptiveMetadata,
@@ -384,6 +745,7 @@ module.exports = {
     Notification: Notification,
     NotificationEndpoint: NotificationEndpoint,
     ResourceManager: ResourceManager,
-    HTTP: axios,
-    AuthenticatedHttp: AuthenticatedHttp
+    HttpClient: HttpClient,
+    AuthenticatorProvider: AuthenticatorProvider,
+    Exception: Exception
 }
