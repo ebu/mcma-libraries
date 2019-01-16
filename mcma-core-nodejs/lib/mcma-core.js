@@ -15,7 +15,7 @@ const checkProperty = (object, propertyName, expectedType, required) => {
 
     if (propertyValue === undefined || propertyValue === null) {
         if (required) {
-            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to be defined");
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to be defined", null, object);
         }
         return;
     }
@@ -24,23 +24,23 @@ const checkProperty = (object, propertyName, expectedType, required) => {
         if ((propertyType !== "string" && propertyType !== "object") ||
             (propertyType === "string" && !validUrl.test(propertyValue)) ||
             (propertyType === "object" && Array.isArray(propertyValue))) {
-            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have a valid URL or an object");
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have a valid URL or an object", null, object);
         }
     } else if (expectedType === "url") {
         if (propertyType !== "string" || !validUrl.test(propertyValue)) {
-            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have a valid URL");
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have a valid URL", null, object);
         }
     } else if (expectedType === "Array") {
         if (!Array.isArray(propertyValue)) {
-            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type Array");
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type Array", null, object);
         }
     } else if (expectedType === "object") {
         if (propertyType !== "object" || Array.isArray(propertyValue)) {
-            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type object");
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type object", null, object);
         }
     } else {
         if (expectedType !== propertyType) {
-            throw new Error("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type " + expectedType);
+            throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type " + expectedType, null, object);
         }
     }
 }
@@ -110,11 +110,15 @@ class ResourceEndpoint extends Resource {
                 return null;
             }
 
-            if (typeof authProvider.getAuthenticator !== 'function') {
-                throw new Error('Provided authProvider does not define the required getAuthenticator(authType, authContext) function.');
+            if (typeof authProvider.getAuthenticator !== "function") {
+                throw new Exception("ResourceEndpoint: Provided authProvider does not define the required getAuthenticator(authType, authContext) function.", null, this);
             }
 
-            return await authProvider.getAuthenticator(this.authType || serviceAuthType, this.authContext || serviceAuthContext);
+            try {
+                return await authProvider.getAuthenticator(this.authType || serviceAuthType, this.authContext || serviceAuthContext);
+            } catch (error) {
+                throw new Exception("ResourceEndpoint: Error occurred while getting authenticator", error, this);
+            }
         }
 
         this.request = async (config) => {
@@ -385,39 +389,45 @@ class TechnicalMetadata extends Resource {
 
 class ResourceManager {
     constructor(config) {
+        const httpClient = new HttpClient();
+
         const services = [];
 
         if (!config.servicesUrl) {
-            throw new Error("Missing property 'servicesUrl' in ResourceManager config")
+            throw new Exception("Missing property 'servicesUrl' in ResourceManager config")
         }
 
         this.init = async () => {
-            services.length = 0;
+            try {
+                services.length = 0;
 
-            let serviceRegistry = new Service({
-                name: "Service Registry",
-                resources: [
-                    new ResourceEndpoint({
-                        resourceType: "Service",
-                        httpEndpoint: config.servicesUrl,
-                        authType: config.servicesAuthType,
-                        authContext: config.servicesAuthContext
-                    })
-                ]
-            }, config.authProvider);
+                let serviceRegistry = new Service({
+                    name: "Service Registry",
+                    resources: [
+                        new ResourceEndpoint({
+                            resourceType: "Service",
+                            httpEndpoint: config.servicesUrl,
+                            authType: config.servicesAuthType,
+                            authContext: config.servicesAuthContext
+                        })
+                    ]
+                }, config.authProvider);
 
-            services.push(serviceRegistry);
+                services.push(serviceRegistry);
 
-            let servicesEndpoint = serviceRegistry.getResourceEndpoint("Service");
+                let servicesEndpoint = serviceRegistry.getResourceEndpoint("Service");
 
-            let response = await servicesEndpoint.get();
+                let response = await servicesEndpoint.get();
 
-            for (const service of response.data) {
-                try {
-                    services.push(new Service(service, config.authProvider));
-                } catch (error) {
-                    console.warn("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
+                for (const service of response.data) {
+                    try {
+                        services.push(new Service(service, config.authProvider));
+                    } catch (error) {
+                        console.warn("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
+                    }
                 }
+            } catch (error) {
+                throw new Exception("ResourceManager: Failed to initialize", error);
             }
         }
 
@@ -468,7 +478,7 @@ class ResourceManager {
                 return response.data;
             }
 
-            throw new Error("Failed to find service to create resource of type '" + resourceType + "'.");
+            throw new Exception("ResourceManager: Failed to find service to create resource of type '" + resourceType + "'.");
         }
 
         this.update = async (resource) => {
@@ -490,7 +500,7 @@ class ResourceManager {
                 }
             }
 
-            let response = axios.put(resource.id, resource);
+            let response = await httpClient.put(resource.id, resource);
             return response.data;
         }
 
@@ -513,7 +523,7 @@ class ResourceManager {
                 }
             }
 
-            let response = axios.delete(resource.id);
+            let response = await httpClient.delete(resource.id);
             return response.data;
         }
 
@@ -538,13 +548,13 @@ class ResourceManager {
             if (typeof resource === "string") {
                 let http = await this.getResourceEndpoint(resource)
                 if (http === undefined) {
-                    http = axios;
+                    http = httpClient;
                 }
                 try {
                     let response = await http.get(resource);
                     resolvedResource = response.data;
                 } catch (error) {
-                    throw new Error("Failed to resolve resource from URL '" + resource + "'");
+                    throw new Exception("ResourceManager: Failed to resolve resource from URL '" + resource + "'", error);
                 }
             } else {
                 resolvedResource = resource;
@@ -553,10 +563,10 @@ class ResourceManager {
             let resolvedType = typeof resolvedResource;
             if (resolvedType === "object") {
                 if (Array.isArray(resolvedResource)) {
-                    throw new Error("Resolved resource has illegal type 'Array'");
+                    throw new Exception("ResourceManager: Resolved resource on URL '" + resource + "' has illegal type 'Array'");
                 }
             } else {
-                throw new Error("Resolved resource has illegal type '" + resolvedType + "'");
+                throw new Exception("ResourceManager: Resolved resource has illegal type '" + resolvedType + "'");
             }
 
             return resolvedResource;
@@ -564,18 +574,22 @@ class ResourceManager {
 
         this.sendNotification = async (resource) => {
             if (resource.notificationEndpoint) {
-                let notificationEndpoint = await this.resolve(resource.notificationEndpoint);
+                try {
+                    let notificationEndpoint = await this.resolve(resource.notificationEndpoint);
 
-                let http = await this.getResourceEndpoint(notificationEndpoint.httpEndpoint);
-                if (http === undefined) {
-                    http = axios;
+                    let http = await this.getResourceEndpoint(notificationEndpoint.httpEndpoint);
+                    if (http === undefined) {
+                        http = httpClient;
+                    }
+
+                    let notification = new Notification({
+                        source: resource.id,
+                        content: resource
+                    });
+                    await http.post(notificationEndpoint.httpEndpoint, notification);
+                } catch (error) {
+                    throw new Exception("ResourceManager: Failed to send notification.", error);
                 }
-
-                let notification = new Notification({
-                    source: resource.id,
-                    content: resource
-                });
-                await http.post(notificationEndpoint.httpEndpoint, notification);
             }
         }
     }
@@ -588,7 +602,7 @@ class HttpClient {
 
     async request(config) {
         if (!config) {
-            throw new Error("Missing configuration for making HTTP request");
+            throw new Exception("HttpClient: Missing configuration for making HTTP request");
         }
 
         if (config.method === undefined) {
@@ -601,25 +615,29 @@ class HttpClient {
             } else if (config.url.indexOf('http://') !== 0 && config.url.indexOf('https://') !== 0) {
                 config.url = config.baseURL + config.url;
             } else if (!config.url.startsWith(config.baseURL)) {
-                throw new Error("Making " + config.method + " request to URL '" + config.url + "' which does not match baseURL '" + config.baseURL + "'");
+                throw new Exception("HttpClient: Making " + config.method + " request to URL '" + config.url + "' which does not match baseURL '" + config.baseURL + "'");
             }
         }
 
         if (!config.url) {
-            throw new Error("Missing url in request config")
+            throw new Exception("HttpClient: Missing url in request config");
         }
 
         if (this.authenticator) {
             // if an authenticator was provided, ensure that it's valid
-            if (typeof this.authenticator.sign !== 'function') {
-                throw new Error('Provided authenticator does not define the required sign() function.');
+            if (typeof this.authenticator.sign !== "function") {
+                throw new Exception("HttpClient: Provided authenticator does not define the required sign() function.");
             }
 
             this.authenticator.sign(config);
         }
 
         // send request using axios
-        return await axios(config);
+        try {
+            return await axios(config);
+        } catch (error) {
+            throw new Exception("HttpClient: " + config.method + " request to " + config.url + " responded with error " + error.message, error);
+        }
     }
 
     async get(url, config) {
@@ -667,6 +685,43 @@ class AuthenticatorProvider {
     }
 }
 
+class Exception extends Error {
+    constructor(message, cause, source) {
+        if (typeof message === 'object' && source === undefined) {
+            source = cause;
+            cause = message;
+            message = null;
+        }
+        super(message)
+        this.cause = cause;
+        this.source = source;
+    }
+
+    toString() {
+        let ret = "";
+
+        let c = this
+        while (c) {
+            if (c.stack) {
+                ret += c.stack;
+            } else {
+                ret += "Error: " + c.message;
+            }
+
+            if (c.source) {
+                ret += "\nSource:\n" + JSON.stringify(this.source, null, 2)
+            }
+
+            c = c.cause;
+            if (c) {
+                ret += "\nCaused by:\n";
+            }
+        }
+
+        return ret;
+    }
+}
+
 module.exports = {
     Service: Service,
     ResourceEndpoint: ResourceEndpoint,
@@ -691,5 +746,6 @@ module.exports = {
     NotificationEndpoint: NotificationEndpoint,
     ResourceManager: ResourceManager,
     HttpClient: HttpClient,
-    AuthenticatorProvider: AuthenticatorProvider
+    AuthenticatorProvider: AuthenticatorProvider,
+    Exception: Exception
 }
