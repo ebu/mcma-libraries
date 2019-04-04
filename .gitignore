@@ -1,0 +1,11 @@
+bin
+obj
+dist
+
+.terraform
+terraform.output
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfvars
+build.inputs
+aws-credentials.json
