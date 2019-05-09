@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageVersion>0.0.1-beta</PackageVersion>
+    <PackageVersion>0.0.2.5</PackageVersion>
     <Title>MCMA on AWS (.NET)</Title>
     <Description>Library containing base classes and interfaces for using MCMA services in AWS</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -12,6 +12,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Mcma.Core\Mcma.Core.csproj" />
     <ProjectReference Include="..\Mcma.Api\Mcma.Api.csproj" />
+    <ProjectReference Include="..\Mcma.Data\Mcma.Data.csproj" />
+    <ProjectReference Include="..\Mcma.Worker\Mcma.Worker.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +22,7 @@
     <PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.3.7.21" />
     <PackageReference Include="AWSSDK.DynamoDBV2" Version="3.3.14.6" />
     <PackageReference Include="AWSSDK.S3" Version="3.3.27.1" />
+    <PackageReference Include="AWSSDK.Lambda" Version="3.3.17" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>

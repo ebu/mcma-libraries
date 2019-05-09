@@ -4,7 +4,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Mcma.Core;
 
-namespace Mcma.Aws
+namespace Mcma.Aws.S3
 {
     public class S3Locator : HttpEndpointLocator
     {

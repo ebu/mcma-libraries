@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageVersion>0.0.1-beta</PackageVersion>
+    <PackageVersion>0.0.2.5</PackageVersion>
     <Title>MCMA Core (.NET)</Title>
     <Description>Library containing type definitions and helper utilities for the EBU MCMA framework</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

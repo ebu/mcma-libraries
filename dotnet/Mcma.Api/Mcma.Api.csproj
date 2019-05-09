@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageVersion>0.0.1-beta</PackageVersion>
+    <PackageVersion>0.0.2.5</PackageVersion>
     <Title>MCMA API (.NET)</Title>
     <Description>Library containing base classes and interfaces for MCMA API implementations</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -11,11 +11,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mcma.Core\Mcma.Core.csproj" />
+    <ProjectReference Include="..\Mcma.Data\Mcma.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Pluralize.NET" Version="0.1.84" />
   </ItemGroup>
 
 </Project>

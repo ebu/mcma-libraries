@@ -50,20 +50,20 @@ namespace Mcma.Aws
         public static ResourceManager GetAwsV4ResourceManager()
             => new ResourceManager(GetAwsV4ResourceManagerOptions());
 
-        public static ResourceManagerOptions GetAwsV4ResourceManagerOptions(this IStageVariableProvider stageVariableProvider)
-            => new ResourceManagerOptions(stageVariableProvider.StageVariables["ServicesUrl"])
+        public static ResourceManagerOptions GetAwsV4ResourceManagerOptions(this IContextVariableProvider contextVariableProvider)
+            => new ResourceManagerOptions(contextVariableProvider.ContextVariables["ServicesUrl"])
                 .WithAuth(
                     GetDefaultAwsV4AuthProvider(),
-                    stageVariableProvider.StageVariables.ContainsKey("ServicesAuthType")
-                        ? stageVariableProvider.StageVariables["ServicesAuthType"]
+                    contextVariableProvider.ContextVariables.ContainsKey("ServicesAuthType")
+                        ? contextVariableProvider.ContextVariables["ServicesAuthType"]
                         : ServicesAuthType,
-                    stageVariableProvider.StageVariables.ContainsKey("ServicesAuthContext")
-                        ? stageVariableProvider.StageVariables["ServicesAuthContext"]
+                    contextVariableProvider.ContextVariables.ContainsKey("ServicesAuthContext")
+                        ? contextVariableProvider.ContextVariables["ServicesAuthContext"]
                         : ServicesAuthContext
                 );
 
-        public static ResourceManager GetAwsV4ResourceManager(this IStageVariableProvider stageVariableProvider)
-            => new ResourceManager(stageVariableProvider.GetAwsV4ResourceManagerOptions());
+        public static ResourceManager GetAwsV4ResourceManager(this IContextVariableProvider contextVariableProvider)
+            => new ResourceManager(contextVariableProvider.GetAwsV4ResourceManagerOptions());
 
         public static ResourceManagerOptions WithAwsV4Auth(this ResourceManagerOptions options, AwsV4AuthContext authContext)
             => options.WithAuth(

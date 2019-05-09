@@ -1,17 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
-using Mcma.Core.Serialization;
 using Mcma.Core.Logging;
+using Mcma.Core.Serialization;
+using Mcma.Api.Routes;
 
 namespace Mcma.Api
 {
-    public class McmaApiController<TRequest> where TRequest : McmaApiRequest
+
+    public class McmaApiController
     {
-        private List<McmaApiRoute<TRequest>> Routes { get; } = new List<McmaApiRoute<TRequest>>();
+        public McmaApiController(McmaApiRouteCollection routes = null)
+        {
+            Routes = routes ?? new McmaApiRouteCollection();
+        }
 
         private IDictionary<string, string> GetDefaultResponseHeaders()
             => new Dictionary<string, string>
@@ -21,20 +27,14 @@ namespace Mcma.Api
                 ["Access-Control-Allow-Origin"] = "*"
             };
 
-        public void AddRoute(string method, string path, Func<TRequest, McmaApiResponse, Task> handler)
-        {
-            Routes.Add(new McmaApiRoute<TRequest>(method, path, handler));
-        }
+        public McmaApiRouteCollection Routes { get; }
 
-        public async Task<McmaApiResponse> HandleRequestAsync(TRequest request)
+        public async Task<McmaApiResponse> HandleRequestAsync(McmaApiRequestContext requestContext)
         {
-            var response = new McmaApiResponse
-            {
-                StatusCode = (int)HttpStatusCode.OK,
-                StatusMessage = null,
-                Headers = GetDefaultResponseHeaders(),
-                JsonBody = null
-            };
+            var request = requestContext.Request;
+            var response = requestContext.Response;
+            
+            response.Headers = GetDefaultResponseHeaders();
 
             var pathMatched = false;
             var methodMatched = false;
@@ -77,8 +77,8 @@ namespace Mcma.Api
                                 methodMatched = true;
 
                                 request.PathVariables = pathVariables;
-
-                                await route.Handler(request, response);
+                                
+                                await route.Handler(requestContext);
                                 break;
                             }
                         }
@@ -99,7 +99,7 @@ namespace Mcma.Api
                             methodsAllowed += "OPTIONS";
                         }
 
-                        if (request.HttpMethod == "OPTIONS")
+                        if (request.HttpMethod == HttpMethod.Options)
                         {
                             response.StatusCode = (int)HttpStatusCode.OK;
                             response.Headers = GetDefaultResponseHeaders();
@@ -138,7 +138,14 @@ namespace Mcma.Api
                         response.Headers = GetDefaultResponseHeaders();
                         response.JsonBody = new McmaApiError(response.StatusCode, response.StatusMessage, request.Path).ToMcmaJson();
                     }
+                    else
+                    {
+                        response.StatusCode = (int)HttpStatusCode.OK;
+                    }
                 }
+            
+                if (response.JsonBody != null)
+                    response.Body = response.JsonBody.ToString();
             }
             catch (Exception ex)
             {
@@ -148,9 +155,6 @@ namespace Mcma.Api
                 response.Headers = GetDefaultResponseHeaders();
                 response.JsonBody = new McmaApiError(response.StatusCode, ex.ToString(), request.Path).ToMcmaJson();
             }
-
-            if (response.JsonBody != null)
-                response.Body = response.JsonBody.ToString();
 
             return response;
         }

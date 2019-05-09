@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
-using Mcma.Core.Serialization;
 using Mcma.Api;
-using System.IO;
+using Mcma.Api.Routes;
+using Mcma.Aws.S3;
+using Mcma.Core.Serialization;
 using Mcma.Core.Logging;
 
 namespace Mcma.Aws.Api
@@ -14,35 +17,39 @@ namespace Mcma.Aws.Api
     {
         static ApiGatewayApiController()
         {
-            McmaTypes.Add<S3Locator>();
+            AwsMcmaTypes.Add();
             Logger.Global = new LambdaLoggerWrapper();
         }
 
-        private McmaApiController<ApiGatewayRequest> McmaApiController { get; } = new McmaApiController<ApiGatewayRequest>();
+        public ApiGatewayApiController(McmaApiRouteCollection routes)
+        {
+            McmaApiController = new McmaApiController(routes);
+        }
 
-        public void AddRoute(string method, string path, Func<ApiGatewayRequest, McmaApiResponse, Task> handler)
-            => McmaApiController.AddRoute(method, path, handler);
+        private McmaApiController McmaApiController { get; }
 
         public async Task<APIGatewayProxyResponse> HandleRequestAsync(APIGatewayProxyRequest @event, ILambdaContext context)
         {
-            var request = new ApiGatewayRequest
-            {
-                Path = @event.Path,
-                HttpMethod = @event.HttpMethod,
-                Headers = @event.Headers,
-                PathVariables = new Dictionary<string, object>(),
-                QueryStringParameters = @event.QueryStringParameters ?? new Dictionary<string, string>(),
-                StageVariables = @event.StageVariables ?? new Dictionary<string, string>(),
-                Body = @event.Body
-            };
+            var requestContext = new McmaApiRequestContext(
+                new McmaApiRequest
+                {
+                    Path = @event.Path,
+                    HttpMethod = new HttpMethod(@event.HttpMethod),
+                    Headers = @event.Headers,
+                    PathVariables = new Dictionary<string, object>(),
+                    QueryStringParameters = @event.QueryStringParameters ?? new Dictionary<string, string>(),
+                    Body = @event.Body
+                },
+                @event.StageVariables
+            );
             
-            var response = await McmaApiController.HandleRequestAsync(request);
+            await McmaApiController.HandleRequestAsync(requestContext);
 
             return new APIGatewayProxyResponse
             {
-                StatusCode = response.StatusCode,
-                Headers = response.Headers,
-                Body = response.Body
+                StatusCode = requestContext.Response.StatusCode,
+                Headers = requestContext.Response.Headers,
+                Body = requestContext.Response.Body
             };
         }
     }

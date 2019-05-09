@@ -1,14 +1,10 @@
 using System.Threading.Tasks;
+using Mcma.Worker.Builders;
 
 namespace Mcma.Worker
 {
     public static class McmaWorker
     {
-        public static Task DoWorkAsync<TWorker, TRequest>(string operation, TRequest request) where TWorker : IWorker<TRequest>, new()
-        {
-            var worker = new TWorker();
-            
-            return worker.DoWorkAsync(operation, request);
-        }
+        public static WorkerBuilder Builder() => new WorkerBuilder();
     }
 }

@@ -7,10 +7,15 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Runtime;
 using Newtonsoft.Json.Linq;
 using Mcma.Core.Serialization;
+using Mcma.Data;
+using Mcma.Core;
+using System.Linq.Expressions;
+using System;
 
-namespace Mcma.Aws
+namespace Mcma.Aws.DynamoDb
 {
-    public class DynamoDbTable
+
+    public class DynamoDbTable<T> : IDbTable<T> where T : McmaResource
     {
         public DynamoDbTable(string tableName)
         {
@@ -19,7 +24,7 @@ namespace Mcma.Aws
 
         private Table Table { get; }
 
-        private T DocumentToResource<T>(Document document) where T : class
+        private T DocumentToResource(Document document)
         {
             var docJson = JObject.Parse(document.ToJson());
             
@@ -28,7 +33,7 @@ namespace Mcma.Aws
             return resourceJson != null ? resourceJson.ToMcmaObject<T>() : null;
         }
 
-        private Document ResourceToDocument<T>(string id, T resource) where T : class
+        private Document ResourceToDocument(string id, T resource)
         {
             var jObj = new JObject
             {
@@ -71,28 +76,28 @@ namespace Mcma.Aws
             }
         }
 
-        public async Task<IList<T>> GetAllAsync<T>() where T : class
+        public async Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> filter)
         {
             var query = Table.Query(typeof(T).Name, new QueryFilter());
 
             var documents = await query.GetRemainingAsync();
 
-            return documents.Select(DocumentToResource<T>).ToList();
+            return documents.Select(DocumentToResource).Where(filter != null ? filter.Compile() : x => true).ToList();
         }
 
-        public async Task<T> GetAsync<T>(string id) where T : class
+        public async Task<T> GetAsync(string id)
         {
             var document = await Table.GetItemAsync(typeof(T).Name, id);
 
-            return document != null ? DocumentToResource<T>(document) : null;
+            return document != null ? DocumentToResource(document) : null;
         }
 
-        public async Task PutAsync<T>(string id, T resource) where T : class
+        public async Task PutAsync(string id, T resource)
         {
             await Table.PutItemAsync(ResourceToDocument(id, resource));
         }
 
-        public async Task DeleteAsync<T>(string id) where T : class
+        public async Task DeleteAsync(string id)
         {
             await Table.DeleteItemAsync(typeof(T).Name, id);
         }

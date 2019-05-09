@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net.Http;
 using Mcma.Core;
 using Newtonsoft.Json.Linq;
 
@@ -8,7 +9,7 @@ namespace Mcma.Api
     {
         public string Path { get; set; }
 
-        public string HttpMethod { get; set; }
+        public HttpMethod HttpMethod { get; set; }
                 
         public IDictionary<string, string> Headers { get; set; }
         

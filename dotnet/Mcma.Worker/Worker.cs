@@ -1,47 +1,36 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Mcma.Core.Logging;
 
 namespace Mcma.Worker
 {
-    public abstract class Worker<T> : IWorker<T>
+    internal class Worker : IWorker
     {
-        protected Worker()
+        internal Worker(IEnumerable<IWorkerOperationFilter> operations)
         {
-            OperationsCaseInsensitive =
-                new Lazy<IDictionary<string, Func<T, Task>>>(() => new Dictionary<string, Func<T, Task>>(Operations, StringComparer.OrdinalIgnoreCase));
+            OperationHandlers = operations?.ToArray() ?? new IWorkerOperationFilter[0];
         }
 
-        protected abstract IDictionary<string, Func<T, Task>> Operations { get; }
+        private IWorkerOperationFilter[] OperationHandlers { get; }
 
-        private Lazy<IDictionary<string, Func<T, Task>>> OperationsCaseInsensitive { get; }
-
-        Task IWorker.DoWorkAsync(string operation, object request)
+        public async Task DoWorkAsync(WorkerRequest requestContext)
         {
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            var operationHandler = OperationHandlers.FirstOrDefault(oh => oh.Filter(requestContext))?.Handler;
+            if (operationHandler == null)
+                throw new Exception($"No handler found for '{requestContext.OperationName}' that can handle this request.");
 
-            if (!(request is T typedRequest))
-                throw new Exception($"Worker of type {GetType().Name} cannot accept request of type {request.GetType()}");
-
-            return DoWorkAsync(operation, typedRequest);
-        }
-
-        public async Task DoWorkAsync(string operation, T request)
-        {
-            if (!OperationsCaseInsensitive.Value.ContainsKey(operation))
-                throw new Exception(
-                    $"Worker of type {GetType().Name} does not support the operation '{operation}'.{Environment.NewLine}" +
-                    $"Supported operations are:{Environment.NewLine}{string.Join(", ", OperationsCaseInsensitive.Value.Keys)}");
+            Logger.Debug("Handling worker operation '" + requestContext.OperationName + "' with handler of type '" + operationHandler.GetType().Name + "'");
             
             try
             {
-                await OperationsCaseInsensitive.Value[operation](request);
+                await operationHandler.ExecuteAsync(requestContext);
             }
             catch (Exception ex)
             {
-                Logger.Error($"{GetType().Name} failed to process event.");
+                Logger.Error($"Failed to process worker operation '{requestContext.OperationName}'.");
                 Logger.Exception(ex);
                 
                 throw;

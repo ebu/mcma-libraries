@@ -1,0 +1,10 @@
+dotnet pack Mcma.Core -p:PackageVersion=%1
+dotnet nuget push Mcma.Core\bin\packages\Mcma.Core.%1.nupkg -k=%NUGET_API_KEY% -s https://api.nuget.org/v3/index.json
+dotnet pack Mcma.Data -p:PackageVersion=%1
+dotnet nuget push Mcma.Data\bin\packages\Mcma.Data.%1.nupkg -k=%NUGET_API_KEY% -s https://api.nuget.org/v3/index.json
+dotnet pack Mcma.Worker -p:PackageVersion=%1
+dotnet nuget push Mcma.Worker\bin\packages\Mcma.Worker.%1.nupkg -k=%NUGET_API_KEY% -s https://api.nuget.org/v3/index.json
+dotnet pack Mcma.Api -p:PackageVersion=%1
+dotnet nuget push Mcma.Api\bin\packages\Mcma.Api.%1.nupkg -k=%NUGET_API_KEY% -s https://api.nuget.org/v3/index.json
+dotnet pack Mcma.Aws -p:PackageVersion=%1
+dotnet nuget push Mcma.Aws\bin\packages\Mcma.Aws.%1.nupkg -k=%NUGET_API_KEY% -s https://api.nuget.org/v3/index.json

@@ -3,19 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageVersion>0.0.2.5</PackageVersion>
-    <Title>MCMA Workers (.NET)</Title>
-    <Description>Library containing base classes and interfaces for MCMA worker services</Description>
+    <Title>MCMA Core (.NET)</Title>
+    <Description>Library containing interfaces for interacting with databases from MCMA services</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageOutputPath>bin/packages</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Mcma.Core\Mcma.Core.csproj" />
-    <ProjectReference Include="..\Mcma.Data\Mcma.Data.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
 </Project>
