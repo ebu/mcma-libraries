@@ -42,7 +42,7 @@ namespace Mcma.Worker
 
         public async Task InitializeAsync()
         {
-            JobAssignment = await Table.UpdateJobStatus<JobAssignment>(JobAssignmentId, JobStatus.Running);
+            JobAssignment = await Table.UpdateJobStatusAsync(JobAssignmentId, JobStatus.Running);
 
             Job = await ResourceManager.ResolveResourceFromFullUrl<T>(JobAssignment.Job);
 
@@ -53,8 +53,8 @@ namespace Mcma.Worker
 
         public void ValidateJob(IEnumerable<string> supportedProfiles)
         {
-            var SupportedJobProfiles = supportedProfiles?.ToArray() ?? new string[0];
-            if (!SupportedJobProfiles.Contains(Profile.Name, StringComparer.OrdinalIgnoreCase))
+            var supportedJobProfiles = supportedProfiles?.ToArray() ?? new string[0];
+            if (!supportedJobProfiles.Contains(Profile.Name, StringComparer.OrdinalIgnoreCase))
                 throw new Exception($"Job profile '{Profile.Name}' is not supported");
 
             if (Profile.InputParameters != null)

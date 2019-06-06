@@ -1,21 +1,17 @@
 ﻿using System.Net;
 using Mcma.Core;
+using Mcma.Core.ContextVariables;
 using Mcma.Core.Serialization;
 
 namespace Mcma.Api
 {
     public static class McmaApiRequestContextExtensions
     {
-        public static string PublicUrl(this McmaApiRequestContext requestContext)
-            => requestContext.ContextVariables.TryGetValue(nameof(PublicUrl), out var publicUrl) ? publicUrl : string.Empty;
+        public static string PublicUrl(this IContextVariableProvider contextVariableProvider)
+            => contextVariableProvider.GetRequiredContextVariable(nameof(PublicUrl));
         
-        public static string TableName(this McmaApiRequestContext requestContext)
-            => requestContext.ContextVariables.TryGetValue(nameof(TableName), out var tableName) ? tableName : string.Empty;
-
-        public static string WorkerFunctionName(this McmaApiRequestContext requestContext)
-            => requestContext.ContextVariables.TryGetValue(nameof(WorkerFunctionName), out var workerLambdaFunctionName)
-                ? workerLambdaFunctionName
-                : string.Empty;
+        public static string WorkerFunctionName(this IContextVariableProvider contextVariableProvider)
+            => contextVariableProvider.GetRequiredContextVariable(nameof(WorkerFunctionName));
 
         public static bool IsBadRequestDueToMissingBody<TResource>(this McmaApiRequestContext requestContext, out TResource resource)
             where TResource : McmaResource

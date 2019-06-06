@@ -10,8 +10,6 @@ namespace Mcma.Worker.Builders
         {
         }
 
-        private WorkerBuilder WorkerBuilder { get; }
-
         private List<OperationHandlerBuilder<T>> OperationHandlerBuilders { get; } = new List<OperationHandlerBuilder<T>>();
 
         public RequestHandlerBuilder<T> WithOperation(string operationName, Action<OperationHandlerBuilder<T>> configureOperation)

@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mcma.Data;
 using Mcma.Core.Logging;
+using Mcma.Core.ContextVariables;
 
 namespace Mcma.Api.Routes.Defaults
 {
@@ -17,7 +18,7 @@ namespace Mcma.Api.Routes.Defaults
         {
             public RouteBuilderAction(
                 DefaultRouteCollectionBuilder<TResource> builder,
-                DefaultRouteBuilderCollectionRoutes<TResource> routes,
+                DefaultRoutes<TResource> routes,
                 DefaultRouteBuilder<TResult> routeBuilder)
             {
                 Builder = builder;
@@ -27,7 +28,7 @@ namespace Mcma.Api.Routes.Defaults
 
             private DefaultRouteCollectionBuilder<TResource> Builder { get; }
 
-            private DefaultRouteBuilderCollectionRoutes<TResource> Routes { get; }
+            private DefaultRoutes<TResource> Routes { get; }
 
             private DefaultRouteBuilder<TResult> RouteBuilder { get; }
 
@@ -63,7 +64,7 @@ namespace Mcma.Api.Routes.Defaults
 
             Root = root;
             
-            Routes = new DefaultRouteBuilderCollectionRoutes<TResource>
+            Routes = new DefaultRoutes<TResource>
             {
                 Query = DefaultQueryBuilder(dbTableProvider, root),
                 Create = DefaultCreateBuilder(dbTableProvider, root),
@@ -77,7 +78,7 @@ namespace Mcma.Api.Routes.Defaults
 
         private string Root { get; }
 
-        private DefaultRouteBuilderCollectionRoutes<TResource> Routes { get; }
+        private DefaultRoutes<TResource> Routes { get; }
 
         public McmaApiRouteCollection Build()
             => new McmaApiRouteCollection(Routes.Included.Select(rb => rb.Build()));
@@ -89,7 +90,7 @@ namespace Mcma.Api.Routes.Defaults
         }
 
         public RouteBuilderAction<TResult> Route<TResult>(
-            Expression<Func<DefaultRouteBuilderCollectionRoutes<TResource>, DefaultRouteBuilder<TResult>>> selectRoute)
+            Expression<Func<DefaultRoutes<TResource>, DefaultRouteBuilder<TResult>>> selectRoute)
         {
             if (!(selectRoute.Body is MemberExpression memberExpression) ||
                 !(memberExpression.Member is PropertyInfo propertyInfo) ||

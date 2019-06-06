@@ -56,6 +56,19 @@ class Resource {
                 }
             }
         }
+
+        this.onCreate = (id) => {
+            this.id = id;
+            this.dateModified = this.dateCreated = new Date().toISOString();
+        };
+
+        this.onUpsert = (id) => {
+            this.id = id;
+            this.dateModified = new Date().toISOString();
+            if (!this.dateCreated) {
+                this.dateCreated = this.dateModified;
+            }
+        };
     }
 }
 
@@ -255,25 +268,33 @@ class Locator extends Resource {
     }
 }
 
-class Job extends Resource {
+class JobBase extends Resource {
+    constructor(type, properties) {
+        super(type, properties);
+
+        checkProperty(this, "notificationEndpoint", "resource", false);
+        checkProperty(this, "status", "string", false);
+        checkProperty(this, "statusMessage", "string", false)
+        checkProperty(this, "jobOutput", "resource", false);
+
+        if (typeof this.notificationEndpoint === "object") {
+            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
+        }
+    }
+}
+
+class Job extends JobBase {
     constructor(type, properties) {
         super(type, properties);
 
         checkProperty(this, "jobProfile", "resource", true);
         checkProperty(this, "jobInput", "resource", true);
-        checkProperty(this, "notificationEndpoint", "resource", false);
-        checkProperty(this, "status", "string", false);
-        checkProperty(this, "statusMessage", "string", false)
-        checkProperty(this, "jobOutput", "resource", false);
 
         if (typeof this.jobProfile === "object") {
             this.jobProfile = new JobProfile(this.jobProfile);
         }
         if (typeof this.jobInput === "object") {
             this.jobInput = new JobParameterBag(this.jobInput);
-        }
-        if (typeof this.notificationEndpoint === "object") {
-            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
         }
     }
 }
@@ -320,29 +341,19 @@ class WorkflowJob extends Job {
     }
 }
 
-class JobProcess extends Resource {
+class JobProcess extends JobBase {
     constructor(properties) {
         super("JobProcess", properties)
 
         checkProperty(this, "job", "resource");
-        checkProperty(this, "notificationEndpoint", "resource");
-
-        if (typeof this.notificationEndpoint === "object") {
-            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
-        }
     }
 }
 
-class JobAssignment extends Resource {
+class JobAssignment extends JobBase {
     constructor(properties) {
         super("JobAssignment", properties)
 
         checkProperty(this, "job", "resource");
-        checkProperty(this, "notificationEndpoint", "resource");
-
-        if (typeof this.notificationEndpoint === "object") {
-            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
-        }
     }
 }
 
@@ -722,30 +733,50 @@ class Exception extends Error {
     }
 }
 
+class JobStatus {
+    constructor(name) {
+        this.name = name;
+        
+        this.equals = (compareTo) => {
+            if (typeof compareTo === 'object') {
+                compareTo = compareTo.name;
+            }
+            
+            return typeof compareTo === 'string' && this.name.toLowerCase() === compareTo.toLowerCase();
+        };
+    }
+};
+JobStatus.queued = new JobStatus('QUEUED');
+JobStatus.scheduled = new JobStatus('SCHEDULED');
+JobStatus.running = new JobStatus('RUNNING');
+JobStatus.completed = new JobStatus('COMPLETED');
+JobStatus.failed = new JobStatus('FAILED');
+
 module.exports = {
-    Service: Service,
-    ResourceEndpoint: ResourceEndpoint,
-    BMContent: BMContent,
-    BMEssence: BMEssence,
-    DescriptiveMetadata: DescriptiveMetadata,
-    TechnicalMetadata: TechnicalMetadata,
-    JobProfile: JobProfile,
-    JobParameter: JobParameter,
-    JobParameterBag: JobParameterBag,
-    Locator: Locator,
-    AIJob: AIJob,
-    AmeJob: AmeJob,
-    CaptureJob: CaptureJob,
-    QAJob: QAJob,
-    TransferJob: TransferJob,
-    TransformJob: TransformJob,
-    WorkflowJob: WorkflowJob,
-    JobProcess: JobProcess,
-    JobAssignment: JobAssignment,
-    Notification: Notification,
-    NotificationEndpoint: NotificationEndpoint,
-    ResourceManager: ResourceManager,
-    HttpClient: HttpClient,
-    AuthenticatorProvider: AuthenticatorProvider,
-    Exception: Exception
+    Service,
+    ResourceEndpoint,
+    BMContent,
+    BMEssence,
+    DescriptiveMetadata,
+    TechnicalMetadata,
+    JobProfile,
+    JobParameter,
+    JobParameterBag,
+    Locator,
+    AIJob,
+    AmeJob,
+    CaptureJob,
+    QAJob,
+    TransferJob,
+    TransformJob,
+    WorkflowJob,
+    JobProcess,
+    JobAssignment,
+    Notification,
+    NotificationEndpoint,
+    ResourceManager,
+    HttpClient,
+    AuthenticatorProvider,
+    Exception,
+    JobStatus
 }

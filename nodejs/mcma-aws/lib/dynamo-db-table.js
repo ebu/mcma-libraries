@@ -1,4 +1,5 @@
 const util = require('util');
+const { DbTable } = require('mcma-data');
 
 const removeEmptyStrings = (object) => {
     if (object) {
@@ -22,23 +23,25 @@ const removeEmptyStrings = (object) => {
     }
 }
 
-class DynamoDbTable {
-    constructor(AWS, tableName) {
-        let docClient = new AWS.DynamoDB.DocumentClient();
+class DynamoDbTable extends DbTable {
+    constructor(AWS, type, tableName) {
+        super(type);
+
+        const docClient = new AWS.DynamoDB.DocumentClient();
         const dcQuery = util.promisify(docClient.query.bind(docClient));
         const dcGet = util.promisify(docClient.get.bind(docClient));
         const dcPut = util.promisify(docClient.put.bind(docClient));
         const dcDelete = util.promisify(docClient.delete.bind(docClient));
 
-        this.getAll = async (type) => {
-            var params = {
+        this.query = async (filter) => {
+            const params = {
                 TableName: tableName,
                 KeyConditionExpression: "#rs = :rs1",
                 ExpressionAttributeNames: {
                     "#rs": "resource_type"
                 },
                 ExpressionAttributeValues: {
-                    ":rs1": type
+                    ":rs1": this.type
                 }
             };
 
@@ -48,18 +51,20 @@ class DynamoDbTable {
 
             if (data.Items) {
                 for (const item of data.Items) {
-                    items.push(item.resource);
+                    if (!filter || filter(item)) {
+                        items.push(item.resource);
+                    }
                 }
             }
 
             return items;
         }
 
-        this.get = async (type, id) => {
+        this.get = async (id) => {
             var params = {
                 TableName: tableName,
                 Key: {
-                    "resource_type": type,
+                    "resource_type": this.type,
                     "resource_id": id,
                 }
             };
@@ -72,11 +77,11 @@ class DynamoDbTable {
             return data.Item.resource;
         }
 
-        this.put = async (type, id, resource) => {
+        this.put = async (id, resource) => {
             removeEmptyStrings(resource);
 
             var item = {
-                "resource_type": type,
+                "resource_type": this.type,
                 "resource_id": id,
                 "resource": resource
             };
@@ -89,11 +94,11 @@ class DynamoDbTable {
             await dcPut(params);
         }
 
-        this.delete = async (type, id) => {
+        this.delete = async (id) => {
             var params = {
                 TableName: tableName,
                 Key: {
-                    "resource_type": type,
+                    "resource_type": this.type,
                     "resource_id": id,
                 }
             };
@@ -103,6 +108,15 @@ class DynamoDbTable {
     }
 }
 
-module.exports = {
-    DynamoDbTable: DynamoDbTable
+function dynamoDbTableProvider(aws, type) {
+    return {
+        table: (name) => {
+            return new DynamoDbTable(aws, type, name);
+        }
+    };
 }
+
+module.exports = {
+    DynamoDbTable,
+    dynamoDbTableProvider
+};

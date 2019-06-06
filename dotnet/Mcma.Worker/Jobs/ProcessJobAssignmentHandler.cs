@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Mcma.Core;
+using Mcma.Core.ContextVariables;
 using Mcma.Core.Logging;
 using Mcma.Data;
 
@@ -56,7 +57,7 @@ namespace Mcma.Worker
 
                 Logger.Debug("Using profile handler of type '" + profileHandler.GetType().Name + "' for profile '" + workerJobHelper.Profile?.Name + "'...");
                 
-                await profileHandler.RunAsync(workerJobHelper);
+                await profileHandler.ExecuteAsync(workerJobHelper);
             }
             catch (Exception ex)
             {

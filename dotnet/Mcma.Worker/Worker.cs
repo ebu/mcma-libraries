@@ -11,26 +11,29 @@ namespace Mcma.Worker
     {
         internal Worker(IEnumerable<IWorkerOperationFilter> operations)
         {
-            OperationHandlers = operations?.ToArray() ?? new IWorkerOperationFilter[0];
+            OperationFilters = operations?.ToArray() ?? new IWorkerOperationFilter[0];
         }
 
-        private IWorkerOperationFilter[] OperationHandlers { get; }
+        private IWorkerOperationFilter[] OperationFilters { get; }
 
-        public async Task DoWorkAsync(WorkerRequest requestContext)
+        public async Task DoWorkAsync(WorkerRequest request)
         {
-            var operationHandler = OperationHandlers.FirstOrDefault(oh => oh.Filter(requestContext))?.Handler;
-            if (operationHandler == null)
-                throw new Exception($"No handler found for '{requestContext.OperationName}' that can handle this request.");
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
 
-            Logger.Debug("Handling worker operation '" + requestContext.OperationName + "' with handler of type '" + operationHandler.GetType().Name + "'");
+            var operationFilter = OperationFilters.FirstOrDefault(oh => oh.Filter(request));
+            if (operationFilter == null)
+                throw new Exception($"No handler found for '{request.OperationName}' that can handle this request.");
+
+            Logger.Debug("Handling worker operation '" + request.OperationName + "' with handler of type '" + operationFilter.GetType().Name + "'");
             
             try
             {
-                await operationHandler.ExecuteAsync(requestContext);
+                await operationFilter.Handler.ExecuteAsync(request);
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to process worker operation '{requestContext.OperationName}'.");
+                Logger.Error($"Failed to process worker operation '{request.OperationName}'.");
                 Logger.Exception(ex);
                 
                 throw;

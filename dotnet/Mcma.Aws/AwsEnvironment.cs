@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Mcma.Api;
 using Mcma.Aws.Authentication;
 using Mcma.Core;
+using Mcma.Core.ContextVariables;
 using Mcma.Core.Serialization;
 
 namespace Mcma.Aws
@@ -51,15 +52,11 @@ namespace Mcma.Aws
             => new ResourceManager(GetAwsV4ResourceManagerOptions());
 
         public static ResourceManagerOptions GetAwsV4ResourceManagerOptions(this IContextVariableProvider contextVariableProvider)
-            => new ResourceManagerOptions(contextVariableProvider.ContextVariables["ServicesUrl"])
+            => new ResourceManagerOptions(contextVariableProvider.GetRequiredContextVariable("ServicesUrl"))
                 .WithAuth(
                     GetDefaultAwsV4AuthProvider(),
-                    contextVariableProvider.ContextVariables.ContainsKey("ServicesAuthType")
-                        ? contextVariableProvider.ContextVariables["ServicesAuthType"]
-                        : ServicesAuthType,
-                    contextVariableProvider.ContextVariables.ContainsKey("ServicesAuthContext")
-                        ? contextVariableProvider.ContextVariables["ServicesAuthContext"]
-                        : ServicesAuthContext
+                    contextVariableProvider.GetOptionalContextVariable("ServicesAuthType", ServicesAuthType),
+                    contextVariableProvider.GetOptionalContextVariable("ServicesAuthContext", ServicesAuthContext)
                 );
 
         public static ResourceManager GetAwsV4ResourceManager(this IContextVariableProvider contextVariableProvider)

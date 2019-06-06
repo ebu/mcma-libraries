@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using Mcma.Core;
+using Mcma.Core.ContextVariables;
 using Mcma.Core.Serialization;
 using Newtonsoft.Json.Linq;
 
 namespace Mcma.Worker
 {
-    public class WorkerRequest : IContextVariableProvider
+    public class WorkerRequest : ContextVariableProvider
     {
-        public string OperationName { get; set; }
+        public WorkerRequest(string operationName, IDictionary<string, string> contextVariables)
+            : base(contextVariables)
+        {
+            OperationName = operationName;
+        }
 
-        public IReadOnlyDictionary<string, string> ContextVariables { get; set; }
+        public string OperationName { get; }
 
         public JObject Input { get; set; }
 

@@ -7,6 +7,6 @@ namespace Mcma.Worker
 {
     public interface IJobProfileHandler<T> where T : Job
     {
-        Task RunAsync(WorkerJobHelper<T> job);
+        Task ExecuteAsync(WorkerJobHelper<T> job);
     }
 }

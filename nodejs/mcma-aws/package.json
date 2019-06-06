@@ -1,6 +1,6 @@
 {
     "name": "mcma-aws",
-    "version": "0.1.0",
+    "version": "0.2.8",
     "description": "Node module with boilerplate code for setting up a REST controller for an API Gateway endpoint and a DynamoDB storage backend with support for EBU MCMA framework",
     "engines": {
         "node": "~8.10.0"
@@ -29,7 +29,10 @@
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-nodejs#readme",
     "dependencies": {
         "aws-sdk": "^2.291.0",
+        "crypto-js": "^3.1.9-1",
         "dynamodb-doc": "^1.0.0",
+        "mcma-api": "file:../mcma-api",
+        "mcma-core": "file:../mcma-core",
         "uri-templates": "^0.2.0"
     },
     "devDependencies": {

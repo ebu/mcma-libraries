@@ -25,8 +25,8 @@ namespace Mcma.Worker
         public JobHandlerBuilder<T> AddProfile<THandler>(string profileName) where THandler : IJobProfileHandler<T>, new()
             => AddProfile(profileName, new THandler());
 
-        public JobHandlerBuilder<T> AddProfile(string profileName, Func<WorkerJobHelper<T>, Task> handler)
-            => AddProfile(profileName, new DelegateJobProfileHandler<T>(handler));
+        public JobHandlerBuilder<T> AddProfile(string profileName, Func<WorkerJobHelper<T>, Task> profileHandler)
+            => AddProfile(profileName, new DelegateJobProfileHandler<T>(profileHandler));
 
         public JobHandlerBuilder<T> AddProfile(string profileName, IJobProfileHandler<T> profileHandler)
         {

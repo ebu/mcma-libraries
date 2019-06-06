@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageVersion>0.0.2.5</PackageVersion>
-    <Title>MCMA Core (.NET)</Title>
+    <Title>MCMA Data (.NET)</Title>
     <Description>Library containing interfaces for interacting with databases from MCMA services</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageOutputPath>bin/packages</PackageOutputPath>

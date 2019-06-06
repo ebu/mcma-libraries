@@ -6,11 +6,6 @@ namespace Mcma.Worker.Builders
 {
     public class WorkerBuilder
     {
-        internal WorkerBuilder()
-        {
-            
-        }
-
         private List<IRequestHandlerBuilder> RequestHandlerBuilders { get; } = new List<IRequestHandlerBuilder>();
 
         public WorkerBuilder HandleRequestsOfType<T>(Action<RequestHandlerBuilder<T>> configureRequestType)

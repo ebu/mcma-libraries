@@ -14,6 +14,6 @@ namespace Mcma.Worker
 
         private Func<WorkerJobHelper<T>, Task> Handler { get; }
 
-        public Task RunAsync(WorkerJobHelper<T> job) => Handler(job);
+        public Task ExecuteAsync(WorkerJobHelper<T> job) => Handler(job);
     }
 }

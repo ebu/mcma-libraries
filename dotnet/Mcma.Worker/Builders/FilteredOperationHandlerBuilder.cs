@@ -28,12 +28,6 @@ namespace Mcma.Worker.Builders
 
         private IWorkerOperationHandler Handler { get; }
 
-        internal IWorkerOperationFilter Build()
-        {
-            if (Handler == null)
-                throw new Exception($"Filter for operation {OperationName} does not have a handler.");
-            
-            return new WorkerOperationFilter(Filter, Handler);
-        }
+        internal IWorkerOperationFilter Build() => new WorkerOperationFilter(Filter, Handler);
     }
 }

@@ -4,10 +4,11 @@ namespace Mcma.Api
 {
     public class McmaApiError
     {
-        public McmaApiError(int status = 0, string error = null, string path = null)
+        public McmaApiError(int status = 0, string message = null, string path = null)
         {
             Status = status;
-            Error = error;
+            Error = HttpStatusCodeMessage.From(status);
+            Message = message;
             Path = path;
         }
 
@@ -16,6 +17,8 @@ namespace Mcma.Api
         public int Status { get; set; }
 
         public string Error { get; set; }
+
+        public string Message { get; set; }
 
         public string Path { get; set; }
     }
