@@ -1,6 +1,6 @@
 {
     "name": "mcma-core",
-    "version": "0.2.8",
+    "version": "0.3.0",
     "description": "Node module with type definitions and helper utils for the EBU MCMA framework",
     "engines": {
         "node": "~8.10.0"
@@ -24,8 +24,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs#readme",
     "dependencies": {
-        "axios": "^0.18.0",
-        "crypto-js": "^3.1.9-1"
+        "axios": "^0.18.0"
     },
     "devDependencies": {
         "jasmine": "^3.3.1"
