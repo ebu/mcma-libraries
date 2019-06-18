@@ -1,8 +1,8 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Mcma.Worker.Builders
 {
-    internal interface IRequestHandlerBuilder
+    internal interface IOperationHandlerBuilder
     {
         IEnumerable<IWorkerOperationFilter> Build();
     }

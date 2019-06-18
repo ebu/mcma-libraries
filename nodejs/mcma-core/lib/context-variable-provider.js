@@ -6,12 +6,12 @@ class ContextVariableProvider {
 
         this.getRequiredContextVariable = (key) => {
             if (!key) {
-                throw new Error('Invalid key specified.');
+                throw new Error("Invalid key specified.");
             }
         
             const matchedKey = Object.keys(contextVariables).find(k => k.toLocaleLowerCase() === key.toLocaleLowerCase());
             if (!matchedKey) {
-                throw new Error(`Required context variable with key '${key}' is missing.`);
+                throw new Error(`Required context variable with key "${key}" is missing.`);
             }
         
             return contextVariables[matchedKey];
@@ -19,7 +19,7 @@ class ContextVariableProvider {
 
         this.getOptionalContextVariable = (key, defaultValue) => {
             if (!key) {
-                throw new Error('Invalid key specified.');
+                throw new Error("Invalid key specified.");
             }
         
             const matchedKey = Object.keys(contextVariables).find(k => k.toLocaleLowerCase() === key.toLocaleLowerCase());
@@ -32,6 +32,13 @@ class ContextVariableProvider {
     }
 }
 
+class EnvironmentVariableProvider extends ContextVariableProvider {
+    constructor() {
+        super(process.env);
+    }
+}
+
 module.exports = {
-    ContextVariableProvider
+    ContextVariableProvider,
+    EnvironmentVariableProvider
 };

@@ -1,10 +1,10 @@
 function getTypeName(type) {
-    if (typeof type === 'function') {
+    if (typeof type === "function") {
         type = type.name;
-    } else if (typeof type === 'object') {
+    } else if (typeof type === "object") {
         type = type.constructor.name;
-    } else if (typeof type !== 'string') {
-        throw new Error('Invalid type for db table.');
+    } else if (typeof type !== "string") {
+        throw new Error("Invalid type for db table.");
     }
     return type;
 }

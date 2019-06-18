@@ -1,25 +1,25 @@
-const CryptoJS = require('crypto-js');
-const WHATWG_URL = require('url');
+const CryptoJS = require("crypto-js");
+const WHATWG_URL = require("url");
 
 if ("URL" in WHATWG_URL) {
     URL = WHATWG_URL.URL;
 }
 
-const AWS_SHA_256 = 'AWS4-HMAC-SHA256';
-const AWS4_REQUEST = 'aws4_request';
-const AWS4 = 'AWS4';
-const X_AMZ_DATE = 'x-amz-date';
-const X_AMZ_SECURITY_TOKEN = 'x-amz-security-token';
-const HOST = 'host';
-const AUTHORIZATION = 'Authorization';
+const AWS_SHA_256 = "AWS4-HMAC-SHA256";
+const AWS4_REQUEST = "aws4_request";
+const AWS4 = "AWS4";
+const X_AMZ_DATE = "x-amz-date";
+const X_AMZ_SECURITY_TOKEN = "x-amz-security-token";
+const HOST = "host";
+const AUTHORIZATION = "Authorization";
 
-const X_AMZ_DATE_QUERY_PARAM = 'X-Amz-Date';
-const X_AMZ_SECURITY_TOKEN_QUERY_PARAM = 'X-Amz-Security-Token';
-const X_AMZ_ALGORITHM_QUERY_PARAM = 'X-Amz-Algorithm';
-const X_AMZ_CREDENTIAL_QUERY_PARAM = 'X-Amz-Credential';
-const X_AMZ_SIGNEDHEADERS_QUERY_PARAM = 'X-Amz-SignedHeaders';
-const X_AMZ_SIGNATURE_QUERY_PARAM = 'X-Amz-Signature';
-const X_AMZ_EXPIRES_QUERY_PARAM = 'X-Amz-Expires';
+const X_AMZ_DATE_QUERY_PARAM = "X-Amz-Date";
+const X_AMZ_SECURITY_TOKEN_QUERY_PARAM = "X-Amz-Security-Token";
+const X_AMZ_ALGORITHM_QUERY_PARAM = "X-Amz-Algorithm";
+const X_AMZ_CREDENTIAL_QUERY_PARAM = "X-Amz-Credential";
+const X_AMZ_SIGNEDHEADERS_QUERY_PARAM = "X-Amz-SignedHeaders";
+const X_AMZ_SIGNATURE_QUERY_PARAM = "X-Amz-Signature";
+const X_AMZ_EXPIRES_QUERY_PARAM = "X-Amz-Expires";
 
 function hash(value) {
     return CryptoJS.SHA256(value);
@@ -34,12 +34,12 @@ function hmac(secret, value) {
 }
 
 function buildCanonicalRequest(method, pathname, queryParams, headers, data) {
-    return method + '\n' +
-        buildCanonicalUri(pathname) + '\n' +
-        buildCanonicalQueryString(queryParams) + '\n' +
-        buildCanonicalHeaders(headers) + '\n' +
-        buildCanonicalSignedHeaders(headers) + '\n' +
-        hexEncode(hash(typeof data === 'string' ? data : JSON.stringify(data)));
+    return method + "\n" +
+        buildCanonicalUri(pathname) + "\n" +
+        buildCanonicalQueryString(queryParams) + "\n" +
+        buildCanonicalHeaders(headers) + "\n" +
+        buildCanonicalSignedHeaders(headers) + "\n" +
+        hexEncode(hash(typeof data === "string" ? data : JSON.stringify(data)));
 }
 
 function hashCanonicalRequest(request) {
@@ -52,7 +52,7 @@ function buildCanonicalUri(uri) {
 
 function buildCanonicalQueryString(queryParams) {
     if (Object.keys(queryParams || {}).length < 1) {
-        return '';
+        return "";
     }
 
     var sortedQueryParams = [];
@@ -61,21 +61,21 @@ function buildCanonicalQueryString(queryParams) {
     }
     sortedQueryParams.sort();
 
-    var canonicalQueryString = '';
+    var canonicalQueryString = "";
     for (var i = 0; i < sortedQueryParams.length; i++) {
-        canonicalQueryString += sortedQueryParams[i] + '=' + fixedEncodeURIComponent(queryParams[sortedQueryParams[i]]) + '&';
+        canonicalQueryString += sortedQueryParams[i] + "=" + fixedEncodeURIComponent(queryParams[sortedQueryParams[i]]) + "&";
     }
     return canonicalQueryString.substr(0, canonicalQueryString.length - 1);
 }
 
 function fixedEncodeURIComponent(str) {
-    return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
-        return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+    return encodeURIComponent(str).replace(/[!"()*]/g, function (c) {
+        return "%" + c.charCodeAt(0).toString(16).toUpperCase();
     });
 }
 
 function buildCanonicalHeaders(headers) {
-    var canonicalHeaders = '';
+    var canonicalHeaders = "";
     var sortedKeys = [];
     for (var property of Object.keys(headers)) {
         sortedKeys.push(property);
@@ -83,7 +83,7 @@ function buildCanonicalHeaders(headers) {
     sortedKeys.sort();
 
     for (var i = 0; i < sortedKeys.length; i++) {
-        canonicalHeaders += sortedKeys[i].toLowerCase() + ':' + headers[sortedKeys[i]] + '\n';
+        canonicalHeaders += sortedKeys[i].toLowerCase() + ":" + headers[sortedKeys[i]] + "\n";
     }
     return canonicalHeaders;
 }
@@ -95,18 +95,18 @@ function buildCanonicalSignedHeaders(headers) {
     }
     sortedKeys.sort();
 
-    return sortedKeys.join(';');
+    return sortedKeys.join(";");
 }
 
 function buildStringToSign(datetime, credentialScope, hashedCanonicalRequest) {
-    return AWS_SHA_256 + '\n' +
-        datetime + '\n' +
-        credentialScope + '\n' +
+    return AWS_SHA_256 + "\n" +
+        datetime + "\n" +
+        credentialScope + "\n" +
         hashedCanonicalRequest;
 }
 
 function buildCredentialScope(datetime, region, service) {
-    return datetime.substr(0, 8) + '/' + region + '/' + service + '/' + AWS4_REQUEST
+    return datetime.substr(0, 8) + "/" + region + "/" + service + "/" + AWS4_REQUEST
 }
 
 function calculateSigningKey(secretKey, datetime, region, service) {
@@ -118,7 +118,7 @@ function calculateSignature(key, stringToSign) {
 }
 
 function buildAuthorizationHeader(signature, credentialScope, signedHeaders) {
-    return AWS_SHA_256 + ' Credential=' + credentialScope + ', SignedHeaders=' + signedHeaders + ', Signature=' + signature;
+    return AWS_SHA_256 + " Credential=" + credentialScope + ", SignedHeaders=" + signedHeaders + ", Signature=" + signature;
 }
 
 function generateSignature(request, credentials, datetime, credentialScope) {
@@ -147,7 +147,7 @@ function generateSignature(request, credentials, datetime, credentialScope) {
 }
 
 function getAwsDate() {
-    return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/[:\-]|\.\d{3}/g, '');
+    return new Date().toISOString().replace(/\.\d{3}Z$/, "Z").replace(/[:\-]|\.\d{3}/g, "");
 }
 
 function conformCredentials(credentials) {
@@ -160,8 +160,8 @@ function conformCredentials(credentials) {
         return;
     }
 
-    // if no service name was provided, we'll assume this is an API Gateway request
-    credentials.serviceName = credentials.serviceName || 'execute-api';
+    // if no service name was provided, we"ll assume this is an API Gateway request
+    credentials.serviceName = credentials.serviceName || "execute-api";
 
     return credentials;
 }
@@ -191,14 +191,14 @@ class AwsV4Authenticator {
             const signature = generateSignature(request, credentials, datetime, credentialScope);
 
             // add authorization header with signature
-            request.headers[AUTHORIZATION] = buildAuthorizationHeader(signature, credentials.accessKey + '/' + credentialScope, signedHeaders);
+            request.headers[AUTHORIZATION] = buildAuthorizationHeader(signature, credentials.accessKey + "/" + credentialScope, signedHeaders);
 
             // add security token (for temporary credentials)
             if (credentials.sessionToken) {
                 request.headers[X_AMZ_SECURITY_TOKEN] = credentials.sessionToken;
             }
 
-            // need to remove the host header if we're in the browser as it's protected and cannot be set
+            // need to remove the host header if we"re in the browser as it"s protected and cannot be set
             delete request.headers[HOST];
         };
     }
@@ -222,7 +222,7 @@ class AwsV4PresignedUrlGenerator {
 
             // add parameters for signing
             requestUrlParsed.searchParams.set(X_AMZ_ALGORITHM_QUERY_PARAM, AWS_SHA_256);
-            requestUrlParsed.searchParams.set(X_AMZ_CREDENTIAL_QUERY_PARAM, credentials.accessKey + '/' + credentialScope);
+            requestUrlParsed.searchParams.set(X_AMZ_CREDENTIAL_QUERY_PARAM, credentials.accessKey + "/" + credentialScope);
             requestUrlParsed.searchParams.set(X_AMZ_DATE_QUERY_PARAM, datetime);
             requestUrlParsed.searchParams.set(X_AMZ_EXPIRES_QUERY_PARAM, expires);
             requestUrlParsed.searchParams.set(X_AMZ_SIGNEDHEADERS_QUERY_PARAM, signedHeaders);

@@ -1,5 +1,5 @@
-const { ContextVariableProvider } = require('mcma-core');
-const { HttpStatusCode } = require('./http-statuses');
+const { ContextVariableProvider } = require("mcma-core");
+const { HttpStatusCode } = require("./http-statuses");
 
 class McmaApiRequest {
     constructor(config) {
@@ -33,21 +33,21 @@ class McmaApiRequestContext extends ContextVariableProvider {
         let resource = this.request && this.request.body;
         if (!resource) {
             this.response.statusCode = HttpStatusCode.BAD_REQUEST;
-            this.response.statusMessage = 'Missing request body.';
+            this.response.statusMessage = "Missing request body.";
             return resource;
         }
     }
     
     resourceCreated(resource) {
         this.response.statusCode = HttpStatusCode.CREATED;
-        this.response.headers['Location'] = resource.id;
+        this.response.headers["Location"] = resource.id;
         this.response.body = resource;
     }
     
     resourceIfFound(resource, setBody = true) {
         if (!resource) {
             this.response.statusCode = HttpStatusCode.NOT_FOUND;
-            this.response.statusMessage = 'No resource found on path "' + this.request.path + '".';
+            this.response.statusMessage = "No resource found on path '" + this.request.path + "'.";
             return false;
         }
     
@@ -60,11 +60,11 @@ class McmaApiRequestContext extends ContextVariableProvider {
 }
 
 ContextVariableProvider.prototype.publicUrl = function publicUrl() {
-    return this.getRequiredContextVariable('PublicUrl');
+    return this.getRequiredContextVariable("PublicUrl");
 }
 
 ContextVariableProvider.prototype.workerFunctionName = function workerFunctionName() {
-    return this.getRequiredContextVariable('WorkerFunctionName');
+    return this.getRequiredContextVariable("WorkerFunctionName");
 }
 
 module.exports = {

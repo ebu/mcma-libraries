@@ -1,9 +1,9 @@
-const DbTable = require('./db-table');
+const DbTable = require("./db-table");
 
 DbTable.prototype.getAndThrowIfNotFound = async function getAndThrowIfNotFound(id) {
     const resource = await this.get(id);
     if (!resource) {
-        throw new Error('Resource of type ' + this.type + ' with id ' + id + ' was not found.');
+        throw new Error("Resource of type " + this.type + " with id " + id + " was not found.");
     }
     return resource;
 }

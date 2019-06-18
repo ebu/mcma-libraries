@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mcma.Worker.Builders
 {
-    public class OperationHandlerBuilder<T>
+    public class OperationHandlerBuilder<T> : IOperationHandlerBuilder
     {
         internal OperationHandlerBuilder(string operationName)
         {
@@ -31,6 +31,6 @@ namespace Mcma.Worker.Builders
             return this;
         }
 
-        internal IEnumerable<IWorkerOperationFilter> Build() => Filters.Values.Select(f => f.Build());
+        IEnumerable<IWorkerOperationFilter> IOperationHandlerBuilder.Build() => Filters.Values.Select(f => f.Build());
     }
 }

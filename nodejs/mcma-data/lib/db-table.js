@@ -1,4 +1,4 @@
-const { Utils } = require('mcma-core');
+const { Utils } = require("mcma-core");
 
 class DbTable {
     constructor(type) {

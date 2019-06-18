@@ -5,6 +5,6 @@ namespace Mcma.Api
 {
     public interface IWorkerInvoker
     {
-        Task RunAsync(string workerFunctionName, object payload);
+        Task InvokeAsync(string workerFunctionName, object payload);
     }
 }

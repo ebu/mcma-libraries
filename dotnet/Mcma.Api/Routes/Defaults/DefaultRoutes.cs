@@ -44,7 +44,7 @@ namespace Mcma.Api.Routes.Defaults
                 .AddAll()
                 .Route(r => r.Create).Configure(rb =>
                     rb.OnCompleted((requestContext, jobAssignment) =>
-                        workerInvoker.RunAsync(requestContext.WorkerFunctionName(),
+                        workerInvoker.InvokeAsync(requestContext.WorkerFunctionName(),
                             new
                             {
                                 operationName = "ProcessJobAssignment",

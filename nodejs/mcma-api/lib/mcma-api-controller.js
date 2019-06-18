@@ -1,5 +1,5 @@
 //"use strict";
-const { HttpStatusCode, getStatusError } = require('./http-statuses');
+const { HttpStatusCode, getStatusError } = require("./http-statuses");
 
 class McmaApiError {
     constructor(statusCode, message, path) {
@@ -136,6 +136,5 @@ class McmaApiController {
 }
 
 module.exports = {
-    McmaApiController,
-    HttpStatusCode
+    McmaApiController
 };

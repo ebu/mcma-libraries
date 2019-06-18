@@ -1,43 +1,43 @@
-const { Logger } = require('mcma-core');
-const WorkerJobHelper = require('./worker-job-helper');
+const { Logger } = require("mcma-core");
+const WorkerJobHelper = require("./worker-job-helper");
 
-class ProcessJobAssignmentHandler {
+class ProcessJobAssignment {
     constructor(jobType, dbTableProvider, resourceManagerProvider) {
         this.profileHandlers = {};
 
         this.execute = async (request) => {
             if (!request) {
-                throw new Error('request must be provided');
+                throw new Error("request must be provided");
             }
             if (!request.input) {
-                throw new Error('request.input is required.');
+                throw new Error("request.input is required.");
             }
             if (!request.input.jobAssignmentId) {
-                throw new Error('request.input does not specify a jobAssignmentId');
+                throw new Error("request.input does not specify a jobAssignmentId");
             }
-            if (typeof resourceManagerProvider === 'object') {
+            if (typeof resourceManagerProvider === "object") {
                 resourceManagerProvider = resourceManagerProvider.getResourceManager;
             }
-            if (typeof resourceManagerProvider !== 'function') {
-                throw new Error('Invalid resourceManagerProvider');
+            if (typeof resourceManagerProvider !== "function") {
+                throw new Error("Invalid resourceManagerProvider");
             }
 
-            const workerJobHelper = new WorkerJobHelper(dbTableProvider.table(request.tableName()), resourceManagerProvider(request), request, request.input.jobAssignmentId);
+            const workerJobHelper = new WorkerJobHelper(jobType, dbTableProvider.table(request.tableName()), resourceManagerProvider(request), request, request.input.jobAssignmentId);
 
             try {
-                Logger.debug('Initializing job helper...');
+                Logger.debug("Initializing job helper...");
 
                 await workerJobHelper.initialize();
 
-                Logger.debug('Validating job...');
+                Logger.debug("Validating job...");
 
-                workerJobHelper.validateJob(jobType, Object.keys(this.profileHandlers));
+                workerJobHelper.validateJob(Object.keys(this.profileHandlers));
 
-                Logger.debug('Getting handler for profile "' + workerJobHelper.getProfile().name + '"...');
+                Logger.debug("Getting handler for profile '" + workerJobHelper.getProfile().name + "'...");
 
-                const profileHandler = this.profileHandlers[workerJobHelper.getProfile().name];
+                const profileHandler = this.profileHandlers[workerJobHelper.getMatchedProfileName()];
 
-                Logger.debug('Found handler for profile "' + workerJobHelper.getProfile().name + '"');
+                Logger.debug("Found handler for profile '" + workerJobHelper.getProfile().name + "'");
 
                 await profileHandler(workerJobHelper);
             } catch (e) {
@@ -52,14 +52,6 @@ class ProcessJobAssignmentHandler {
     }
 }
 
-class ProcessJobAssignment {
-    constructor(jobAssignmentId) {
-        this.jobAssignmentId = jobAssignmentId;
-    }
-}
-ProcessJobAssignment.operationName = 'ProcessJobAssignment';
-
 module.exports = {
-    ProcessJobAssignment,
-    ProcessJobAssignmentHandler
+    ProcessJobAssignment
 };

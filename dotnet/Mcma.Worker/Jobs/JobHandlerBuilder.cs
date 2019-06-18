@@ -35,9 +35,8 @@ namespace Mcma.Worker
         }
 
         internal WorkerBuilder Apply()
-            => WorkerBuilder.HandleRequestsOfType<ProcessJobAssignment>(configureRequest =>
-                configureRequest.WithOperation(ProcessJobAssignment.OperationName,
-                    configureOperation =>
-                        configureOperation.Handle(Handler)));
+            => WorkerBuilder.HandleOperation<ProcessJobAssignment>(
+                ProcessJobAssignment.OperationName,
+                configureOperation => configureOperation.Handle(Handler));
     }
 }

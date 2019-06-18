@@ -11,7 +11,7 @@ namespace Mcma.Aws.Lambda
 {
     public class LambdaWorkerInvoker : IWorkerInvoker
     {
-        public async Task RunAsync(string workerFunctionName, object payload)
+        public async Task InvokeAsync(string workerFunctionName, object payload)
         {
             Logger.Debug("Invoking worker with function name '" + workerFunctionName + "'...");
             

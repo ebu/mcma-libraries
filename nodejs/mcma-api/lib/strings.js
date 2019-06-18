@@ -1,12 +1,12 @@
-const pluralize = require('pluralize');
+const pluralize = require("pluralize");
 
 function camelCaseToKebabCase(value) {
-    let result = '';
+    let result = "";
 
     for (let i = 0; i < value.length; i++) {
         if (value[i] === value[i].toUpperCase()) {
             if (result.length > 0) {
-                result += '-';
+                result += "-";
             }
             result += value[i].toLowerCase();
         }
@@ -19,9 +19,9 @@ function camelCaseToKebabCase(value) {
 }
 
 function pluralizeKebabCase(value) {
-    const parts = value.split('-');
+    const parts = value.split("-");
     parts[parts.length - 1] = pluralize.plural(parts[parts.length - 1]);
-    return parts.join('-');
+    return parts.join("-");
 }
 
 module.exports = {

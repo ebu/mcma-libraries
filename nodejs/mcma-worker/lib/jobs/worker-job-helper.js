@@ -1,10 +1,11 @@
- const { JobStatus, JobParameterBag } = require('mcma-core');
+ const { JobStatus, JobParameterBag } = require("mcma-core");
 
 class WorkerJobHelper {
-    constructor(dbTable, resourceManager, request, jobAssignmentId) {
+    constructor(jobType, dbTable, resourceManager, request, jobAssignmentId) {
         let jobAssignment;
         let job;
         let profile;
+        let matchedProfileName;
 
         this.getTable = () => dbTable;
         this.getResourceManager = () => resourceManager;
@@ -13,6 +14,7 @@ class WorkerJobHelper {
         this.getJobAssignment = () => jobAssignment;
         this.getJob = () => job;
         this.getProfile = () => profile;
+        this.getMatchedProfileName = () => matchedProfileName;
         this.getJobInput = () => job.jobInput;
         this.getJobOutput = () => job.jobOutput;
 
@@ -26,16 +28,17 @@ class WorkerJobHelper {
             job.jobOutput = new JobParameterBag();
         };
 
-        this.validateJob = (jobType, supportedProfiles) => {
-            if (!(typeof jobType === 'function' && job instanceof jobType) &&
-                !(typeof jobType === 'string' && job['@type'] === jobType) &&
-                !(typeof jobType === 'object' && (job instanceof jobType.constructor || job['@type'] === jobType['@type']))) {
-                throw new Error('Job does not match expected job type.');
+        this.validateJob = (supportedProfiles) => {
+            if (!(typeof jobType === "function" && job instanceof jobType) &&
+                !(typeof jobType === "string" && job["@type"] === jobType) &&
+                !(typeof jobType === "object" && (job instanceof jobType.constructor || job["@type"] === jobType["@type"]))) {
+                throw new Error("Job does not match expected job type.");
             }
 
             supportedProfiles = supportedProfiles || [];
-            if (supportedProfiles.find(x => x && profile.name.toLowerCase() === x.toLowerCase())) {
-                throw new Error(`Job profile '${profile.name}' is not supported.`);
+            matchedProfileName = supportedProfiles.find(x => x && profile.name.toLowerCase() === x.toLowerCase());
+            if (!matchedProfileName) {
+                throw new Error(`Job profile "${profile.name}" is not supported.`);
             }
 
             if (profile.inputParameters) {
@@ -47,13 +50,13 @@ class WorkerJobHelper {
                     }
                 }
                 if (missingInputParams.length > 0) {
-                    throw new Error('One or more required input parameters are missing from the job: ' + missingInputParams.join(', '));
+                    throw new Error("One or more required input parameters are missing from the job: " + missingInputParams.join(", "));
                 }
             }
         };
 
         this.fail = async (error) => {
-            if (typeof error !== 'string') {
+            if (typeof error !== "string") {
                 error = JSON.stringify(error);
             }
             await this.updateJobAssignmentStatus(JobStatus.failed, error);
@@ -64,11 +67,14 @@ class WorkerJobHelper {
             await this.updateJobAssignmentStatus(JobStatus.completed);
         };
 
-        this.updateJobAssignmentStatus = async () => {
+        this.updateJobAssignmentOutput = async () => {
             await this.updateJobAssignment(ja => ja.jobOutput = job.jobOutput);
         };
 
-        this.updateJobAssignmentOutput = async (status, statusMessage) => {
+        this.updateJobAssignmentStatus = async (status, statusMessage) => {
+            if (typeof status === 'object' && status.name) {
+                status = status.name;
+            }
             await this.updateJobAssignment(
                 ja => {
                     ja.status = status;
@@ -78,12 +84,12 @@ class WorkerJobHelper {
         };
 
         this.updateJobAssignment = async (update, sendNotification = false) => {
-            if (typeof update !== 'function') {
-                throw new Error('update must be a function that modifies the JobAssignment.');
+            if (typeof update !== "function") {
+                throw new Error("update must be a function that modifies the JobAssignment.");
             }
             jobAssignment = await dbTable.get(jobAssignmentId);
             if (!jobAssignment) {
-                throw new Error('JobAssignment with id "' + jobAssignmentId + '" not found.');
+                throw new Error("JobAssignment with id '" + jobAssignmentId + "' not found.");
             }
 
             update(jobAssignment);
@@ -104,4 +110,6 @@ class WorkerJobHelper {
     }
 }
 
-module.exports = WorkerJobHelper;
+module.exports = {
+    WorkerJobHelper
+};

@@ -1,9 +1,9 @@
-const uuidv4 = require('uuid/v4');
-const { Utils } = require('mcma-core');
+const uuidv4 = require("uuid/v4");
+const { Utils, onResourceCreate, onResourceUpsert } = require("mcma-core");
 
-const filters = require('../filters');
-const { camelCaseToKebabCase, pluralizeKebabCase } = require('../strings');
-const { McmaApiRouteCollection, McmaApiRoute } = require('./route-collection');
+const filters = require("../filters");
+const { camelCaseToKebabCase, pluralizeKebabCase } = require("../strings");
+const { McmaApiRouteCollection, McmaApiRoute } = require("./route-collection");
 
 class DefaultRouteBuilder {
     constructor(httpMethod, path, defaultHandlerBuilder) {
@@ -54,8 +54,8 @@ function defaultRouteHandlerBuilder(handlerBuilder) {
 
 class DefaultRouteCollectionBuilder {
     constructor(dbTableProvider, root) {
-        if (root[0] !== '/') {
-            root = '/' + root;
+        if (root[0] !== "/") {
+            root = "/" + root;
         }
 
         const routes = new DefaultRoutes({
@@ -78,7 +78,7 @@ class DefaultRouteCollectionBuilder {
         this.route = (getRoute) => {
             const routeBuilder = this;
             if (!getRoute(routes)) {
-                throw new Error('Invalid route selection expression');
+                throw new Error("Invalid route selection expression");
             }
 
             return {
@@ -109,7 +109,7 @@ class DefaultRouteCollectionBuilder {
 
 function defaultQueryBuilder(dbTableProvider, root) {
     return new DefaultRouteBuilder(
-        'GET',
+        "GET",
         root,
         defaultRouteHandlerBuilder(
             (onStarted, onCompleted) => {
@@ -139,7 +139,7 @@ function defaultQueryBuilder(dbTableProvider, root) {
 
 function defaultCreateBuilder(dbTableProvider, root) {
     return new DefaultRouteBuilder(
-        'POST',
+        "POST",
         root,
         defaultRouteHandlerBuilder(
             (onStarted, onCompleted) => {
@@ -153,9 +153,9 @@ function defaultCreateBuilder(dbTableProvider, root) {
                         return;
                     }
 
-                    resource.onCreate(requestContext.publicUrl() + root + '/' + uuidv4());
+                    onResourceCreate(resource, requestContext.publicUrl() + root + "/" + uuidv4());
 
-                    await dbTableProvider.table(requestContext.tableName()).put(resource.Id, resource);
+                    await dbTableProvider.table(requestContext.tableName()).put(resource.id, resource);
 
                     if (onCompleted) {
                         await onCompleted(requestContext, resource);
@@ -170,8 +170,8 @@ function defaultCreateBuilder(dbTableProvider, root) {
 
 function defaultGetBuilder(dbTableProvider, root) {
     return new DefaultRouteBuilder(
-        'GET',
-        root + '/{id}',
+        "GET",
+        root + "/{id}",
         defaultRouteHandlerBuilder(
             (onStarted, onCompleted) => {
                 return async (requestContext) => {
@@ -195,8 +195,8 @@ function defaultGetBuilder(dbTableProvider, root) {
 
 function defaultUpdateBuilder(dbTableProvider, root) {
     return new DefaultRouteBuilder(
-        'PUT',
-        root + '/{id}',
+        "PUT",
+        root + "/{id}",
         defaultRouteHandlerBuilder(
             (onStarted, onCompleted) => {
                return async (requestContext) => {
@@ -209,7 +209,7 @@ function defaultUpdateBuilder(dbTableProvider, root) {
                         return;
                     }
 
-                    resource.onUpsert(requestContext.publicUrl() + requestContext.request.path);
+                    onResourceUpsert(resource, requestContext.publicUrl() + requestContext.request.path);
 
                     await dbTableProvider.table(requestContext.tableName()).put(resource.id, resource);
 
@@ -226,8 +226,8 @@ function defaultUpdateBuilder(dbTableProvider, root) {
 
 function defaultDeleteBuilder(dbTableProvider, root) {
     return new DefaultRouteBuilder(
-        'DELETE',
-        root + '/{id}',
+        "DELETE",
+        root + "/{id}",
         defaultRouteHandlerBuilder(
             (onStarted, onCompleted) => {
                 return async (requestContext) => {
@@ -241,7 +241,7 @@ function defaultDeleteBuilder(dbTableProvider, root) {
 
                     const resource = await table.get(id);
 
-                    if (!resource.resourceIfFound(false)) {
+                    if (!requestContext.resourceIfFound(resource, false)) {
                         return;
                     }
 
@@ -256,35 +256,15 @@ function defaultDeleteBuilder(dbTableProvider, root) {
     );
 }
 
-function forJobAssignments(builder) {
-    return workerInvoker =>
-        builder
-            .addAll()
-            .route(r => r.create).configure(rb =>
-                rb.onCompleted((requestContext, jobAssignment) =>
-                    workerInvoker.run(workerFunctionName(requestContext), {
-                        operationName: 'ProcessJobAssignment',
-                        contextVariables: requestContext.contextVariables,
-                        input: {
-                            jobAssignmentId: jobAssignment.id
-                        }
-                    })
-                )
-            )
-            .build();
-}
-
 function defaultRoutes(type) {
     type = Utils.getTypeName(type);
     return {
-        builder: (getDbTableProvider, root) => {
-            const builder = new DefaultRouteCollectionBuilder(getDbTableProvider(type), root || pluralizeKebabCase(camelCaseToKebabCase(type)));
-            builder.forJobAssignments = forJobAssignments(builder);
-            return builder;
-        }
+        builder: (getDbTableProvider, root) =>
+            new DefaultRouteCollectionBuilder(getDbTableProvider(type), root || pluralizeKebabCase(camelCaseToKebabCase(type)))
     };
 }
 
 module.exports = {
+    DefaultRouteCollectionBuilder,
     defaultRoutes
 };

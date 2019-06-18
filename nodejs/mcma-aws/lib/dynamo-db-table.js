@@ -1,5 +1,6 @@
-const util = require('util');
-const { DbTable } = require('mcma-data');
+const AWS = require("aws-sdk");
+const util = require("util");
+const { DbTable } = require("mcma-data");
 
 const removeEmptyStrings = (object) => {
     if (object) {
@@ -24,10 +25,10 @@ const removeEmptyStrings = (object) => {
 }
 
 class DynamoDbTable extends DbTable {
-    constructor(AWS, type, tableName) {
+    constructor(type, tableName) {
         super(type);
 
-        const docClient = new AWS.DynamoDB.DocumentClient();
+        const docClient = new AWS.DynamoDB.DocumentClient()
         const dcQuery = util.promisify(docClient.query.bind(docClient));
         const dcGet = util.promisify(docClient.get.bind(docClient));
         const dcPut = util.promisify(docClient.put.bind(docClient));
@@ -108,10 +109,10 @@ class DynamoDbTable extends DbTable {
     }
 }
 
-function dynamoDbTableProvider(aws, type) {
+function dynamoDbTableProvider(type) {
     return {
         table: (name) => {
-            return new DynamoDbTable(aws, type, name);
+            return new DynamoDbTable(type, name);
         }
     };
 }

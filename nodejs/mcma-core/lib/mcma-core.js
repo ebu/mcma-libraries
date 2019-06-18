@@ -1,13 +1,13 @@
 //"use strict";
 
-const axios = require('axios');
+const axios = require("axios");
 
-const validUrl = new RegExp('^(https?:\\/\\/)?' + // protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locater
+const validUrl = new RegExp("^(https?:\\/\\/)?" + // protocol
+    "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // domain name
+    "((\\d{1,3}\\.){3}\\d{1,3}))" + // OR ip (v4) address
+    "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // port and path
+    "(\\?[;&a-z\\d%_.~+=-]*)?" + // query string
+    "(\\#[-a-z\\d_]*)?$", "i"); // fragment locater
 
 const checkProperty = (object, propertyName, expectedType, required) => {
     const propertyValue = object[propertyName];
@@ -45,6 +45,19 @@ const checkProperty = (object, propertyName, expectedType, required) => {
     }
 }
 
+const onResourceCreate = (resource, id) => {
+    resource.id = id;
+    resource.dateModified = resource.dateCreated = new Date().toISOString();
+};
+
+const onResourceUpsert = (resource, id) => {
+    resource.id = id;
+    resource.dateModified = new Date().toISOString();
+    if (!resource.dateCreated) {
+        resource.dateCreated = resource.dateModified;
+    }
+};
+
 class Resource {
     constructor(type, properties) {
         this["@type"] = type;
@@ -57,18 +70,8 @@ class Resource {
             }
         }
 
-        this.onCreate = (id) => {
-            this.id = id;
-            this.dateModified = this.dateCreated = new Date().toISOString();
-        };
-
-        this.onUpsert = (id) => {
-            this.id = id;
-            this.dateModified = new Date().toISOString();
-            if (!this.dateCreated) {
-                this.dateCreated = this.dateModified;
-            }
-        };
+        this.onCreate = (id) => onResourceCreate(this, id);
+        this.onUpsert = (id) => onResourceUpsert(this, id);
     }
 }
 
@@ -443,6 +446,10 @@ class ResourceManager {
         }
 
         this.get = async (resourceType, filter) => {
+            if (typeof resourceType === "function" && resourceType.propertyType) {
+                resourceType = resourceType.name;
+            }
+
             if (services.length === 0) {
                 await this.init();
             }
@@ -623,7 +630,7 @@ class HttpClient {
         if (config.baseURL) {
             if (!config.url) {
                 config.url = config.baseURL;
-            } else if (config.url.indexOf('http://') !== 0 && config.url.indexOf('https://') !== 0) {
+            } else if (config.url.indexOf("http://") !== 0 && config.url.indexOf("https://") !== 0) {
                 config.url = config.baseURL + config.url;
             } else if (!config.url.startsWith(config.baseURL)) {
                 throw new Exception("HttpClient: Making " + config.method + " request to URL '" + config.url + "' which does not match baseURL '" + config.baseURL + "'");
@@ -635,7 +642,7 @@ class HttpClient {
         }
 
         if (this.authenticator) {
-            // if an authenticator was provided, ensure that it's valid
+            // if an authenticator was provided, ensure that it"s valid
             if (typeof this.authenticator.sign !== "function") {
                 throw new Exception("HttpClient: Provided authenticator does not define the required sign() function.");
             }
@@ -698,7 +705,7 @@ class AuthenticatorProvider {
 
 class Exception extends Error {
     constructor(message, cause, context) {
-        if (typeof message === 'object' && context === undefined) {
+        if (typeof message === "object" && context === undefined) {
             context = cause;
             cause = message;
             message = null;
@@ -738,21 +745,24 @@ class JobStatus {
         this.name = name;
         
         this.equals = (compareTo) => {
-            if (typeof compareTo === 'object') {
+            if (typeof compareTo === "object") {
                 compareTo = compareTo.name;
             }
             
-            return typeof compareTo === 'string' && this.name.toLowerCase() === compareTo.toLowerCase();
+            return typeof compareTo === "string" && this.name.toLowerCase() === compareTo.toLowerCase();
         };
     }
 };
-JobStatus.queued = new JobStatus('QUEUED');
-JobStatus.scheduled = new JobStatus('SCHEDULED');
-JobStatus.running = new JobStatus('RUNNING');
-JobStatus.completed = new JobStatus('COMPLETED');
-JobStatus.failed = new JobStatus('FAILED');
+JobStatus.queued = new JobStatus("QUEUED");
+JobStatus.scheduled = new JobStatus("SCHEDULED");
+JobStatus.running = new JobStatus("RUNNING");
+JobStatus.completed = new JobStatus("COMPLETED");
+JobStatus.failed = new JobStatus("FAILED");
 
 module.exports = {
+    onResourceCreate,
+    onResourceUpsert,
+    Resource,
     Service,
     ResourceEndpoint,
     BMContent,
@@ -778,5 +788,6 @@ module.exports = {
     HttpClient,
     AuthenticatorProvider,
     Exception,
-    JobStatus
+    JobStatus,
+    JobBase
 }

@@ -1,18 +1,24 @@
-const OperationHandlerBuilder = require('./operation-handler-builder');
-const Worker = require('../worker');
+const OperationHandlerBuilder = require("./operation-handler-builder");
+const Worker = require("../worker");
 
 class WorkerBuilder {
     constructor() {
         const operationHandlerBuilders = [];
         
-        this.handleOperation = (requestType, operationName, configureOperation) => {
-            if (!operationName || typeof operationName !== 'string' || operationName.length === '') {
-                throw new Error('operationName must be a non-empty string.');
+        this.handleOperation = (operationName, configureOperation) => {
+            if (!configureOperation) {
+                if (typeof operationName === "function" && operationName.name !== "Function") {
+                    configureOperation = x => x.handle(operationName);
+                    operationName = operationName.name;
+                }
             }
-            if (!configureOperation || typeof configureOperation !== 'function') {
-                throw new Error('configureOperation must be a function');
+            if (!operationName || typeof operationName !== "string" || operationName.length === "") {
+                throw new Error("operationName must be a non-empty string.");
             }
-            const opHandlerBuilder = new OperationHandlerBuilder(requestType, operationName);
+            if (!configureOperation || typeof configureOperation !== "function") {
+                throw new Error("configureOperation must be a function");
+            }
+            const opHandlerBuilder = new OperationHandlerBuilder(operationName);
             operationHandlerBuilders.push(opHandlerBuilder);
             configureOperation(opHandlerBuilder);
             return this;

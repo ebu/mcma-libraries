@@ -1,7 +1,8 @@
-const { AuthenticatorProvider } = require('mcma-core');
-const { AwsV4Authenticator } = require('./aws-v4');
+const AWS = require("aws-sdk");
+const { AuthenticatorProvider } = require("mcma-core");
+const { AwsV4Authenticator } = require("./aws-v4");
 
-const getAwsV4DefaultAuthContext = (AWS) => {
+const getAwsV4DefaultAuthContext = () => {
     return {
         accessKey: AWS.config.credentials.accessKeyId,
         secretKey: AWS.config.credentials.secretAccessKey,
@@ -10,10 +11,10 @@ const getAwsV4DefaultAuthContext = (AWS) => {
     };
 };
 
-const getAwsV4DefaultAuthenticator = (AWS) => new AwsV4Authenticator(getAwsV4DefaultAuthContext(AWS));
+const getAwsV4DefaultAuthenticator = () => new AwsV4Authenticator(getAwsV4DefaultAuthContext());
 
-const getAwsV4DefaultAuthProvider = (AWS) => {
-    const authenticatorAWS4 = getAwsV4DefaultAuthenticator(AWS);
+const getAwsV4DefaultAuthProvider = () => {
+    const authenticatorAWS4 = getAwsV4DefaultAuthenticator();
     
     return new AuthenticatorProvider(
         async (authType, authContext) => {
@@ -25,7 +26,7 @@ const getAwsV4DefaultAuthProvider = (AWS) => {
     );
 };
 
-const getAwsV4ResourceManager = (contextVariableProvider, AWS) => contextVariableProvider.getResourceManagerFromContext(getAwsV4DefaultAuthProvider(AWS));
+const getAwsV4ResourceManager = (contextVariableProvider) => contextVariableProvider.getResourceManagerFromContext(getAwsV4DefaultAuthProvider());
 
 module.exports = {
     getAwsV4DefaultAuthContext,

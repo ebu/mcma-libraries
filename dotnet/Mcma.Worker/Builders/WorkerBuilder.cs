@@ -6,16 +6,16 @@ namespace Mcma.Worker.Builders
 {
     public class WorkerBuilder
     {
-        private List<IRequestHandlerBuilder> RequestHandlerBuilders { get; } = new List<IRequestHandlerBuilder>();
+        private List<IOperationHandlerBuilder> OperationHandlerBuilders { get; } = new List<IOperationHandlerBuilder>();
 
-        public WorkerBuilder HandleRequestsOfType<T>(Action<RequestHandlerBuilder<T>> configureRequestType)
+        public WorkerBuilder HandleOperation<T>(string operationName, Action<OperationHandlerBuilder<T>> configureOperation)
         {
-            var requestHandlerBuilder = new RequestHandlerBuilder<T>();
-            RequestHandlerBuilders.Add(requestHandlerBuilder);
-            configureRequestType(requestHandlerBuilder);
+            var opHandlerBuilder = new OperationHandlerBuilder<T>(operationName);
+            OperationHandlerBuilders.Add(opHandlerBuilder);
+            configureOperation(opHandlerBuilder);
             return this;
         }
 
-        public IWorker Build() => new Worker(RequestHandlerBuilders.SelectMany(r => r.Build()));
+        public IWorker Build() => new Worker(OperationHandlerBuilders.SelectMany(r => r.Build()));
     }
 }

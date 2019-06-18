@@ -13,7 +13,7 @@ describe("The AWS V4 Presigned Url Generator", () => {
     it("generates a usable presigned url to make a GET request", async () => {
         const presignedUrlGenerator = new MCMA_CORE.AwsV4PresignedUrlGenerator(creds);
 
-        const presignedUrl = presignedUrlGenerator.generatePresignedUrl('GET', url, 7200);
+        const presignedUrl = presignedUrlGenerator.generatePresignedUrl("GET", url, 7200);
 
         try {
             let response = await axios.get(presignedUrl);
@@ -29,7 +29,7 @@ describe("The AWS V4 Presigned Url Generator", () => {
     it("generates a usable presigned url to make a POST request with UNSIGNED PAYLOAD", async () => {
         const presignedUrlGenerator = new MCMA_CORE.AwsV4PresignedUrlGenerator(creds);
 
-        const presignedUrl = presignedUrlGenerator.generatePresignedUrl('POST', url, 7200);
+        const presignedUrl = presignedUrlGenerator.generatePresignedUrl("POST", url, 7200);
 
         const headers = { "X-Amz-Content-Sha256": "UNSIGNED-PAYLOAD" }
 
