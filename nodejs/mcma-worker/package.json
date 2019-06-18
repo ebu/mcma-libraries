@@ -1,6 +1,6 @@
 {
     "name": "mcma-worker",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "description": "Node module for building worker services based on the EBU MCMA framework",
     "engines": {
         "node": "~8.10.0"
