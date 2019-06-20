@@ -109,15 +109,13 @@ class DynamoDbTable extends DbTable {
     }
 }
 
-function dynamoDbTableProvider(type) {
-    return {
-        table: (name) => {
-            return new DynamoDbTable(type, name);
-        }
-    };
+class DynamoDbTableProvider {
+    constructor(type) {
+        this.table = (name) => new DynamoDbTable(type, name);
+    }
 }
 
 module.exports = {
     DynamoDbTable,
-    dynamoDbTableProvider
+    DynamoDbTableProvider
 };

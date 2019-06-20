@@ -2,7 +2,7 @@
 import { Authenticator, AuthenticatorProvider, HttpRequestConfig, Resource, ContextVariableProvider, ResourceManager, ResourceType } from "mcma-core";
 import { DbTable, DbTableProvider } from "mcma-data";
 import { McmaApiRouteCollection, DefaultRouteBuilder, DefaultRoutesBuilderFactory, DefaultRouteCollectionBuilder, InvokeWorker } from "mcma-api";
-import { ResourceManagerProvider } from "mcma-worker";
+import { ResourceManagerProvider, WorkerBuilder, JobHandlerBuilder } from "mcma-worker";
 
 interface AwsBaseAuthContext {
     region: string;
@@ -38,7 +38,7 @@ export class DynamoDbTable<T extends Resource> extends DbTable<T> {
     constructor(type: string, tableName: string);
 }
 
-export const dynamoDbTableProvider: DbTableProvider;
+export function dynamoDbTableProvider<T extends Resource>(type: ResourceType): DbTableProvider<T>;
 
 export class ApiGatewayApiController {
     constructor(routes: McmaApiRouteCollection);
@@ -65,3 +65,15 @@ export function getAwsV4DefaultAuthProvider(): AuthenticatorProvider;
 export const getAwsV4ResourceManager: ResourceManagerProvider;
 
 export const invokeLambdaWorker: InvokeWorker;
+
+export interface AwsDefaultJobWorkerBuilder {
+    handleJobsOfType<T extends Resource>(
+        jobType: ResourceType,
+        configure: (jobHandlerBuilder: JobHandlerBuilder) => void): WorkerBuilder;
+}
+
+declare module "mcma-worker" {
+    interface WorkerBuilder {
+        useAwsJobDefaults(): AwsDefaultJobWorkerBuilder;
+    }
+}

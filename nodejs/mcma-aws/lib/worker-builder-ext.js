@@ -1,12 +1,12 @@
 const { WorkerBuilder } = require("mcma-worker");
-const { dynamoDbTableProvider } = require("./dynamo-db-table");
-const { awsResourceManagerProvider } = require("./resource-manager-provider");
+const { DynamoDbTableProvider } = require("./dynamo-db-table");
+const { getAwsV4ResourceManager } = require("./auth");
 
 WorkerBuilder.prototype.useAwsJobDefaults = function useAwsJobDefaults() {
     const workerBuilder = this;
     return {
         handleJobsOfType: (type, configure) => {
-            return workerBuilder.handleJobsOfType(type, dynamoDbTableProvider(type), awsResourceManagerProvider(), configure)
+            return workerBuilder.handleJobsOfType(type, new DynamoDbTableProvider(type), getAwsV4ResourceManager, configure);
         }
     };
 }
