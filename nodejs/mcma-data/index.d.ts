@@ -1,7 +1,7 @@
 import { Resource, JobBase, ResourceType } from "mcma-core";
 
 export abstract class DbTable<T extends Resource> {
-    constructor(type: ResourceType);
+    constructor(type: ResourceType<T>);
 
     query(filter: any): Promise<T[]>;
     get(id: string): Promise<T>;

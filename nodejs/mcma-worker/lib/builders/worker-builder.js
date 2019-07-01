@@ -8,11 +8,12 @@ class WorkerBuilder {
         this.handleOperation = (operationName, configureOperation) => {
             if (!configureOperation) {
                 if (typeof operationName === "function" && operationName.name !== "Function") {
-                    configureOperation = x => x.handle(operationName);
-                    operationName = operationName.name;
+                    const operation = operationName;
+                    configureOperation = x => x.handle(operation);
+                    operationName = operation.name;
                 }
             }
-            if (!operationName || typeof operationName !== "string" || operationName.length === "") {
+            if (!operationName || typeof operationName !== "string" || operationName.length === 0) {
                 throw new Error("operationName must be a non-empty string.");
             }
             if (!configureOperation || typeof configureOperation !== "function") {

@@ -1,8 +1,8 @@
 //import { Lambda } from "aws-sdk";
-import { Authenticator, AuthenticatorProvider, HttpRequestConfig, Resource, ContextVariableProvider, ResourceManager, ResourceType } from "mcma-core";
+import { Authenticator, AuthenticatorProvider, HttpRequestConfig, Resource, ContextVariableProvider, ResourceManager, ResourceType, ResourceManagerProvider } from "mcma-core";
 import { DbTable, DbTableProvider } from "mcma-data";
 import { McmaApiRouteCollection, DefaultRouteBuilder, DefaultRoutesBuilderFactory, DefaultRouteCollectionBuilder, InvokeWorker } from "mcma-api";
-import { ResourceManagerProvider, WorkerBuilder, JobHandlerBuilder } from "mcma-worker";
+import { WorkerBuilder, JobHandlerBuilder } from "mcma-worker";
 
 interface AwsBaseAuthContext {
     region: string;
@@ -38,7 +38,9 @@ export class DynamoDbTable<T extends Resource> extends DbTable<T> {
     constructor(type: string, tableName: string);
 }
 
-export function dynamoDbTableProvider<T extends Resource>(type: ResourceType): DbTableProvider<T>;
+export class DynamoDbTableProvider<T extends Resource> {
+    table: DbTableProvider<T>;
+}
 
 export class ApiGatewayApiController {
     constructor(routes: McmaApiRouteCollection);
@@ -50,7 +52,7 @@ export interface AwsDefaultRouteBuilder extends DefaultRoutesBuilderFactory {
     withDynamoDb(root: string): DefaultRouteCollectionBuilder;
 }
 
-export function awsDefaultRoutes(type: ResourceType): AwsDefaultRouteBuilder;
+export function awsDefaultRoutes<T extends Resource>(type: ResourceType<T>): AwsDefaultRouteBuilder;
 
 declare module "mcma-api" {
     interface McmaApiRouteCollection {
@@ -68,7 +70,7 @@ export const invokeLambdaWorker: InvokeWorker;
 
 export interface AwsDefaultJobWorkerBuilder {
     handleJobsOfType<T extends Resource>(
-        jobType: ResourceType,
+        jobType: ResourceType<T>,
         configure: (jobHandlerBuilder: JobHandlerBuilder) => void): WorkerBuilder;
 }
 

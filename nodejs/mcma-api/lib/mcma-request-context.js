@@ -34,8 +34,8 @@ class McmaApiRequestContext extends ContextVariableProvider {
         if (!resource) {
             this.response.statusCode = HttpStatusCode.BAD_REQUEST;
             this.response.statusMessage = "Missing request body.";
-            return resource;
         }
+        return resource;
     }
     
     resourceCreated(resource) {

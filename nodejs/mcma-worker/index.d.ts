@@ -1,8 +1,8 @@
-import { ResourceManager, ContextVariableProvider, JobAssignment, Job, JobProfile, JobParameterBag, JobStatus, Resource, ResourceType } from "mcma-core";
+import { ResourceManager, ContextVariableProvider, ResourceManagerProvider, JobAssignment, Job, JobProfile, JobParameterBag, JobStatus, Resource, ResourceType } from "mcma-core";
 import { DbTableProvider, DbTable } from "mcma-data";
 
 export class WorkerRequest extends ContextVariableProvider {
-    constructor(operationName: string, contextVariables: { [key: string]: string }, input: any);
+    constructor(request: { operationName: string, contextVariables?: { [key: string]: string }, input?: any });
 
     operationName: string;
     input: any;
@@ -31,8 +31,6 @@ export interface NamedOperationHandler extends OperationHandler {
     name: string;
 }
 
-export type ResourceManagerProvider = (request: WorkerRequest) => ResourceManager;
-
 export interface ProfileHandler {
     (request: WorkerRequest): Promise<void>;
 }
@@ -57,7 +55,7 @@ export interface JobHandlerBuilder {
 }
 
 export class WorkerJobHelper<T extends Job> {
-    constructor(dbTable: DbTable<T>, resourceManager: ResourceManager, request: WorkerRequest, jobAssignmentId: string);
+    constructor(jobType: ResourceType<T>, dbTable: DbTable<T>, resourceManager: ResourceManager, request: WorkerRequest, jobAssignmentId: string);
     
     getTable(): DbTable<T>;
     getResourceManager(): ResourceManager;
@@ -71,7 +69,7 @@ export class WorkerJobHelper<T extends Job> {
     getJobOutput(): JobParameterBag;
 
     initialize(): Promise<void>;
-    validateJob(jobType: ResourceType, supportedProfiles: string[]): void;
+    validateJob(supportedProfiles: string[]): void;
     complete(): Promise<void>;
     fail(error: Error | string | any): Promise<void>;
     updateJobAssignmentOuput(): Promise<void>;
@@ -86,7 +84,7 @@ export class WorkerBuilder {
     build(): Worker;
 
     handleJobsOfType<T extends Resource>(
-        jobType: ResourceType,
+        jobType: ResourceType<T>,
         dbTableProvider: DbTableProvider<T>,
         resourceManagerProvider: ResourceManagerProvider,
         configure: (jobHandlerBuilder: JobHandlerBuilder) => void): WorkerBuilder;

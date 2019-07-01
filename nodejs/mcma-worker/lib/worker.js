@@ -1,5 +1,5 @@
 const { Logger } = require("mcma-core");
-const WorkerRequest = require("./worker-request");
+const { WorkerRequest } = require("./worker-request");
 
 class Worker {
     constructor(operationFilters) {

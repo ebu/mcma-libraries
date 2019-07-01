@@ -36,6 +36,8 @@ class JobHandlerBuilder {
             }
 
             jobHandler.profileHandlers[profileName] = profileHandler;
+
+            return this;
         };
 
         this.applyTo = (workerBuilder) => 

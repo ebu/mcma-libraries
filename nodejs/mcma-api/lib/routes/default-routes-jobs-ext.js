@@ -10,7 +10,7 @@ DefaultRouteCollectionBuilder.prototype.forJobAssignments = function forJobAssig
             rb.onCompleted(async (requestContext, jobAssignment) =>
                 await invokeWorker(requestContext.workerFunctionName(), {
                     operationName: "ProcessJobAssignment",
-                    contextVariables: requestContext.contextVariables,
+                    contextVariables: requestContext.getAllContextVariables(),
                     input: {
                         jobAssignmentId: jobAssignment.id
                     }

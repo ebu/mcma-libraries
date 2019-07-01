@@ -1,5 +1,5 @@
 const { ResourceManager } = require("./mcma-core");
-const ContextVariableProvider = require("./context-variable-provider");
+const { ContextVariableProvider } = require("./context-variable-provider");
 
 ContextVariableProvider.prototype.tableName = function tableName() {
     return this.getRequiredContextVariable("TableName");

@@ -10,8 +10,8 @@ DbTable.prototype.getAndThrowIfNotFound = async function getAndThrowIfNotFound(i
 
 DbTable.prototype.updateJobStatus = async function updateJobStatus(jobId, status, statusMessage) {
     const jobBase = await this.getAndThrowIfNotFound(jobId);
-    jobBase.status = status;
+    jobBase.status = status.name || status;
     jobBase.statusMessage = statusMessage;
-    await this.put(id, jobBase);
+    await this.put(jobId, jobBase);
     return jobBase;
 }

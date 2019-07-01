@@ -30,12 +30,12 @@ export interface AuthenticatorProvider {
     getAuthenticator(authType: string, authContext: any);
 }
 
-export interface ResourceConstructor {
-    new(): { id: string, ["@type"]: string; };
+export interface ResourceConstructor<T extends Resource> {
+    new(...args): T;
     name: string;
 }
 
-export type ResourceType = string | ResourceConstructor;
+export type ResourceType<T extends Resource>= string | ResourceConstructor<T>;
 
 export const onResourceCreate: (resource: Resource, id: string) => void;
 export const onResourceUpsert: (resource: Resource, id: string) => void;
@@ -45,6 +45,8 @@ export abstract class Resource {
 
     id: string;
     ["@type"]: string;
+    dateCreated?: string;
+    dateModified?: string;
 
     onCreate(id: string): void;
     onUpsert(id: string): void;
@@ -120,10 +122,14 @@ export class JobParameter extends Resource implements JobParameterProperties {
 
 export class JobParameterBag extends Resource {
     constructor(properties: any);
+
+    [key: string]: any;
 }
 
 export class Locator extends Resource {
     constructor(properties: any);
+
+    [key: string]: any;
 }
 
 export interface NotificationProperties {
@@ -214,18 +220,26 @@ export class WorkflowJob extends Job {
 
 export class BMContent extends Resource {
     constructor(properties: any);
+
+    [key: string]: any;
 }
 
 export class BMEssence extends Resource {
     constructor(properties: any);
+
+    [key: string]: any;
 }
 
 export class DescriptiveMetadata extends Resource {
     constructor(properties: any);
+
+    [key: string]: any;
 }
 
 export class TechnicalMetadata extends Resource {
     constructor(properties: any);
+
+    [key: string]: any;
 }
 
 export interface ResourceManagerConfig {
@@ -239,13 +253,13 @@ export class ResourceManager {
     constructor(config: ResourceManagerConfig);
 
     init(): Promise<void>;
-    get<T extends Resource>(resourceType: ResourceType, filter: any): Promise<T | T[] | null>;
+    get<T extends Resource>(resourceType: ResourceType<T>, filter?: any): Promise<T[] | null>;
     create<T extends Resource>(resource: T): Promise<T>;
     update<T extends Resource>(resource: T): Promise<T>;
     delete<T extends Resource>(resource: T | string): Promise<void>;
 
     getResourceEndpoint(url: string): Promise<ResourceEndpoint | undefined>;
-    resolve<T extends Resource>(resource: T): Promise<T | undefined>;
+    resolve<T extends Resource>(resource: T | string): Promise<T | undefined>;
 }
 
 export class Exception extends Error {
@@ -295,8 +309,10 @@ export class EnvironmentVariableProvider extends ContextVariableProvider {
     constructor();
 }
 
+export type ResourceManagerProvider = (contextVariableProvider: ContextVariableProvider) => ResourceManager;
+
 export namespace Utils {
-    function getTypeName(type: ResourceType): string;
+    function getTypeName(type: { name: string } | { ["@type"]: string } | string): string;
 }
 
 export as namespace McmaCore;

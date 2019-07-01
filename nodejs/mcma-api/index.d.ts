@@ -91,7 +91,7 @@ export class McmaApiRouteCollection {
 
 export type InvokeWorker = (workerFunctionName: string, payload: any) => Promise<void>;
 
-export type DbTableProviderFactory<T extends Resource> = (type: ResourceType) => DbTableProvider<T>;
+export type DbTableProviderFactory<T extends Resource> = (type: ResourceType<T>) => DbTableProvider<T>;
 
 export interface DefaultRouteBuilder<T> {
     overrideHandler(handler: McmaApiRouteHandler): void;
@@ -126,7 +126,7 @@ export interface DefaultRoutesBuilderFactory {
     builder<T extends Resource>(getDbTableProvider: DbTableProviderFactory<T>, root?: string): DefaultRouteCollectionBuilder;
 }
 
-export function defaultRoutes(type: ResourceType): DefaultRoutesBuilderFactory;
+export function defaultRoutes<T extends Resource>(type: ResourceType<T>): DefaultRoutesBuilderFactory;
 
 export class McmaApiController {
     constructor(routes: McmaApiRouteCollection);

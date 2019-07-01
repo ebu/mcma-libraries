@@ -52,7 +52,7 @@ class DynamoDbTable extends DbTable {
 
             if (data.Items) {
                 for (const item of data.Items) {
-                    if (!filter || filter(item)) {
+                    if (!filter || filter(item.resource)) {
                         items.push(item.resource);
                     }
                 }

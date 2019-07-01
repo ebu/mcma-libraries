@@ -117,7 +117,7 @@ class McmaApiController {
                 } else if ((response.statusCode / 200 << 0) * 200 === 400) {
                     response.headers = getDefaultResponseHeaders();
                     response.body = new McmaApiError(response.statusCode, response.statusMessage, request.path);
-                } else {
+                } else if (response.statusCode === 0) {
                     response.statusCode = HttpStatusCode.OK;
                 }
             }

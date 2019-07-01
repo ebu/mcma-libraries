@@ -446,7 +446,7 @@ class ResourceManager {
         }
 
         this.get = async (resourceType, filter) => {
-            if (typeof resourceType === "function" && resourceType.propertyType) {
+            if (typeof resourceType === "function" && resourceType.name) {
                 resourceType = resourceType.name;
             }
 
@@ -789,5 +789,6 @@ module.exports = {
     AuthenticatorProvider,
     Exception,
     JobStatus,
-    JobBase
+    JobBase,
+    Job
 }

@@ -4,7 +4,7 @@ function inMemoryTextValues(filterValues) {
     }
 
     return item => {
-        for (const propKey in Object.keys(filterValues)) {
+        for (const propKey of Object.keys(filterValues)) {
             if (item[propKey] !== undefined &&
                 (item[propKey] && item[propKey].toString()) !== (filterValues[propKey] && filterValues[propKey].toString())) {
                 return false;

@@ -24,7 +24,7 @@ class DefaultRouteBuilder {
         }
         
         this.build = () => {
-            return new McmaApiRoute(httpMethod, path, handler || defaultHandlerBuilder());
+            return new McmaApiRoute(httpMethod, path, handler || defaultHandlerBuilder.create());
         }
     }
 }
@@ -46,10 +46,13 @@ class DefaultRoutes {
 }
 
 function defaultRouteHandlerBuilder(handlerBuilder) {
-    this.onStarted = null;
-    this.onCompleted = null;
-
-    return () => handlerBuilder(this.onStarted, this.onCompleted);
+    return {
+        onStarted: null,
+        onCompleted: null,
+        create: function () {
+            return handlerBuilder(this.onStarted, this.onCompleted);
+        }
+    };
 }
 
 class DefaultRouteCollectionBuilder {
@@ -76,8 +79,8 @@ class DefaultRouteCollectionBuilder {
         };
 
         this.route = (getRoute) => {
-            const routeBuilder = this;
-            if (!getRoute(routes)) {
+            const routeBuilder = getRoute(routes);
+            if (!routeBuilder) {
                 throw new Error("Invalid route selection expression");
             }
 
@@ -119,7 +122,7 @@ function defaultQueryBuilder(dbTableProvider, root) {
                     }
 
                     var filter = 
-                        requestContext.request.queryStringParameters && requestContext.request.queryStringParameters.length > 0
+                        requestContext.request.queryStringParameters && Object.keys(requestContext.request.queryStringParameters).length > 0
                             ? filters.inMemoryTextValues(requestContext.request.queryStringParameters)
                             : null;
 

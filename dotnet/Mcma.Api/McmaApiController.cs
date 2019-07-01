@@ -138,7 +138,7 @@ namespace Mcma.Api
                         response.Headers = GetDefaultResponseHeaders();
                         response.JsonBody = new McmaApiError(response.StatusCode, response.StatusMessage, request.Path).ToMcmaJson();
                     }
-                    else
+                    else if (response.StatusCode == 0)
                     {
                         response.StatusCode = (int)HttpStatusCode.OK;
                     }

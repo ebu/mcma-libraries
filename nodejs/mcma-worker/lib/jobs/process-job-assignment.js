@@ -1,5 +1,5 @@
 const { Logger } = require("mcma-core");
-const WorkerJobHelper = require("./worker-job-helper");
+const { WorkerJobHelper } = require("./worker-job-helper");
 
 class ProcessJobAssignment {
     constructor(jobType, dbTableProvider, resourceManagerProvider) {

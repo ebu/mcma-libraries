@@ -1,6 +1,6 @@
 {
     "name": "mcma-api",
-    "version": "0.3.5",
+    "version": "0.3.13",
     "description": "Node module for building APIs based on the EBU MCMA framework",
     "engines": {
         "node": "~8.10.0"
@@ -26,8 +26,8 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodes/mcma-api#readme",
     "dependencies": {
-        "mcma-core": "^0.3.5",
-        "mcma-data": "^0.3.5",
+        "mcma-core": "^0.3.6",
+        "mcma-data": "^0.3.13",
         "pluralize": "^7.0.0",
         "uri-templates": "^0.2.0",
         "uuid": "^3.3.2"
