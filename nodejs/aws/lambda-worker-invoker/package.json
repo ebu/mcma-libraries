@@ -1,0 +1,35 @@
+{
+    "name": "@mcma/aws-lambda-worker-invoker",
+    "version": "0.4.0",
+    "description": "Node module with code for invoking MCMA workers running as Lambda functions, via the AWS SDK",
+    "engines": {
+        "node": "~8.10.0"
+    },
+    "main": "index.js",
+    "scripts": {
+        "test": "jasmine"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ebu/mcma-libraries.git"
+    },
+    "keywords": [
+        "ebu",
+        "mcma",
+        "aws",
+        "lambda"
+    ],
+    "author": "Joost Rovers <joost.rovers@glookast.com>",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/ebu/mcma-libraries/issues"
+    },
+    "homepage": "https://github.com/ebu/mcma-libraries/mcma-worker-lambda#readme",
+    "dependencies": {
+        "@mcma/api": "0.4.0",
+        "aws-sdk": "^2.291.0"
+    },
+    "devDependencies": {
+        "jasmine": "^3.2.0"
+    }
+}

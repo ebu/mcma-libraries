@@ -1,0 +1,32 @@
+{
+    "name": "@mcma/data",
+    "version": "0.4.0",
+    "description": "Node module with helper utils for dealing with data in the EBU MCMA framework",
+    "engines": {
+        "node": "~8.10.0"
+    },
+    "main": "index.js",
+    "scripts": {
+        "test": "jasmine"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ebu/mcma-libraries/mcma-data-nodejs.git"
+    },
+    "keywords": [
+        "mcma",
+        "awsv4"
+    ],
+    "author": "Evan Verney-Fink <evan@triskel-inc.com>",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/ebu/mcma-libraries/mcma-data-nodejs/issues"
+    },
+    "homepage": "https://github.com/ebu/mcma-libraries/mcma-data-nodejs#readme",
+    "dependencies": {
+        "@mcma/core": "0.4.0"
+    },
+    "devDependencies": {
+        "jasmine": "^3.3.1"
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "name": "@mcma/worker",
+    "version": "0.4.0",
+    "description": "Node module for building worker services based on the EBU MCMA framework",
+    "engines": {
+        "node": "~8.10.0"
+    },
+    "main": "index.js",
+    "scripts": {
+        "test": "jasmine"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ebu/mcma-libraries.git"
+    },
+    "keywords": [
+        "ebu",
+        "mcma"
+    ],
+    "author": "Evan Verney-Fink <evan@triskel-inc.com>",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/ebu/mcma-libraries/issues"
+    },
+    "homepage": "https://github.com/ebu/mcma-libraries/nodes/mcma-worker#readme",
+    "dependencies": {
+        "@mcma/client": "0.4.0",
+        "@mcma/data": "0.4.0"
+    },
+    "devDependencies": {
+        "jasmine": "^3.2.0"
+    }
+}
