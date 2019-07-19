@@ -41,7 +41,7 @@ const checkProperty = (object, propertyName, expectedType, required) => {
             throw new Exception("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type " + expectedType, null, object);
         }
     }
-}
+};
 
 const onResourceCreate = (resource, id) => {
     resource.id = id;
@@ -99,7 +99,7 @@ class Service extends Resource {
 
 class ResourceEndpoint extends Resource {
     constructor(properties) {
-        super("ResourceEndpoint", properties)
+        super("ResourceEndpoint", properties);
 
         checkProperty(this, "resourceType", "string", true);
         checkProperty(this, "httpEndpoint", "url", true);
@@ -109,7 +109,7 @@ class ResourceEndpoint extends Resource {
 
 class JobProfile extends Resource {
     constructor(properties) {
-        super("JobProfile", properties)
+        super("JobProfile", properties);
 
         checkProperty(this, "inputParameters", "Array", false);
         checkProperty(this, "outputParameters", "Array", false);
@@ -119,7 +119,7 @@ class JobProfile extends Resource {
 
 class JobParameter extends Resource {
     constructor(properties) {
-        super("JobParameter", properties)
+        super("JobParameter", properties);
 
         checkProperty(this, "parameterName", "string", true);
         checkProperty(this, "parameterType", "string", false);
@@ -128,13 +128,13 @@ class JobParameter extends Resource {
 
 class JobParameterBag extends Resource {
     constructor(properties) {
-        super("JobParameterBag", properties)
+        super("JobParameterBag", properties);
     }
 }
 
 class Locator extends Resource {
     constructor(properties) {
-        super("Locator", properties)
+        super("Locator", properties);
     }
 }
 
@@ -144,7 +144,7 @@ class JobBase extends Resource {
 
         checkProperty(this, "notificationEndpoint", "resource", false);
         checkProperty(this, "status", "string", false);
-        checkProperty(this, "statusMessage", "string", false)
+        checkProperty(this, "statusMessage", "string", false);
         checkProperty(this, "jobOutput", "resource", false);
 
         if (typeof this.notificationEndpoint === "object") {
@@ -171,49 +171,49 @@ class Job extends JobBase {
 
 class AIJob extends Job {
     constructor(properties) {
-        super("AIJob", properties)
+        super("AIJob", properties);
     }
 }
 
 class AmeJob extends Job {
     constructor(properties) {
-        super("AmeJob", properties)
+        super("AmeJob", properties);
     }
 }
 
 class CaptureJob extends Job {
     constructor(properties) {
-        super("CaptureJob", properties)
+        super("CaptureJob", properties);
     }
 }
 
 class QAJob extends Job {
     constructor(properties) {
-        super("QAJob", properties)
+        super("QAJob", properties);
     }
 }
 
 class TransferJob extends Job {
     constructor(properties) {
-        super("TransferJob", properties)
+        super("TransferJob", properties);
     }
 }
 
 class TransformJob extends Job {
     constructor(properties) {
-        super("TransformJob", properties)
+        super("TransformJob", properties);
     }
 }
 
 class WorkflowJob extends Job {
     constructor(properties) {
-        super("WorkflowJob", properties)
+        super("WorkflowJob", properties);
     }
 }
 
 class JobProcess extends JobBase {
     constructor(properties) {
-        super("JobProcess", properties)
+        super("JobProcess", properties);
 
         checkProperty(this, "job", "resource");
     }
@@ -221,7 +221,7 @@ class JobProcess extends JobBase {
 
 class JobAssignment extends JobBase {
     constructor(properties) {
-        super("JobAssignment", properties)
+        super("JobAssignment", properties);
 
         checkProperty(this, "job", "resource");
     }
@@ -229,42 +229,42 @@ class JobAssignment extends JobBase {
 
 class Notification extends Resource {
     constructor(properties) {
-        super("Notification", properties)
+        super("Notification", properties);
 
-        checkProperty(this, "source", "string", false)
-        checkProperty(this, "content", "resource", true)
+        checkProperty(this, "source", "string", false);
+        checkProperty(this, "content", "resource", true);
     }
 }
 
 class NotificationEndpoint extends Resource {
     constructor(properties) {
-        super("NotificationEndpoint", properties)
+        super("NotificationEndpoint", properties);
 
-        checkProperty(this, "httpEndpoint", "url", true)
+        checkProperty(this, "httpEndpoint", "url", true);
     }
 }
 
 class BMContent extends Resource {
     constructor(properties) {
-        super("BMContent", properties)
+        super("BMContent", properties);
     }
 }
 
 class BMEssence extends Resource {
     constructor(properties) {
-        super("BMEssence", properties)
+        super("BMEssence", properties);
     }
 }
 
 class DescriptiveMetadata extends Resource {
     constructor(properties) {
-        super("DescriptiveMetadata", properties)
+        super("DescriptiveMetadata", properties);
     }
 }
 
 class TechnicalMetadata extends Resource {
     constructor(properties) {
-        super("TechnicalMetadata", properties)
+        super("TechnicalMetadata", properties);
     }
 }
 
@@ -275,7 +275,7 @@ class Exception extends Error {
             cause = message;
             message = null;
         }
-        super(message)
+        super(message);
         this.cause = cause;
         this.context = context;
     }
@@ -283,7 +283,7 @@ class Exception extends Error {
     toString() {
         let ret = "";
 
-        let c = this
+        let c = this;
         while (c) {
             if (c.stack) {
                 ret += c.stack;
@@ -292,7 +292,7 @@ class Exception extends Error {
             }
 
             if (c.context) {
-                ret += "\nContext:\n" + JSON.stringify(c.context, null, 2)
+                ret += "\nContext:\n" + JSON.stringify(c.context, null, 2);
             }
 
             c = c.cause;
@@ -317,7 +317,9 @@ class JobStatus {
             return typeof compareTo === "string" && this.name.toLowerCase() === compareTo.toLowerCase();
         };
     }
-};
+}
+
+JobStatus.new = new JobStatus("NEW");
 JobStatus.queued = new JobStatus("QUEUED");
 JobStatus.scheduled = new JobStatus("SCHEDULED");
 JobStatus.running = new JobStatus("RUNNING");
@@ -353,4 +355,4 @@ module.exports = {
     Notification,
     NotificationEndpoint,
     Exception
-}
+};

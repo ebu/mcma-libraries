@@ -71,11 +71,11 @@ export class WorkerJobHelper<T extends Job> {
 
     initialize(): Promise<void>;
     validateJob(supportedProfiles: string[]): void;
-    complete(): Promise<void>;
-    fail(error: Error | string | any): Promise<void>;
-    updateJobAssignmentOuput(): Promise<void>;
-    updateJobAssignmentStatus(status: JobStatus | string, statusMessage?: string): Promise<void>;
-    updateJobAssignment(update: (jobAssignment: JobAssignment) => void, sendNotification?: boolean): Promise<void>;
+    complete(): Promise<JobAssignment>;
+    fail(error: Error | string | any): Promise<JobAssignment>;
+    updateJobAssignmentOuput(): Promise<JobAssignment>;
+    updateJobAssignmentStatus(status: JobStatus | string, statusMessage?: string): Promise<JobAssignment>;
+    updateJobAssignment(update: (jobAssignment: JobAssignment) => void, sendNotification?: boolean): Promise<JobAssignment>;
     sendNotification(): Promise<void>; 
 }
 
@@ -84,9 +84,9 @@ export class WorkerBuilder {
     handleOperation(operationHandler: NamedOperationHandler): WorkerBuilder;
     build(): Worker;
 
-    handleJobsOfType<T extends Resource>(
+    handleJobsOfType<T extends Job>(
         jobType: ResourceType<T>,
-        dbTableProvider: DbTableProvider<T>,
+        dbTableProvider: DbTableProvider<JobAssignment>,
         resourceManagerProvider: ResourceManagerProvider,
         configure: (jobHandlerBuilder: JobHandlerBuilder) => void): WorkerBuilder;
 }

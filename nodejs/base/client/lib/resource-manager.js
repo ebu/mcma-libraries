@@ -1,16 +1,16 @@
-const { Service, ResourceEndpoint } = require("@mcma/core");
+const { Exception, Service, ResourceEndpoint, Notification } = require("@mcma/core");
 
 const { HttpClient } = require("./http-client");
 const { ServiceClient } = require("./service-client");
 
 class ResourceManager {
-    constructor(config) {
+    constructor(config, authProvider) {
         const httpClient = new HttpClient();
 
         const serviceClients = [];
 
         if (!config.servicesUrl) {
-            throw new Exception("Missing property 'servicesUrl' in ResourceManager config")
+            throw new Exception("Missing property 'servicesUrl' in ResourceManager config");
         }
 
         this.init = async () => {
@@ -21,7 +21,7 @@ class ResourceManager {
                     name: "Service Registry",
                     resources: [
                         new ResourceEndpoint({
-                            resourceType: Service,
+                            resourceType: "Service",
                             httpEndpoint: config.servicesUrl,
                             authType: config.servicesAuthType,
                             authContext: config.servicesAuthContext
@@ -29,7 +29,7 @@ class ResourceManager {
                     ]
                 });
 
-                let serviceRegistryClient = new ServiceClient(serviceRegistry, config.authProvider);
+                let serviceRegistryClient = new ServiceClient(serviceRegistry, authProvider);
 
                 serviceClients.push(serviceRegistryClient);
 
@@ -39,7 +39,7 @@ class ResourceManager {
 
                 for (const service of response.data) {
                     try {
-                        serviceClients.push(new ServiceClient(new Service(service), config.authProvider));
+                        serviceClients.push(new ServiceClient(new Service(service), authProvider));
                     } catch (error) {
                         console.warn("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
                     }
@@ -47,7 +47,7 @@ class ResourceManager {
             } catch (error) {
                 throw new Exception("ResourceManager: Failed to initialize", error);
             }
-        }
+        };
 
         this.get = async (resourceType, filter) => {
             if (typeof resourceType === "function" && resourceType.name) {
@@ -63,7 +63,7 @@ class ResourceManager {
             let usedHttpEndpoints = {};
 
             for (const serviceClient of serviceClients) {
-                let resourceEndpoint = serviceClient.getResourceEndpoint(resourceType);
+                let resourceEndpoint = serviceClient.getResourceEndpointClient(resourceType);
                 if (resourceEndpoint === undefined) {
                     continue;
                 }
@@ -81,7 +81,7 @@ class ResourceManager {
             }
 
             return result;
-        }
+        };
 
         this.create = async (resource) => {
             if (serviceClients.length === 0) {
@@ -91,7 +91,7 @@ class ResourceManager {
             let resourceType = resource["@type"];
 
             for (const service of serviceClients) {
-                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                let resourceEndpoint = service.getResourceEndpointClient(resourceType);
                 if (resourceEndpoint === undefined) {
                     continue;
                 }
@@ -101,7 +101,7 @@ class ResourceManager {
             }
 
             throw new Exception("ResourceManager: Failed to find service to create resource of type '" + resourceType + "'.");
-        }
+        };
 
         this.update = async (resource) => {
             if (serviceClients.length === 0) {
@@ -111,7 +111,7 @@ class ResourceManager {
             let resourceType = resource["@type"];
 
             for (const service of serviceClients) {
-                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                let resourceEndpoint = service.getResourceEndpointClient(resourceType);
                 if (resourceEndpoint === undefined) {
                     continue;
                 }
@@ -124,7 +124,7 @@ class ResourceManager {
 
             let response = await httpClient.put(resource.id, resource);
             return response.data;
-        }
+        };
 
         this.delete = async (resource) => {
             if (serviceClients.length === 0) {
@@ -134,7 +134,7 @@ class ResourceManager {
             let resourceType = resource["@type"];
 
             for (const service of serviceClients) {
-                let resourceEndpoint = service.getResourceEndpoint(resourceType);
+                let resourceEndpoint = service.getResourceEndpointClient(resourceType);
                 if (resourceEndpoint === undefined) {
                     continue;
                 }
@@ -147,7 +147,7 @@ class ResourceManager {
 
             let response = await httpClient.delete(resource.id);
             return response.data;
-        }
+        };
 
         this.getResourceEndpointClient = async (url) => {
             if (serviceClients.length === 0) {
@@ -155,20 +155,20 @@ class ResourceManager {
             }
 
             for (const serviceClient of serviceClients) {
-                for (const resourceEndpoint of serviceClient.getAllResourceEndpoints()) {
+                for (const resourceEndpoint of serviceClient.getAllResourceEndpointClients()) {
                     if (url.startsWith(resourceEndpoint.httpEndpoint)) {
                         return resourceEndpoint;
                     }
                 }
             }
             return undefined;
-        }
+        };
 
         this.resolve = async (resource) => {
             let resolvedResource;
 
             if (typeof resource === "string") {
-                let http = await this.getResourceEndpointClient(resource)
+                let http = await this.getResourceEndpointClient(resource);
                 if (http === undefined) {
                     http = httpClient;
                 }
@@ -192,7 +192,7 @@ class ResourceManager {
             }
 
             return resolvedResource;
-        }
+        };
 
         this.sendNotification = async (resource) => {
             if (resource.notificationEndpoint) {
@@ -213,10 +213,26 @@ class ResourceManager {
                     throw new Exception("ResourceManager: Failed to send notification.", error);
                 }
             }
-        }
+        };
+    }
+}
+
+class ResourceManagerProvider {
+    constructor(authProvider, defaultConfig) {
+        this.get = (config) => {
+            config = config || defaultConfig;
+            if (!config) {
+                throw new Error("Config for resource manager not provided, and there is no default config available");
+            }
+            if (config.getResourceManagerConfig) {
+                config = config.getResourceManagerConfig();
+            }
+            return new ResourceManager(config, authProvider);
+        };
     }
 }
 
 module.exports = {
-    ResourceManager
+    ResourceManager,
+    ResourceManagerProvider
 };

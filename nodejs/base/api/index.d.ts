@@ -65,10 +65,10 @@ export class McmaApiRequestContext extends ContextVariableProvider {
     resourceIfFound<T extends Resource>(resource: T, setBody?: boolean): boolean;
 }
 
-declare module "mcma-core" {
+declare module "@mcma/core" {
     interface ContextVariableProvider {
         publicUrl(): string;
-        workerFunctionName(): string;
+        workerFunctionId(): string;
     }
 }
 
@@ -89,14 +89,27 @@ export class McmaApiRouteCollection {
     addRoutes(routes: McmaApiRoute[]): McmaApiRouteCollection;
 }
 
-export type InvokeWorker = (workerFunctionName: string, payload: any) => Promise<void>;
+export interface WorkerRequest {
+    operationName: string;
+    contextVariables: { [key: string]: string };
+    input: any;
+}
+
+export type InvokeWorker = (workerFunctionId: string, payload: WorkerRequest) => Promise<void>;
+
+export class WorkerInvoker {
+    constructor(invokeWorker: InvokeWorker);
+
+    invoke(workerFunctionId: string, operationName: string, contextVariables: { [key: string]: string }, input: any): Promise<void>;
+    invoke(workerFunctionId: string, workerRequest: WorkerRequest): Promise<void>;
+}
 
 export type DbTableProviderFactory<T extends Resource> = (type: ResourceType<T>) => DbTableProvider<T>;
 
 export interface DefaultRouteBuilder<T> {
     overrideHandler(handler: McmaApiRouteHandler): void;
-    onStarted(handleOnStarted: ((requestContext: McmaApiRequestContext) => Promise<void>));
-    onCompleted(handleOnCompleted: ((requestContext: McmaApiRequestContext) => Promise<T>));
+    onStarted(handleOnStarted: ((requestContext: McmaApiRequestContext) => Promise<void>)): void;
+    onCompleted(handleOnCompleted: ((requestContext: McmaApiRequestContext) => Promise<T>)): void;
     build(): McmaApiRoute;
 }
 
@@ -108,25 +121,20 @@ export interface DefaultRoutes<T extends Resource> {
     delete: DefaultRouteBuilder<T>;
 }
 
-export interface DefaultRouteConfigurator<T> {
-    configure(configureRoute: (defaultRouteBuilder: DefaultRouteBuilder<T>) => void): DefaultRouteCollectionBuilder;
-    add(): DefaultRouteCollectionBuilder;
-    remove(): DefaultRouteCollectionBuilder;
+export interface DefaultRouteConfigurator<T extends Resource> {
+    configure<TConfigure = T | T[]>(configureRoute: (defaultRouteBuilder: DefaultRouteBuilder<TConfigure>) => void): DefaultRouteCollectionBuilder<T>;
+    add(): DefaultRouteCollectionBuilder<T>;
+    remove(): DefaultRouteCollectionBuilder<T>;
 }
 
-export interface DefaultRouteCollectionBuilder {
-    addAll(): DefaultRouteCollectionBuilder;
-    route<T extends Resource>(selectRoute: (defaultRoutes: DefaultRoutes<T>) => DefaultRouteBuilder<T>): DefaultRouteConfigurator<T>;
+export class DefaultRouteCollectionBuilder<T extends Resource> {
+    constructor(dbTableProvider: DbTableProvider<T>, resourceType: ResourceType<T>, root?: string);
+    addAll(): DefaultRouteCollectionBuilder<T>;
+    route(selectRoute: (defaultRoutes: DefaultRoutes<T>) => DefaultRouteBuilder<T>): DefaultRouteConfigurator<T>;
     build(): McmaApiRouteCollection;
 
     forJobAssignments(invokeWorker: InvokeWorker): McmaApiRouteCollection;
 }
-
-export interface DefaultRoutesBuilderFactory {
-    builder<T extends Resource>(getDbTableProvider: DbTableProviderFactory<T>, root?: string): DefaultRouteCollectionBuilder;
-}
-
-export function defaultRoutes<T extends Resource>(type: ResourceType<T>): DefaultRoutesBuilderFactory;
 
 export class McmaApiController {
     constructor(routes: McmaApiRouteCollection);

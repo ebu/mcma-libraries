@@ -1,9 +1,9 @@
-const OperationHandlerBuilder = require("./operation-handler-builder");
-const Worker = require("../worker");
+const { OperationHandlerBuilder } = require("./operation-handler-builder");
+const { Worker } = require("../worker");
 
 class WorkerBuilder {
     constructor() {
-        const operationHandlerBuilders = [];
+        const operationHandlerBuilders = {};
         
         this.handleOperation = (operationName, configureOperation) => {
             if (!configureOperation) {
@@ -19,13 +19,16 @@ class WorkerBuilder {
             if (!configureOperation || typeof configureOperation !== "function") {
                 throw new Error("configureOperation must be a function");
             }
+            if (Object.keys(operationHandlerBuilders).find(k => k.toLowerCase() === operationName.toLowerCase())) {
+                throw new Error("Operation with name '" + operationName + "' is already being handled.");
+            }
             const opHandlerBuilder = new OperationHandlerBuilder(operationName);
-            operationHandlerBuilders.push(opHandlerBuilder);
+            operationHandlerBuilders[operationName] = opHandlerBuilder;
             configureOperation(opHandlerBuilder);
             return this;
         };
 
-        this.build = () => new Worker(operationHandlerBuilders.reduce((flattened, opBuilder) => flattened.concat(opBuilder.build()), []));
+        this.build = () => new Worker(Object.values(operationHandlerBuilders).reduce((flattened, opBuilder) => flattened.concat(opBuilder.build()), []));
     }
 }
 

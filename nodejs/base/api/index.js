@@ -1,8 +1,9 @@
 const { HttpStatusCode } = require("./lib/http-statuses");
 const { McmaApiRequest, McmaApiResponse, McmaApiRequestContext } = require("./lib/mcma-request-context");
 const { McmaApiRoute, McmaApiRouteCollection } = require("./lib/routes/route-collection");
-const { defaultRoutes } = require("./lib/routes/default-routes");
+const { DefaultRouteCollectionBuilder } = require("./lib/routes/default-routes");
 const { McmaApiController } = require("./lib/mcma-api-controller");
+const { WorkerInvoker } = require("./lib/worker-invoker");
 
 require("./lib/routes/default-routes-jobs-ext");
 
@@ -13,6 +14,7 @@ module.exports = {
     McmaApiRequestContext,
     McmaApiRoute,
     McmaApiRouteCollection,
-    defaultRoutes,
-    McmaApiController
+    DefaultRouteCollectionBuilder,
+    McmaApiController,
+    WorkerInvoker
 };

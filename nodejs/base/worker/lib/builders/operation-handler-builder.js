@@ -1,5 +1,3 @@
-const WorkerRequest = require("../worker-request");
-
 class OperationHandlerBuilder {
     constructor(operationName) {
         if (!operationName || typeof operationName !== "string" || operationName.length === 0) {
@@ -50,4 +48,6 @@ class OperationHandlerBuilder {
     }
 }
 
-module.exports = OperationHandlerBuilder;
+module.exports = {
+    OperationHandlerBuilder
+};

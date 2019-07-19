@@ -1,3 +1,4 @@
+const { Exception } = require("@mcma/core");
 const { HttpClient } = require("./http-client");
 
 class ResourceEndpointClient {
@@ -15,12 +16,12 @@ class ResourceEndpointClient {
                 return null;
             }
 
-            if (typeof authProvider.getAuthenticator !== "function") {
-                throw new Exception("ResourceEndpoint: Provided authProvider does not define the required getAuthenticator(authType, authContext) function.", null, resourceEndpoint);
+            if (typeof authProvider.get !== "function") {
+                throw new Exception("ResourceEndpoint: Provided authProvider does not define the required get(authType, authContext) function.", null, resourceEndpoint);
             }
 
             try {
-                return await authProvider.getAuthenticator(resourceEndpoint.authType || serviceAuthType, resourceEndpoint.authContext || serviceAuthContext);
+                return await authProvider.get(resourceEndpoint.authType || serviceAuthType, resourceEndpoint.authContext || serviceAuthContext);
             } catch (error) {
                 throw new Exception("ResourceEndpoint: Error occurred while getting authenticator", error, resourceEndpoint);
             }

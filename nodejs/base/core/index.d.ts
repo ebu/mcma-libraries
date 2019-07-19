@@ -15,7 +15,7 @@ export interface ResourceConstructor<T extends Resource> {
     name: string;
 }
 
-export type ResourceType<T extends Resource>= string | ResourceConstructor<T>;
+export type ResourceType<T extends Resource> = string | ResourceConstructor<T>;
 
 export const onResourceCreate: (resource: Resource, id: string) => void;
 export const onResourceUpsert: (resource: Resource, id: string) => void;
@@ -91,6 +91,12 @@ export class Locator extends Resource {
 }
 
 export interface NotificationProperties {
+    source?: string;
+    content: Resource | string;
+}
+
+export class Notification extends Resource implements NotificationProperties {
+    constructor(properties: NotificationProperties);
     source?: string;
     content: Resource | string;
 }
@@ -207,6 +213,10 @@ export class Exception extends Error {
 export class JobStatus {
     constructor(name: string);
 
+    name: string;
+    equals(compareTo: string | JobStatus): boolean;
+
+    static new: JobStatus;
     static queued: JobStatus;
     static scheduled: JobStatus;
     static running: JobStatus;

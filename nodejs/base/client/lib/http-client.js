@@ -1,4 +1,5 @@
 //"use strict";
+const { Exception } = require("@mcma/core");
 
 const axios = require("axios");
 
@@ -44,12 +45,18 @@ async function request(config, authenticator) {
 
 class HttpClient {
     constructor(authenticator) {
+        if (authenticator) {
+            if (typeof authenticator.sign !== "function") {
+                throw new Exception("HttpClient: Provided authenticator does not define the required sign() function.");
+            }
+            this.authenticator = authenticator;
+        }
 
         this.get = async (url, config) => {
             config = config || {};
             config.url = url;
             config.method = "GET";
-            return await request(config, authenticator);
+            return await request(config, this.authenticator);
         };
 
         this.post = async (url, data, config) => {
@@ -57,7 +64,7 @@ class HttpClient {
             config.url = url;
             config.method = "POST";
             config.data = data;
-            return await request(config, authenticator);
+            return await request(config, this.authenticator);
         };
 
         this.put = async (url, data, config) => {
@@ -65,7 +72,7 @@ class HttpClient {
             config.url = url;
             config.method = "PUT";
             config.data = data;
-            return await request(config, authenticator);
+            return await request(config, this.authenticator);
         };
 
         this.patch = async (url, data, config) => {
@@ -73,14 +80,14 @@ class HttpClient {
             config.url = url;
             config.method = "PATCH";
             config.data = data;
-            return await request(config, authenticator);
+            return await request(config, this.authenticator);
         };
 
         this.delete = async (url, config) => {
             config = config || {};
             config.url = url;
             config.method = "DELETE";
-            return await request(config, authenticator);
+            return await request(config, this.authenticator);
         };
     }
 }

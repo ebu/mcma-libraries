@@ -1,4 +1,4 @@
-const { ContextVariableProvider } = require("mcma-core");
+const { ContextVariableProvider } = require("@mcma/core");
 const { HttpStatusCode } = require("./http-statuses");
 
 class McmaApiRequest {
@@ -63,8 +63,8 @@ ContextVariableProvider.prototype.publicUrl = function publicUrl() {
     return this.getRequiredContextVariable("PublicUrl");
 }
 
-ContextVariableProvider.prototype.workerFunctionName = function workerFunctionName() {
-    return this.getRequiredContextVariable("WorkerFunctionName");
+ContextVariableProvider.prototype.workerFunctionId = function workerFunctionId() {
+    return this.getRequiredContextVariable("WorkerFunctionId");
 }
 
 module.exports = {

@@ -1,6 +1,4 @@
-const { Utils } = require("mcma-core");
-const { McmaApiController, McmaApiRequestContext, McmaApiRequest, McmaApiRouteCollection, defaultRoutes } = require("mcma-api");
-const { DynamoDbTableProvider } = require("../../mcma-data-dynamodb/lib/dynamo-db-table");
+const { McmaApiController, McmaApiRequestContext, McmaApiRequest, McmaApiRouteCollection } = require("@mcma/api");
 
 class ApiGatewayApiController {
     constructor(routes) {
@@ -29,18 +27,10 @@ class ApiGatewayApiController {
     }
 }
 
-function awsDefaultRoutes(type) {
-    type = Utils.getTypeName(type);
-    const dfr = defaultRoutes(type);
-    dfr.withDynamoDb = (root) => dfr.builder(() => new DynamoDbTableProvider(type), root);
-    return dfr;
-}
-
 McmaApiRouteCollection.prototype.toApiGatewayApiController = function toApiGatewayApiController() {
     return new ApiGatewayApiController(this);
 }
 
 module.exports = {
-    ApiGatewayApiController,
-    awsDefaultRoutes
+    ApiGatewayApiController
 };

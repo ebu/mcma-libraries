@@ -1,37 +1,38 @@
-const { AuthenticatorProvider } = require("@mcma/core");
+const { AuthProvider } = require("@mcma/client");
 const { AwsV4Authenticator } = require("./aws-v4");
 
-const getAwsV4DefaultAuthContext = (awsConfig) => {
-    return {
-        accessKey: awsConfig.credentials.accessKeyId,
-        secretKey: awsConfig.credentials.secretAccessKey,
-        sessionToken: awsConfig.credentials.sessionToken,
-        region: awsConfig.region
-    };
-};
-
-const getAwsV4DefaultAuthenticator = (awsConfig) => new AwsV4Authenticator(getAwsV4DefaultAuthContext(awsConfig));
-
-const getAwsV4DefaultAuthProvider = (awsConfig) => {
-    const authenticatorAWS4 = getAwsV4DefaultAuthenticator(awsConfig);
-    
-    return new AuthenticatorProvider(
-        async (authType, authContext) => {
-            switch (authType) {
-                case "AWS4":
-                    return authenticatorAWS4;
-            }
+const conformToAwsV4AuthContext = (awsConfig) => {
+    if (awsConfig) {
+        // check if this is the global AWS object
+        if (awsConfig.config) {
+            awsConfig = awsConfig.config;
         }
-    );
+        // check if this is an AWS config object
+        if (awsConfig.credentials) {
+            awsConfig = {
+                accessKey: awsConfig.credentials.accessKeyId,
+                secretKey: awsConfig.credentials.secretAccessKey,
+                sessionToken: awsConfig.credentials.sessionToken,
+                region: awsConfig.region
+            };
+        }
+        // check that it's valid
+        if (!awsConfig.accessKey && !awsConfig.accessKeyId) {
+            throw new Error("Invalid AWS config object.");
+        }
+        return awsConfig;
+    }
 };
 
-const getAwsV4ResourceManagerProvider = (awsConfig) => {
-    return contextVariableProvider => contextVariableProvider.getResourceManagerFromContext(getAwsV4DefaultAuthProvider(awsConfig));
-};
-
-module.exports = {
-    getAwsV4DefaultAuthContext,
-    getAwsV4DefaultAuthenticator,
-    getAwsV4DefaultAuthProvider,
-    getAwsV4ResourceManagerProvider
+AuthProvider.prototype.addAwsV4Auth = function addAwsV4Auth(awsConfig) {
+    return this.add("AWS4", authContext => {
+        authContext = authContext || conformToAwsV4AuthContext(awsConfig);
+        if (!authContext) {
+            throw new Error("Auth context for AWSV4 was not provided, and a global AWS config is not available as a default.");
+        }
+        if (!authContext.accessKey && !authContext.accessKeyId) {
+            throw new Error("Invalid AWSV4 auth context.");
+        }
+        return new AwsV4Authenticator(authContext);
+    });
 };

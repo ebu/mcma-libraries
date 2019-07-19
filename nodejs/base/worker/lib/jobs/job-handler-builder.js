@@ -1,4 +1,4 @@
-const { Utils } = require("mcma-core");
+const { Utils } = require("@mcma/core");
 const { WorkerBuilder } = require("../builders/worker-builder");
 const { ProcessJobAssignment } = require("./process-job-assignment");
 

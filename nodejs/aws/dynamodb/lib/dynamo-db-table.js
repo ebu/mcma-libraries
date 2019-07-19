@@ -1,6 +1,6 @@
 const AWS = require("aws-sdk");
 const util = require("util");
-const { DbTable } = require("mcma-data");
+const { DbTable } = require("@mcma/data");
 
 const removeEmptyStrings = (object) => {
     if (object) {
@@ -22,13 +22,13 @@ const removeEmptyStrings = (object) => {
             }
         }
     }
-}
+};
 
 class DynamoDbTable extends DbTable {
     constructor(type, tableName) {
         super(type);
 
-        const docClient = new AWS.DynamoDB.DocumentClient()
+        const docClient = new AWS.DynamoDB.DocumentClient();
         const dcQuery = util.promisify(docClient.query.bind(docClient));
         const dcGet = util.promisify(docClient.get.bind(docClient));
         const dcPut = util.promisify(docClient.put.bind(docClient));
@@ -59,7 +59,7 @@ class DynamoDbTable extends DbTable {
             }
 
             return items;
-        }
+        };
 
         this.get = async (id) => {
             var params = {
@@ -76,7 +76,7 @@ class DynamoDbTable extends DbTable {
                 return null;
             }
             return data.Item.resource;
-        }
+        };
 
         this.put = async (id, resource) => {
             removeEmptyStrings(resource);
@@ -93,7 +93,9 @@ class DynamoDbTable extends DbTable {
             };
 
             await dcPut(params);
-        }
+
+            return resource;
+        };
 
         this.delete = async (id) => {
             var params = {
@@ -105,7 +107,7 @@ class DynamoDbTable extends DbTable {
             };
 
             await dcDelete(params);
-        }
+        };
     }
 }
 

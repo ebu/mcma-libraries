@@ -1,5 +1,5 @@
 import { AxiosRequestConfig, AxiosPromise } from "axios";
-import { Resource, ResourceType, Service, ResourceEndpoint, ContextVariableProvider } from "@mcma/core";
+import { Resource, ResourceType, Service, ResourceEndpoint, ContextVariableProvider, JobBase } from "@mcma/core";
 
 export type HttpRequestConfig = AxiosRequestConfig;
 export type HttpResponsePromise = AxiosPromise;
@@ -8,8 +8,13 @@ export interface Authenticator {
     sign(config: HttpRequestConfig): void;
 }
 
-export interface AuthenticatorProvider {
-    getAuthenticator(authType: string, authContext: any): Authenticator;
+export type AuthenticatorFactory = (authContext?: any) => Authenticator;
+
+export class AuthProvider {
+    constructor();
+    
+    add(authType: string, authenticatorFactory: AuthenticatorFactory): void;
+    get(authType: string, authContext: any): Authenticator;
 }
 
 export interface Http {
@@ -22,7 +27,10 @@ export interface Http {
 }
 
 export class HttpClient implements Http {
-    constructor(authenticator: Authenticator);
+    constructor(authenticator?: Authenticator);
+    
+    authenticator: Authenticator;
+
     request(config: HttpRequestConfig): HttpResponsePromise;
     get(url: string, config?: HttpRequestConfig): HttpResponsePromise;
     post(url: string, data?: any, config?: HttpRequestConfig): HttpResponsePromise;
@@ -32,15 +40,15 @@ export class HttpClient implements Http {
 }
 
 export class ServiceClient {
-    constructor(service: Service, authProvider?: AuthenticatorProvider);
+    constructor(service: Service, authProvider?: AuthProvider);
 
-    hasResourceEndpoint(resourceType: string): boolean;
-    getResourceEndpoint(resourceType: string): ResourceEndpointClient;
+    hasResourceEndpoint<T extends Resource>(resourceType: ResourceType<T>): boolean;
+    getResourceEndpoint<T extends Resource>(resourceType: ResourceType<T>): ResourceEndpointClient;
     getAllResourceEndpoints(): ResourceEndpointClient[];
 }
 
 export class ResourceEndpointClient implements Http {
-    constructor(resourceEndpoint: ResourceEndpoint, authProvider?: AuthenticatorProvider, serviceAuthType?: string, serviceAuthContext?: any);
+    constructor(resourceEndpoint: ResourceEndpoint, authProvider?: AuthProvider, serviceAuthType?: string, serviceAuthContext?: any);
     
     httpEndpoint: string;
     
@@ -56,11 +64,10 @@ export interface ResourceManagerConfig {
     servicesUrl: string;
     servicesAuthType?: string;
     servicesAuthContext?: any;
-    authProvider?: AuthenticatorProvider;
 }
 
 export class ResourceManager {
-    constructor(config: ResourceManagerConfig);
+    constructor(config: ResourceManagerConfig, authProvider: AuthProvider);
 
     init(): Promise<void>;
     get<T extends Resource>(resourceType: ResourceType<T>, filter?: any): Promise<T[] | null>;
@@ -70,12 +77,17 @@ export class ResourceManager {
 
     getResourceEndpoint(url: string): Promise<ResourceEndpointClient | undefined>;
     resolve<T extends Resource>(resource: T | string): Promise<T | undefined>;
+    sendNotification(resource: JobBase): Promise<void>;
 }
-
-export type ResourceManagerProvider = (contextVariableProvider: ContextVariableProvider) => ResourceManager;
 
 declare module "@mcma/core" {
     interface ContextVariableProvider {
-        getResourceManagerFromContext(authProvider: AuthenticatorProvider): ResourceManager;
+        getResourceManagerConfig(): ResourceManagerConfig;
     }
+}
+
+export class ResourceManagerProvider {
+    constructor(authProvider: AuthProvider, defaultConfig?: ResourceManagerConfig);
+
+    get(config?: ResourceManagerConfig): ResourceManager;
 }

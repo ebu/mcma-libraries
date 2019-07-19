@@ -1,7 +1,12 @@
- const { JobStatus, JobParameterBag } = require("mcma-core");
+ const { JobStatus, JobParameterBag, Utils } = require("@mcma/core");
 
 class WorkerJobHelper {
     constructor(jobType, dbTable, resourceManager, request, jobAssignmentId) {
+        jobType = Utils.getTypeName(jobType);
+        if (!jobType) {
+            throw new Error("Worker job helper requires a valid job type to be specified.");
+        }
+
         let jobAssignment;
         let job;
         let profile;
@@ -19,7 +24,7 @@ class WorkerJobHelper {
         this.getJobOutput = () => job.jobOutput;
 
         this.initialize = async () => {
-            jobAssignment = await dbTable.updateJobStatus(jobAssignmentId, JobStatus.running);
+            jobAssignment = await this.updateJobAssignmentStatus(JobStatus.running);
 
             job = await resourceManager.resolve(jobAssignment.job);
 
@@ -29,10 +34,8 @@ class WorkerJobHelper {
         };
 
         this.validateJob = (supportedProfiles) => {
-            if (!(typeof jobType === "function" && job instanceof jobType) &&
-                !(typeof jobType === "string" && job["@type"] === jobType) &&
-                !(typeof jobType === "object" && (job instanceof jobType.constructor || job["@type"] === jobType["@type"]))) {
-                throw new Error("Job does not match expected job type.");
+            if ((job["@type"] || "").toLowerCase() !== jobType.toLowerCase()) {
+                throw new Error("Job has type '" + job["@type"] + "', which does not match expected job type '" + jobType + "'.");
             }
 
             supportedProfiles = supportedProfiles || [];
@@ -59,23 +62,23 @@ class WorkerJobHelper {
             if (typeof error !== "string") {
                 error = JSON.stringify(error);
             }
-            await this.updateJobAssignmentStatus(JobStatus.failed, error);
+            return await this.updateJobAssignmentStatus(JobStatus.failed, error);
         };
 
         this.complete = async () => {
             await this.updateJobAssignmentOutput();
-            await this.updateJobAssignmentStatus(JobStatus.completed);
+            return await this.updateJobAssignmentStatus(JobStatus.completed);
         };
 
         this.updateJobAssignmentOutput = async () => {
-            await this.updateJobAssignment(ja => ja.jobOutput = job.jobOutput);
+            return await this.updateJobAssignment(ja => ja.jobOutput = job.jobOutput);
         };
 
         this.updateJobAssignmentStatus = async (status, statusMessage) => {
             if (typeof status === 'object' && status.name) {
                 status = status.name;
             }
-            await this.updateJobAssignment(
+            return await this.updateJobAssignment(
                 ja => {
                     ja.status = status;
                     ja.statusMessage = statusMessage;
@@ -100,6 +103,8 @@ class WorkerJobHelper {
             if (sendNotification) {
                 await this.sendNotification();
             }
+
+            return jobAssignment;
         };
 
         this.sendNotification = async () => {

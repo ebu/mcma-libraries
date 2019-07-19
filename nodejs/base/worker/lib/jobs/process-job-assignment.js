@@ -1,8 +1,11 @@
-const { Logger } = require("mcma-core");
+const { Logger } = require("@mcma/core");
 const { WorkerJobHelper } = require("./worker-job-helper");
 
 class ProcessJobAssignment {
     constructor(jobType, dbTableProvider, resourceManagerProvider) {
+        if (typeof resourceManagerProvider !== "object" || !resourceManagerProvider.get) {
+            throw new Error("Invalid resourceManagerProvider");
+        }
         this.profileHandlers = {};
 
         this.execute = async (request) => {
@@ -15,14 +18,8 @@ class ProcessJobAssignment {
             if (!request.input.jobAssignmentId) {
                 throw new Error("request.input does not specify a jobAssignmentId");
             }
-            if (typeof resourceManagerProvider === "object") {
-                resourceManagerProvider = resourceManagerProvider.getResourceManager;
-            }
-            if (typeof resourceManagerProvider !== "function") {
-                throw new Error("Invalid resourceManagerProvider");
-            }
 
-            const workerJobHelper = new WorkerJobHelper(jobType, dbTableProvider.table(request.tableName()), resourceManagerProvider(request), request, request.input.jobAssignmentId);
+            const workerJobHelper = new WorkerJobHelper(jobType, dbTableProvider.table(request.tableName()), resourceManagerProvider.get(request), request, request.input.jobAssignmentId);
 
             try {
                 Logger.debug("Initializing job helper...");

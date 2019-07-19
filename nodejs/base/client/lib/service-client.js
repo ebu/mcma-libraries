@@ -4,9 +4,9 @@ class ServiceClient {
     constructor(service, authProvider) {
         const endpointsMap = {};
 
-        for (let i = 0; i < service.resources.length; i++) {
-            endpointsMap[resourceEndpointClient.resourceType] =
-                new ResourceEndpointClient(resources[i], authProvider, service.authType, service.authContext);
+        for (const resourceEndpoint of service.resources) {
+            endpointsMap[resourceEndpoint.resourceType] =
+                new ResourceEndpointClient(resourceEndpoint, authProvider, service.authType, service.authContext);
         }
 
         this.hasResourceEndpoint = (resourceType) => {
@@ -16,14 +16,14 @@ class ServiceClient {
             return endpointsMap[resourceType] !== undefined;
         };
 
-        this.getResourceEndpoint = (resourceType) => {
+        this.getResourceEndpointClient = (resourceType) => {
             if (typeof resourceType === "function" && resourceType.name) {
                 resourceType = resourceType.name;
             }
             return endpointsMap[resourceType];
         };
 
-        this.getAllResourceEnpdoints = () => {
+        this.getAllResourceEndpointClients = () => {
             return Object.keys(endpointsMap).map(k => endpointsMap[k]);
         };
     }

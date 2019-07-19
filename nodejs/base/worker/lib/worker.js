@@ -1,4 +1,4 @@
-const { Logger } = require("mcma-core");
+const { Logger } = require("@mcma/core");
 const { WorkerRequest } = require("./worker-request");
 
 class Worker {
@@ -28,4 +28,6 @@ class Worker {
     }
 }
 
-module.exports = Worker;
+module.exports = {
+    Worker
+};

@@ -1,4 +1,4 @@
-const { ContextVariableProvider } = require("mcma-core");
+const { ContextVariableProvider } = require("@mcma/core");
 
 class WorkerRequest extends ContextVariableProvider {
     constructor(request) {

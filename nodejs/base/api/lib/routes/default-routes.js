@@ -1,5 +1,5 @@
 const uuidv4 = require("uuid/v4");
-const { Utils, onResourceCreate, onResourceUpsert } = require("mcma-core");
+const { Utils, onResourceCreate, onResourceUpsert } = require("@mcma/core");
 
 const filters = require("../filters");
 const { camelCaseToKebabCase, pluralizeKebabCase } = require("../strings");
@@ -16,16 +16,16 @@ class DefaultRouteBuilder {
         this.onStarted = (x) => {
             defaultHandlerBuilder.onStarted = x;
             return this;
-        }
+        };
 
         this.onCompleted = (x) => {
             defaultHandlerBuilder.onCompleted = x;
             return this;
-        }
+        };
         
         this.build = () => {
             return new McmaApiRoute(httpMethod, path, handler || defaultHandlerBuilder.create());
-        }
+        };
     }
 }
 
@@ -56,7 +56,13 @@ function defaultRouteHandlerBuilder(handlerBuilder) {
 }
 
 class DefaultRouteCollectionBuilder {
-    constructor(dbTableProvider, root) {
+    constructor(dbTableProvider, resourceType, root) {
+        resourceType = Utils.getTypeName(resourceType);
+        if (!resourceType) {
+            throw new Error("Invalid resource type specified for default routes.");
+        }
+
+        root = root || pluralizeKebabCase(camelCaseToKebabCase(resourceType));
         if (root[0] !== "/") {
             root = "/" + root;
         }
@@ -259,15 +265,6 @@ function defaultDeleteBuilder(dbTableProvider, root) {
     );
 }
 
-function defaultRoutes(type) {
-    type = Utils.getTypeName(type);
-    return {
-        builder: (getDbTableProvider, root) =>
-            new DefaultRouteCollectionBuilder(getDbTableProvider(type), root || pluralizeKebabCase(camelCaseToKebabCase(type)))
-    };
-}
-
 module.exports = {
-    DefaultRouteCollectionBuilder,
-    defaultRoutes
+    DefaultRouteCollectionBuilder
 };

@@ -1,5 +1,5 @@
 //import { Lambda } from "aws-sdk";
-import { Authenticator, AuthenticatorProvider, HttpRequestConfig, ResourceManager, ResourceManagerProvider } from "@mcma/client";
+import { Authenticator, AuthProvider, HttpRequestConfig, ResourceManager, ResourceManagerProvider } from "@mcma/client";
 
 interface AwsConfig {
     credentials: {
@@ -8,6 +8,10 @@ interface AwsConfig {
         sessionToken: string
     },
     region: string
+}
+
+interface Aws {
+    config: AwsConfig;
 }
 
 interface AwsBaseAuthContext {
@@ -40,7 +44,8 @@ export class AwsV4PresignedUrlGenerator {
     generatePresignedUrl(method: string, requestUrl: string, expires?: number): string;
 }
 
-export function getAwsV4DefaultAuthContext(awsConfig: AwsConfig): AwsAuthContext;
-export function getAwsV4DefaultAuthenticator(awsConfig: AwsConfig): Authenticator;
-export function getAwsV4DefaultAuthProvider(awsConfig: AwsConfig): AuthenticatorProvider;
-export function getAwsV4ResourceManagerProvider(awsConfig: AwsConfig): ResourceManagerProvider;
+declare module "@mcma/client" {
+    interface AuthProvider {
+        addAwsV4Auth(awsConfig?: Aws | AwsConfig | AwsAuthContext): AuthProvider;
+    }
+}

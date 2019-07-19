@@ -1,20 +1,20 @@
 const { DefaultRouteCollectionBuilder } = require("./default-routes");
+const { WorkerInvoker } = require("../worker-invoker");
 
 DefaultRouteCollectionBuilder.prototype.forJobAssignments = function forJobAssignments(invokeWorker) {
-    if (typeof invokeWorker !== "function") {
-        throw new Error("invokeWorker must be a function.");
-    }
+    const workerInvoker = new WorkerInvoker(invokeWorker);
 
     return this.addAll()
         .route(r => r.create).configure(rb =>
             rb.onCompleted(async (requestContext, jobAssignment) =>
-                await invokeWorker(requestContext.workerFunctionName(), {
-                    operationName: "ProcessJobAssignment",
-                    contextVariables: requestContext.getAllContextVariables(),
-                    input: {
+                await workerInvoker.invoke(
+                    requestContext.workerFunctionId(),
+                    "ProcessJobAssignment",
+                    requestContext.getAllContextVariables(),
+                    {
                         jobAssignmentId: jobAssignment.id
                     }
-                })
+                )
             )
         )
         .build();
