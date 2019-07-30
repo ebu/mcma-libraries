@@ -29,33 +29,35 @@ class McmaApiRequestContext extends ContextVariableProvider {
         this.response = new McmaApiResponse();
     }
 
-    isBadRequestDueToMissingBody() {
-        let resource = this.request && this.request.body;
-        if (!resource) {
-            this.response.statusCode = HttpStatusCode.BAD_REQUEST;
-            this.response.statusMessage = "Missing request body.";
-        }
-        return resource;
+    hasRequestBody() {
+        return !!this.request.body;
+    }
+
+    getRequestBody() {
+        return this.request.body;
+    }
+
+    setResponseStatusCode(statusCode, statusMessage) {
+        this.response.statusCode = statusCode;
+        this.response.statusMessage = statusMessage;
     }
     
-    resourceCreated(resource) {
-        this.response.statusCode = HttpStatusCode.CREATED;
+    setResponseBody(body) {
+        this.response.body = body;
+    }
+
+    setResponseBadRequestDueToMissingBody() {
+        this.setResponseStatusCode(HttpStatusCode.BAD_REQUEST, "Missing request body.");
+    }
+    
+    setResponseResourceCreated(resource) {
         this.response.headers["Location"] = resource.id;
-        this.response.body = resource;
+        this.setResponseStatusCode(HttpStatusCode.CREATED);
+        this.setResponseBody(resource);
     }
     
-    resourceIfFound(resource, setBody = true) {
-        if (!resource) {
-            this.response.statusCode = HttpStatusCode.NOT_FOUND;
-            this.response.statusMessage = "No resource found on path '" + this.request.path + "'.";
-            return false;
-        }
-    
-        if (setBody) {
-            this.response.body = resource;
-        }
-    
-        return true;
+    setResponseResourceNotFound() {
+        this.setResponseStatusCode(HttpStatusCode.NOT_FOUND, "No resource found on path '" + this.request.path + "'.");
     }
 }
 

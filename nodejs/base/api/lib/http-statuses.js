@@ -22,6 +22,7 @@ const HttpStatusCode = {
     ENTITY_TOO_LARGE: 413,
     REQ_TOO_LONG: 414,
     UNSUPPORTED_TYPE: 415,
+    UNPROCESSABLE_ENTITY: 422,
     INTERNAL_ERROR: 500,
     NOT_IMPLEMENTED: 501,
     BAD_GATEWAY: 502,
@@ -78,6 +79,8 @@ const getStatusError = (statusCode) => {
             return "URI Too Long";
         case HttpStatusCode.UNSUPPORTED_TYPE:
             return "Unsupported Media Type";
+        case HttpStatusCode.UNPROCESSABLE_ENTITY:
+            return "Unprocessable Entity";
         case HttpStatusCode.INTERNAL_ERROR:
             return "Internal Server Error";
         case HttpStatusCode.NOT_IMPLEMENTED:

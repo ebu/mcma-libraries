@@ -14,7 +14,7 @@ export class AuthProvider {
     constructor();
     
     add(authType: string, authenticatorFactory: AuthenticatorFactory): void;
-    get(authType: string, authContext: any): Authenticator;
+    get(authType: string, authContext?: any): Authenticator;
 }
 
 export interface Http {

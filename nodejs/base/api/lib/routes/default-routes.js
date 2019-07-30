@@ -124,7 +124,10 @@ function defaultQueryBuilder(dbTableProvider, root) {
             (onStarted, onCompleted) => {
                 return async (requestContext) => {
                     if (onStarted) {
-                        await onStarted(requestContext);
+                        const continueRequest = await onStarted(requestContext);
+                        if (continueRequest !== undefined && !continueRequest) {
+                            return;
+                        }
                     }
 
                     var filter = 
@@ -154,11 +157,15 @@ function defaultCreateBuilder(dbTableProvider, root) {
             (onStarted, onCompleted) => {
                 return async (requestContext) => {
                     if (onStarted) {
-                        await onStarted(requestContext);
+                        const continueRequest = await onStarted(requestContext);
+                        if (continueRequest !== undefined && !continueRequest) {
+                            return;
+                        }
                     }
 
-                    const resource = requestContext.isBadRequestDueToMissingBody();
+                    const resource = requestContext.getRequestBody();
                     if (!resource) {
+                        requestContext.setResponseBadRequestDueToMissingBody();
                         return;
                     }
 
@@ -170,7 +177,7 @@ function defaultCreateBuilder(dbTableProvider, root) {
                         await onCompleted(requestContext, resource);
                     }
 
-                    requestContext.resourceCreated(resource);
+                    requestContext.setResponseResourceCreated(resource);
                 }
             }
         )
@@ -185,7 +192,10 @@ function defaultGetBuilder(dbTableProvider, root) {
             (onStarted, onCompleted) => {
                 return async (requestContext) => {
                     if (onStarted) {
-                        await onStarted(requestContext);
+                        const continueRequest = await onStarted(requestContext);
+                        if (continueRequest !== undefined && !continueRequest) {
+                            return;
+                        }
                     }
 
                     const resource =
@@ -195,7 +205,11 @@ function defaultGetBuilder(dbTableProvider, root) {
                         await onCompleted(requestContext, resource);
                     }
 
-                    requestContext.resourceIfFound(resource);
+                    if (resource) {
+                        requestContext.setResponseBody(resource);
+                    } else {
+                        requestContext.setResponseResourceNotFound();
+                    }
                 }
             }
         )
@@ -210,11 +224,15 @@ function defaultUpdateBuilder(dbTableProvider, root) {
             (onStarted, onCompleted) => {
                return async (requestContext) => {
                     if (onStarted) {
-                        await onStarted(requestContext);
+                        const continueRequest = await onStarted(requestContext);
+                        if (continueRequest !== undefined && !continueRequest) {
+                            return;
+                        }
                     }
 
-                    const resource = requestContext.isBadRequestDueToMissingBody();
+                    const resource = requestContext.getRequestBody();
                     if (!resource) {
+                        requestContext.setResponseBadRequestDueToMissingBody();
                         return;
                     }
 
@@ -226,7 +244,7 @@ function defaultUpdateBuilder(dbTableProvider, root) {
                         await onCompleted(requestContext, resource);
                     }
 
-                    requestContext.response.body = resource;
+                    requestContext.setResponseBody(resource);
                 }
             }
         )
@@ -241,7 +259,10 @@ function defaultDeleteBuilder(dbTableProvider, root) {
             (onStarted, onCompleted) => {
                 return async (requestContext) => {
                     if (onStarted) {
-                        await onStarted(requestContext);
+                        const continueRequest = await onStarted(requestContext);
+                        if (continueRequest !== undefined && !continueRequest) {
+                            return;
+                        }
                     }
 
                     const table = dbTableProvider.table(requestContext.tableName());
@@ -250,7 +271,8 @@ function defaultDeleteBuilder(dbTableProvider, root) {
 
                     const resource = await table.get(id);
 
-                    if (!requestContext.resourceIfFound(resource, false)) {
+                    if (!resource) {
+                        requestContext.setResponseResourceNotFound();
                         return;
                     }
 

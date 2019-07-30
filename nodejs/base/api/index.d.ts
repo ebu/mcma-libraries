@@ -60,9 +60,15 @@ export class McmaApiRequestContext extends ContextVariableProvider {
     request: McmaApiRequest;
     response: McmaApiResponse;
 
-    isBadRequestDueToMissingBody<T extends Resource>(): T | undefined;
-    resourceCreated<T extends Resource>(resource: T): void;
-    resourceIfFound<T extends Resource>(resource: T, setBody?: boolean): boolean;
+    hasRequestBody(): boolean;
+    getRequestBody<T extends Resource>(): T;
+
+    setResponseCode(statusCode: number | HttpStatusCode, statusMessage?: string): void;
+    setResponseBody<T extends Resource>(resource: T): void;
+
+    setResponseResourceCreated<T extends Resource>(resource: T): void;
+    setResponseBadRequestDueToMissingBody():void;
+    setResponseResourceNotFound(): void;
 }
 
 declare module "@mcma/core" {
@@ -108,7 +114,7 @@ export type DbTableProviderFactory<T extends Resource> = (type: ResourceType<T>)
 
 export interface DefaultRouteBuilder<T> {
     overrideHandler(handler: McmaApiRouteHandler): void;
-    onStarted(handleOnStarted: ((requestContext: McmaApiRequestContext) => Promise<void>)): void;
+    onStarted(handleOnStarted: ((requestContext: McmaApiRequestContext) => Promise<void>)): boolean | void;
     onCompleted(handleOnCompleted: ((requestContext: McmaApiRequestContext) => Promise<T>)): void;
     build(): McmaApiRoute;
 }

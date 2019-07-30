@@ -10,7 +10,6 @@ class ResourceEndpointClient {
 
         const httpClient = new HttpClient();
 
-
         const getAuthenticator = async () => {
             if (!authProvider) {
                 return null;
