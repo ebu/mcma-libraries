@@ -1,6 +1,6 @@
 {
     "name": "@mcma/worker",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "Node module for building worker services based on the EBU MCMA framework",
     "engines": {
         "node": "~8.10.0"
@@ -25,9 +25,9 @@
     "homepage": "https://github.com/ebu/mcma-libraries/nodes/mcma-worker#readme",
     "dependencies": {},
     "peerDependencies": {
-        "@mcma/client": "0.5.2",
-        "@mcma/core": "0.5.2",
-        "@mcma/data": "0.5.2"
+        "@mcma/client": "0.5.3",
+        "@mcma/core": "0.5.3",
+        "@mcma/data": "0.5.3"
     },
     "devDependencies": {
         "jasmine": "^3.2.0"

@@ -1,6 +1,6 @@
 {
     "name": "@mcma/data",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "Node module with helper utils for dealing with data in the EBU MCMA framework",
     "engines": {
         "node": "~8.10.0"
@@ -25,7 +25,7 @@
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-data-nodejs#readme",
     "dependencies": {},
     "peerDependencies": {
-        "@mcma/core": "0.5.2"
+        "@mcma/core": "0.5.3"
     },
     "devDependencies": {
         "jasmine": "^3.3.1"

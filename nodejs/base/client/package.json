@@ -1,6 +1,6 @@
 {
     "name": "@mcma/client",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "Node module with classes and functions used to access services in an MCMA environment",
     "engines": {
         "node": "~8.10.0"
@@ -26,7 +26,7 @@
         "axios": "^0.18.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.5.2"
+        "@mcma/core": "0.5.3"
     },
     "devDependencies": {
         "jasmine": "^3.3.1"

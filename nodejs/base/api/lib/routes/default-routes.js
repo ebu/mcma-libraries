@@ -142,7 +142,7 @@ function defaultQueryBuilder(dbTableProvider, root) {
                         await onCompleted(requestContext, resources);
                     }
 
-                    requestContext.resourceIfFound(resources);
+                    requestContext.setResponseBody(resources);
                 }
             }
         )
