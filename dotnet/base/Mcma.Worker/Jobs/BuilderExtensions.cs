@@ -10,7 +10,7 @@ namespace Mcma.Worker
     {
         public static WorkerBuilder HandleJobsOfType<T>(
             this WorkerBuilder workerBuilder,
-            IDbTableProvider<JobAssignment> dbTableProvider,
+            IDbTableProvider dbTableProvider,
             IResourceManagerProvider resourceManagerProvider,
             Action<JobHandlerBuilder<T>> configure) where T : Job
         {

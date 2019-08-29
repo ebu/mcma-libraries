@@ -32,7 +32,7 @@ namespace Mcma.Client
         private async Task<HttpResponseMessage> ExecuteAsync(Func<McmaHttpClient, Task<HttpResponseMessage>> execute)
             => await execute(await HttpClientTask.Value);
 
-        private async Task<T> ExecuteObjectAsync<T>(Func<McmaHttpClient, Task<HttpResponseMessage>> execute)
+        private async Task<T> ExecuteObjectAsync<T>(Func<McmaHttpClient, Task<HttpResponseMessage>> execute) where T : McmaResource
         {
             var response = await ExecuteAsync(execute);
             await response.ThrowIfFailedAsync();
@@ -49,7 +49,7 @@ namespace Mcma.Client
         public async Task<HttpResponseMessage> GetAsync(string url = null)
             => await ExecuteAsync(async httpClient => await httpClient.GetAsync(url));
 
-        public async Task<T> GetAsync<T>(string url = null)
+        public async Task<T> GetAsync<T>(string url = null) where T : McmaResource
             => await ExecuteObjectAsync<T>(async httpClient => await httpClient.GetAsync(url));
 
         public async Task<IEnumerable<T>> GetCollectionAsync<T>(string url = null, IDictionary<string, string> filter = null, bool throwIfAnyFailToDeserialize = true)
@@ -58,19 +58,19 @@ namespace Mcma.Client
         public async Task<HttpResponseMessage> PostAsync(object body, string url = null)
             => await ExecuteAsync(async httpClient => await httpClient.PostAsJsonAsync(url, body));
 
-        public async Task<T> PostAsync<T>(T body, string url = null)
+        public async Task<T> PostAsync<T>(T body, string url = null) where T : McmaResource
             => await ExecuteObjectAsync<T>(async httpClient => await httpClient.PostAsJsonAsync(url, body));
 
         public async Task<HttpResponseMessage> PutAsync(object body, string url = null)
             => await ExecuteAsync(async httpClient => await httpClient.PutAsJsonAsync(GetUrl(url, body), body));
 
-        public async Task<T> PutAsync<T>(T body, string url = null)
+        public async Task<T> PutAsync<T>(T body, string url = null) where T : McmaResource
             => await ExecuteObjectAsync<T>(async httpClient => await httpClient.PutAsJsonAsync(GetUrl(url, body), body));
 
         public async Task<HttpResponseMessage> PatchAsync(object body, string url = null)
             => await ExecuteAsync(async httpClient => await httpClient.PatchAsJsonAsync(GetUrl(url, body), body));
 
-        public async Task<T> PatchAsync<T>(T body, string url = null)
+        public async Task<T> PatchAsync<T>(T body, string url = null) where T : McmaResource
             => await ExecuteObjectAsync<T>(async httpClient => await httpClient.PatchAsJsonAsync(GetUrl(url, body), body));
 
         public async Task<HttpResponseMessage> DeleteAsync(string url = null)

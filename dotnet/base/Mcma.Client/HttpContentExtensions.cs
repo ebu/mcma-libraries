@@ -12,13 +12,27 @@ namespace Mcma.Client
     public static class HttpContentExtensions
     {
         public static async Task<JToken> ReadAsJsonAsync(this HttpContent content)
-            => JToken.Parse(await content.ReadAsStringAsync());
+        {
+            var responseBody = await content.ReadAsStringAsync();
+
+            return !string.IsNullOrWhiteSpace(responseBody) ? JToken.Parse(responseBody) : JValue.CreateNull();
+        }
 
         public static async Task<JToken> ReadAsJsonArrayAsync(this HttpContent content)
             => (JArray)await content.ReadAsJsonAsync();
 
-        public static async Task<JToken> ReadAsJsonObjectAsync(this HttpContent content)
-            => (JObject)await content.ReadAsJsonAsync();
+        public static async Task<JObject> ReadAsJsonObjectAsync(this HttpContent content)
+        {
+            var jToken = await content.ReadAsJsonAsync();
+
+            if (jToken.Type == JTokenType.Null)
+                return null;
+
+            if (!(jToken is JObject jObj))
+                throw new Exception($"Cannot parse response as an object because the returned JSON is a token of type '{jToken.Type}'.");
+
+            return jObj;
+        }
 
         public static async Task<T[]> ReadAsArrayFromJsonAsync<T>(this HttpContent content, bool throwIfAnyFailToDeserialize = true)
         {
@@ -43,7 +57,7 @@ namespace Mcma.Client
             return objects.ToArray();
         }
 
-        public static async Task<T> ReadAsObjectFromJsonAsync<T>(this HttpContent content)
-            => (await content.ReadAsJsonObjectAsync()).ToMcmaObject<T>();
+        public static async Task<T> ReadAsObjectFromJsonAsync<T>(this HttpContent content) where T : class
+            => (await content.ReadAsJsonObjectAsync())?.ToMcmaObject<T>();
     }
 }

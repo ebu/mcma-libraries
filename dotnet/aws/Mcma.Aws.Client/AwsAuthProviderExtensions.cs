@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Threading.Tasks;
 using Mcma.Client;
@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Mcma.Aws.Client
 {
-    public static class AuthProviderExtensions
+    public static class AwsAuthProviderExtensions
     {
         public static IAuthProvider AddAwsV4Auth(this IAuthProvider authProvider, AwsV4AuthContext defaultContext = null)
             =>

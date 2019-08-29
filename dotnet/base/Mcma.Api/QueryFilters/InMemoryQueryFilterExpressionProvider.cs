@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mcma.Api
+namespace Mcma.Api.QueryFilters
 {
-    public static class Filters
+    public class InMemoryQueryFilterExpressionProvider : IQueryFilterExpressionProvider
     {
         private class PropertyFilter<T>
         {
@@ -23,15 +23,15 @@ namespace Mcma.Api
             public bool IsMatch(T resource) => Property.GetValue(resource)?.ToString() == TextValue;
         }
 
-        public static Expression<Func<T, bool>> InMemoryTextValues<T>(IDictionary<string, string> filterValues)
+        public Expression<Func<T, bool>> CreateFilterExpression<T>(IDictionary<string, string> queryParams)
         {
             // if we don't have filters to apply, leave the collection as-is
-            if (filterValues == null || !filterValues.Any())
+            if (queryParams == null || !queryParams.Any())
                 return null;
                 
             // convert dictionary of property names to dictionary of PropertyInfos
             var propertyValues =
-                filterValues
+                queryParams
                     .Select(kvp => new PropertyFilter<T>(kvp.Key, kvp.Value))
                     .Where(x => x.Property != null)
                     .ToList();

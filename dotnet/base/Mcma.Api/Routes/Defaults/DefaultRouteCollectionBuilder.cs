@@ -1,13 +1,14 @@
 using System;
-using System.Linq;
-using Mcma.Core;
 using System.Collections.Generic;
-using System.Net.Http;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Reflection;
-using Mcma.Data;
+using Mcma.Api.QueryFilters;
+using Mcma.Core;
 using Mcma.Core.ContextVariables;
 using Mcma.Core.Utility;
+using Mcma.Data;
 
 namespace Mcma.Api.Routes.Defaults
 {
@@ -54,7 +55,7 @@ namespace Mcma.Api.Routes.Defaults
             }
         }
 
-        public DefaultRouteCollectionBuilder(IDbTableProvider<TResource> dbTableProvider, string root = null)
+        public DefaultRouteCollectionBuilder(IDbTableProvider dbTableProvider, string root = null)
         {
             DbTableProvider = dbTableProvider;
 
@@ -74,14 +75,29 @@ namespace Mcma.Api.Routes.Defaults
             };
         }
 
-        private IDbTableProvider<TResource> DbTableProvider { get; }
+        private IDbTableProvider DbTableProvider { get; }
 
         private string Root { get; }
 
         private DefaultRoutes<TResource> Routes { get; }
 
+        private IQueryFilterExpressionProvider QueryParameterFilterBuilder { get; set; } = new InMemoryQueryFilterExpressionProvider();
+
         public McmaApiRouteCollection Build()
             => new McmaApiRouteCollection(Routes.Included.Select(rb => rb.Build()));
+            
+        public DefaultRouteCollectionBuilder<TResource> WithSimpleQueryFiltering()
+            => WithQueryParameterFilter(new SimpleQueryFilterExpressionProvider());
+            
+        public DefaultRouteCollectionBuilder<TResource> WithQueryFiltering<TFilterProvider>()
+            where TFilterProvider : IQueryFilterExpressionProvider, new()
+            => WithQueryParameterFilter(new TFilterProvider());
+
+        public DefaultRouteCollectionBuilder<TResource> WithQueryParameterFilter(IQueryFilterExpressionProvider queryParamFilterBuilder)
+        {
+            QueryParameterFilterBuilder = queryParamFilterBuilder;
+            return this;
+        }
 
         public DefaultRouteCollectionBuilder<TResource> AddAll()
         {
@@ -100,7 +116,7 @@ namespace Mcma.Api.Routes.Defaults
             return new RouteBuilderAction<TResult>(this, Routes, (DefaultRouteBuilder<TResult>)propertyInfo.GetValue(Routes));
         }
 
-        private static DefaultRouteBuilder<IEnumerable<TResource>> DefaultQueryBuilder(IDbTableProvider<TResource> dbTableProvider, string root) => 
+        private DefaultRouteBuilder<IEnumerable<TResource>> DefaultQueryBuilder(IDbTableProvider dbTableProvider, string root) => 
             new DefaultRouteBuilder<IEnumerable<TResource>>(
                 HttpMethod.Get,
                 root, 
@@ -114,12 +130,12 @@ namespace Mcma.Api.Routes.Defaults
 
                             var filterExpr =
                                 requestContext.Request.QueryStringParameters.Any()
-                                    ? Filters.InMemoryTextValues<TResource>(requestContext.Request.QueryStringParameters)
+                                    ? QueryParameterFilterBuilder.CreateFilterExpression<TResource>(requestContext.Request.QueryStringParameters)
                                     : null;
 
                             // get all resources from the table, applying in-memory filtering using the query string (if any)
                             var resources =
-                                (await dbTableProvider.Table(requestContext.TableName()).QueryAsync(filterExpr))
+                                (await dbTableProvider.Table<TResource>(requestContext.TableName()).QueryAsync(filterExpr))
                                     .ToList();
 
                             // invoke the completion handler with the results
@@ -131,7 +147,7 @@ namespace Mcma.Api.Routes.Defaults
                             requestContext.SetResponseBody(resources);
                         }));
 
-        private static DefaultRouteBuilder<TResource> DefaultCreateBuilder(IDbTableProvider<TResource> dbTableProvider, string root) => 
+        private DefaultRouteBuilder<TResource> DefaultCreateBuilder(IDbTableProvider dbTableProvider, string root) => 
             new DefaultRouteBuilder<TResource>(
                 HttpMethod.Post,
                 root,
@@ -151,11 +167,13 @@ namespace Mcma.Api.Routes.Defaults
                                 return;
                             }
 
+                            var id = requestContext.PublicUrlForPath($"{root}/{Guid.NewGuid()}");
+
                             // initialize the new resource with an ID
-                            resource.OnCreate($"{requestContext.PublicUrl()}{root}/{Guid.NewGuid()}");
+                            resource.OnCreate(id);
 
                             // put the new object into the table
-                            await dbTableProvider.Table(requestContext.TableName()).PutAsync(resource.Id, resource);
+                            await dbTableProvider.Table<TResource>(requestContext.TableName()).PutAsync(resource.Id, resource);
 
                             // invoke the completion handler (if any) with the newly-created resource
                             if (onCompleted != null)
@@ -165,7 +183,7 @@ namespace Mcma.Api.Routes.Defaults
                             requestContext.SetResponseResourceCreated(resource);
                         }));
 
-        private static DefaultRouteBuilder<TResource> DefaultGetBuilder(IDbTableProvider<TResource> dbTableProvider, string root) =>
+        private static DefaultRouteBuilder<TResource> DefaultGetBuilder(IDbTableProvider dbTableProvider, string root) =>
             new DefaultRouteBuilder<TResource>(
                 HttpMethod.Get,
                 root + "/{id}",
@@ -177,9 +195,11 @@ namespace Mcma.Api.Routes.Defaults
                             if (onStarted != null)
                                 await onStarted.Invoke(requestContext);
 
+                            var id = requestContext.CurrentRequestPublicUrl();
+
                             // get the resource from the database
                             var resource =
-                                await dbTableProvider.Table(requestContext.TableName()).GetAsync(requestContext.PublicUrl() + requestContext.Request.Path);
+                                await dbTableProvider.Table<TResource>(requestContext.TableName()).GetAsync(id);
 
                             // invoke the completion handler, if any
                             if (onCompleted != null)
@@ -192,7 +212,7 @@ namespace Mcma.Api.Routes.Defaults
                                 requestContext.SetResponseResourceNotFound();
                         }));
 
-        private static DefaultRouteBuilder<TResource> DefaultUpdateBuilder(IDbTableProvider<TResource> dbTableProvider, string root) =>
+        private DefaultRouteBuilder<TResource> DefaultUpdateBuilder(IDbTableProvider dbTableProvider, string root) =>
             new DefaultRouteBuilder<TResource>(
                 HttpMethod.Put,
                 root + "/{id}",
@@ -211,12 +231,14 @@ namespace Mcma.Api.Routes.Defaults
                                 requestContext.SetResponseBadRequestDueToMissingBody();
                                 return;
                             }
+
+                            var id = requestContext.CurrentRequestPublicUrl();
                             
                             // set properties for upsert
-                            resource.OnUpsert(requestContext.PublicUrl() + requestContext.Request.Path);
+                            resource.OnUpsert(id);
 
                             // upsert the resource
-                            await dbTableProvider.Table(requestContext.TableName()).PutAsync(resource.Id, resource);
+                            await dbTableProvider.Table<TResource>(requestContext.TableName()).PutAsync(resource.Id, resource);
 
                             // invoke the completion handler, if any
                             if (onCompleted != null)
@@ -226,7 +248,7 @@ namespace Mcma.Api.Routes.Defaults
                             requestContext.SetResponseBody(resource);
                         }));
 
-        private static DefaultRouteBuilder<TResource> DefaultDeleteBuilder(IDbTableProvider<TResource> dbTableProvider, string root) =>
+        private DefaultRouteBuilder<TResource> DefaultDeleteBuilder(IDbTableProvider dbTableProvider, string root) =>
             new DefaultRouteBuilder<TResource>(
                 HttpMethod.Delete,
                 root + "/{id}",
@@ -239,10 +261,10 @@ namespace Mcma.Api.Routes.Defaults
                                 await onStarted.Invoke(requestContext);
 
                             // get the table for the resource
-                            var table = dbTableProvider.Table(requestContext.TableName());
+                            var table = dbTableProvider.Table<TResource>(requestContext.TableName());
 
                             // build id from the root public url and the path
-                            var id = requestContext.PublicUrl() + requestContext.Request.Path;
+                            var id = requestContext.CurrentRequestPublicUrl();
 
                             // get the resource from the db
                             var resource = await table.GetAsync(id);

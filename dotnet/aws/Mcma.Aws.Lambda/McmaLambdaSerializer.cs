@@ -15,7 +15,7 @@ namespace Mcma.Aws.Lambda
             try
             {
                 var writer = new StreamWriter(responseStream);
-                McmaJson.DefaultSerializer.Serialize(writer, response);
+                McmaJson.Serializer.Serialize(writer, response);
                 writer.Flush();
             }
             catch (Exception ex)
@@ -30,7 +30,7 @@ namespace Mcma.Aws.Lambda
         {
             try
             {
-                return McmaJson.DefaultSerializer.Deserialize<T>(new JsonTextReader(new StreamReader(requestStream)));
+                return McmaJson.Serializer.Deserialize<T>(new JsonTextReader(new StreamReader(requestStream)));
             }
             catch (Exception ex)
             {

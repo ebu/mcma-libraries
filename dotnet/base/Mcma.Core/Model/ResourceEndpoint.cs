@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Mcma.Core
+﻿namespace Mcma.Core
 {
     public class ResourceEndpoint : McmaObject
     {

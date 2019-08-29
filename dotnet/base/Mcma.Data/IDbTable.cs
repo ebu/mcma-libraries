@@ -6,14 +6,14 @@ using Mcma.Core;
 
 namespace Mcma.Data
 {
-    public interface IDbTable<T> where T : McmaResource
+    public interface IDbTable<TResource, TPartitionKey> where TResource : McmaResource
     {
-        Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> filter);
+        Task<IEnumerable<TResource>> QueryAsync(Expression<Func<TResource, bool>> filter);
 
-        Task<T> GetAsync(string id);
+        Task<TResource> GetAsync(string id, TPartitionKey partitionKey);
 
-        Task PutAsync(string id, T resource);
+        Task<TResource> PutAsync(string id, TPartitionKey partitionKey, TResource resource);
 
-        Task DeleteAsync(string id);
+        Task DeleteAsync(string id, TPartitionKey partitionKey);
     }
 }

@@ -11,7 +11,7 @@ namespace Mcma.Worker
     {
         internal JobHandlerBuilder(
             WorkerBuilder workerBuilder,
-            IDbTableProvider<JobAssignment> dbTableProvider,
+            IDbTableProvider dbTableProvider,
             IResourceManagerProvider resourceManagerProvider)
         {
             WorkerBuilder = workerBuilder;

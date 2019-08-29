@@ -11,7 +11,7 @@ namespace Mcma.Worker
     public class WorkerJobHelper<T> where T : Job
     {
         public WorkerJobHelper(
-            IDbTable<JobAssignment> table,
+            IDbTable<JobAssignment, Type> table,
             ResourceManager resourceManager,
             WorkerRequest request,
             string jobAssignmentId)
@@ -27,7 +27,7 @@ namespace Mcma.Worker
 
         public ResourceManager ResourceManager { get; }
 
-        public IDbTable<JobAssignment> Table { get; }
+        public IDbTable<JobAssignment, Type> Table { get; }
 
         public string JobAssignmentId { get; }
 

@@ -1,10 +1,10 @@
 ﻿using Mcma.Core;
-using Mcma.Data;
 
 namespace Mcma.Data
 {
-    public interface IDbTableProvider<T> where T : McmaResource
+    public interface IDbTableProvider
     {
-        IDbTable<T> Table(string tableName);
+        IDbTable<TResource, TPartitionKey> Table<TResource, TPartitionKey>(string tableName = null)
+            where TResource : McmaResource;
     }
 }

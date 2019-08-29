@@ -12,7 +12,7 @@ namespace Mcma.Worker
     public class ProcessJobAssignment<T> : WorkerOperationHandler<ProcessJobAssignmentRequest> where T : Job
     {
         internal ProcessJobAssignment(
-            IDbTableProvider<JobAssignment> dbTableProvider,
+            IDbTableProvider dbTableProvider,
             IResourceManagerProvider resourceManagerProvider)
         {
             if (dbTableProvider == null) throw new ArgumentNullException(nameof(dbTableProvider));
@@ -22,7 +22,7 @@ namespace Mcma.Worker
             ResourceManagerProvider = resourceManagerProvider;
         }
 
-        private IDbTableProvider<JobAssignment> DbTableProvider { get; }
+        private IDbTableProvider DbTableProvider { get; }
 
         private IResourceManagerProvider ResourceManagerProvider { get; }
 
@@ -36,7 +36,7 @@ namespace Mcma.Worker
 
             var workerJobHelper =
                 new WorkerJobHelper<T>(
-                    DbTableProvider.Table(request.TableName()),
+                    DbTableProvider.Table<JobAssignment>(request.TableName()),
                     ResourceManagerProvider.Get(request),
                     request,
                     requestInput.JobAssignmentId);

@@ -5,10 +5,8 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
 using Mcma.Api;
 using Mcma.Api.Routes;
-using Mcma.Core;
 using Mcma.Core.Logging;
 using Mcma.Aws.Lambda;
-using Mcma.Api.Routes.Defaults;
 
 namespace Mcma.Aws.ApiGateway
 {

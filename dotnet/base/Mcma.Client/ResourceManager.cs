@@ -99,7 +99,7 @@ namespace Mcma.Client
             return new ReadOnlyCollection<T>(results);
         }
 
-        public async Task<T> CreateAsync<T>(T resource)
+        public async Task<T> CreateAsync<T>(T resource) where T : McmaResource
         {
             if (!Services.Any())
                 await InitAsync();
@@ -108,7 +108,9 @@ namespace Mcma.Client
             if (resourceEndpoint != null)
                 return await resourceEndpoint.PostAsync<T>(resource);
 
-            throw new Exception("ResourceManager: Failed to find service to create resource of type '" + typeof(T).Name + "'.");
+            var resp = await HttpClient.PostAsJsonAsync(resource.Id, resource);
+            await resp.ThrowIfFailedAsync();
+            return await resp.Content.ReadAsObjectFromJsonAsync<T>();
         }
 
         public async Task<T> UpdateAsync<T>(T resource) where T : McmaResource
@@ -124,37 +126,30 @@ namespace Mcma.Client
                 return await resourceEndpoint.PutAsync<T>(resource);
 
             var resp = await HttpClient.PutAsJsonAsync(resource.Id, resource);
+            await resp.ThrowIfFailedAsync();
             return await resp.Content.ReadAsObjectFromJsonAsync<T>();
         }
 
-        public async Task DeleteAsync(McmaResource resource)
+        public Task DeleteAsync(McmaResource resource) => DeleteAsync(resource.Type, resource.Id);
+
+        public Task DeleteAsync<T>(string resourceId) => DeleteAsync(typeof(T).Name, resourceId);
+
+        private async Task DeleteAsync(string type, string resourceId)
         {
             if (!Services.Any())
                 await InitAsync();
 
             var resourceEndpoint =
-                Services.Where(s => s.HasResourceEndpointClient(resource.Type))
-                    .Select(s => s.GetResourceEndpointClient(resource.Type))
-                    .FirstOrDefault(re => resource.Id.StartsWith(re.HttpEndpoint, StringComparison.OrdinalIgnoreCase));
-            if (resourceEndpoint != null)
-                await resourceEndpoint.DeleteAsync(resource.Id);
-            else
-                await HttpClient.DeleteAsync(resource.Id);
-        }
-
-        public async Task DeleteAsync<T>(string resourceId)
-        {
-            if (!Services.Any())
-                await InitAsync();
-
-            var resourceEndpoint =
-                Services.Where(s => s.HasResourceEndpointClient(typeof(T).Name))
-                    .Select(s => s.GetResourceEndpointClient(typeof(T).Name))
+                Services.Where(s => s.HasResourceEndpointClient(type))
+                    .Select(s => s.GetResourceEndpointClient(type))
                     .FirstOrDefault(re => resourceId.StartsWith(re.HttpEndpoint, StringComparison.OrdinalIgnoreCase));
-            if (resourceEndpoint != null)
-                await resourceEndpoint.DeleteAsync(resourceId);
-            else
-                await HttpClient.DeleteAsync(resourceId);
+                    
+            var resp =
+                resourceEndpoint != null
+                    ? await resourceEndpoint.DeleteAsync(resourceId)
+                    : await HttpClient.DeleteAsync(resourceId);
+
+            await resp.ThrowIfFailedAsync();
         }
 
         public async Task<ResourceEndpointClient> GetResourceEndpointAsync(string url)
@@ -169,7 +164,7 @@ namespace Mcma.Client
                 .FirstOrDefault(re => url.StartsWith(re.HttpEndpoint, StringComparison.OrdinalIgnoreCase));
         }
 
-        public async Task<T> ResolveAsync<T>(string url)
+        public async Task<T> ResolveAsync<T>(string url) where T : McmaResource
         {
             var resourceEndpoint = await GetResourceEndpointAsync(url);
 

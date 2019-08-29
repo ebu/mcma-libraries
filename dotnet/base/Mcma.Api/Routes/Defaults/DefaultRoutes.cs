@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net.Http;
 using Mcma.Core;
 using Mcma.Core.ContextVariables;
 using Mcma.Core.Utility;
@@ -29,7 +30,9 @@ namespace Mcma.Api.Routes.Defaults
 
     public static class DefaultRoutes
     {
-        public static DefaultRouteCollectionBuilder<T> Builder<T>(IDbTableProvider<T> dbTableProvider, string root = null) where T : McmaResource
+        public static readonly string[] SupportedMethods = {HttpMethod.Get.Method, HttpMethod.Post.Method, HttpMethod.Put.Method, HttpMethod.Delete.Method};
+
+        public static DefaultRouteCollectionBuilder<T> Builder<T>(IDbTableProvider dbTableProvider, string root = null) where T : McmaResource
             => new DefaultRouteCollectionBuilder<T>(dbTableProvider, root ?? typeof(T).Name.CamelCaseToKebabCase().PluralizeKebabCase());
 
         public static McmaApiRouteCollection ForJobAssignments<T>(this DefaultRouteCollectionBuilder<JobAssignment> builder)

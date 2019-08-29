@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Reflection;
 using Mcma.Core.Logging;
 using Mcma.Core.Utility;
 using Newtonsoft.Json;
@@ -61,29 +59,9 @@ namespace Mcma.Core.Serialization
             writer.WritePropertyName(TypeJsonPropertyName);
             writer.WriteValue(((McmaObject)value).Type);
 
-            var properties =
-                value.GetType().GetProperties()
-                    .Where(p => p.Name != nameof(McmaObject.Type) && p.CanRead && p.GetIndexParameters().Length == 0)
-                    .ToList();
-                    
-            foreach (var property in properties)
-            {
-                var propValue = property.GetValue(value);
-                if (propValue == null && serializer.NullValueHandling == NullValueHandling.Ignore)
-                    continue;
-                
-                writer.WritePropertyName(property.Name.PascalCaseToCamelCase());
-                serializer.Serialize(writer, propValue);
-            }
+            WriteProperties(writer, serializer, GetPropertyDictionary(value), false);
 
-            foreach (var keyValuePair in (IDictionary<string, object>)value)
-            {
-                if (keyValuePair.Value == null && serializer.NullValueHandling == NullValueHandling.Ignore)
-                    continue;
-
-                writer.WritePropertyName(keyValuePair.Key.PascalCaseToCamelCase());
-                serializer.Serialize(writer, keyValuePair.Value);
-            }
+            WriteProperties(writer, serializer, (IDictionary<string, object>)value, false);
 
             writer.WriteEndObject();
         }

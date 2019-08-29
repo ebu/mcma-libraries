@@ -1,47 +1,44 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Mcma.Core.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace Mcma.Core.Serialization
 {
     public static class McmaJson
     {
-        public static readonly JsonSerializerSettings DefaultSettings = new JsonSerializerSettings
+        public static JsonSerializerSettings DefaultSettings() => DefaultSettings(false);
+
+        private static JsonSerializerSettings DefaultSettings(bool preserveCasing)
         {
-            ContractResolver = new McmaCamelCasePropertyNamesContractResolver(),
-            NullValueHandling = NullValueHandling.Ignore,
-            Converters =
+            var settings = new JsonSerializerSettings
             {
-                new McmaObjectConverter(),
-                new McmaExpandoObjectConverter()
-            }
-        };
+                NullValueHandling = NullValueHandling.Ignore,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                Converters =
+                {
+                    new McmaObjectConverter(),
+                    new McmaExpandoObjectConverter()
+                }
+            };
 
-        public static readonly JsonSerializerSettings PreserveCasingSettings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            Converters =
-            {
-                new McmaObjectConverter(),
-                new McmaExpandoObjectConverter()
-            }
-        };
+            if (!preserveCasing)
+                settings.ContractResolver = new McmaCamelCasePropertyNamesContractResolver();
 
-        public static JsonSerializer DefaultSerializer { get; private set; } = JsonSerializer.CreateDefault(DefaultSettings);
+            return settings;
+        }
 
-        public static void SetJsonSerializerSettings(JsonSerializerSettings settings) => DefaultSerializer = JsonSerializer.CreateDefault(settings);
+        public static JsonSerializer Serializer { get; private set; } = JsonSerializer.CreateDefault(DefaultSettings(false));
 
-        public static T ToMcmaObject<T>(this JToken json) => json.ToObject<T>(DefaultSerializer);
+        private static JsonSerializer PreserveCasingSerializer { get; set; } = JsonSerializer.CreateDefault(DefaultSettings(true));
 
-        public static object ToMcmaObject(this JToken json, Type type) => json.ToObject(type, DefaultSerializer);
+        public static T ToMcmaObject<T>(this JToken json) => json.ToObject<T>(Serializer);
+
+        public static object ToMcmaObject(this JToken json, Type type) => json.ToObject(type, Serializer);
 
         public static JToken ToMcmaJson<T>(this T obj, bool preserveCasing = false)
-            => JToken.FromObject(obj, preserveCasing ? JsonSerializer.CreateDefault(PreserveCasingSettings) : DefaultSerializer);
+            => JToken.FromObject(obj, preserveCasing ? PreserveCasingSerializer : Serializer);
 
         public static async Task<JToken> ReadJsonFromStreamAsync(this Stream stream)
         {

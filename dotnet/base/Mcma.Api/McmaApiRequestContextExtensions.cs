@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using Mcma.Core;
 using Mcma.Core.ContextVariables;
-using Mcma.Core.Serialization;
 
 namespace Mcma.Api
 {
@@ -9,6 +8,12 @@ namespace Mcma.Api
     {
         public static string PublicUrl(this IContextVariableProvider contextVariableProvider)
             => contextVariableProvider.GetRequiredContextVariable(nameof(PublicUrl));
+
+        public static string CurrentRequestPublicUrl(this McmaApiRequestContext requestContext)
+            => requestContext.PublicUrlForPath(requestContext.Request.Path);
+
+        public static string PublicUrlForPath(this McmaApiRequestContext requestContext, string path)
+            => requestContext.PublicUrl().TrimEnd('/') + "/" + (path?.TrimStart('/') ?? string.Empty);
         
         public static string WorkerFunctionId(this IContextVariableProvider contextVariableProvider)
             => contextVariableProvider.GetRequiredContextVariable(nameof(WorkerFunctionId));

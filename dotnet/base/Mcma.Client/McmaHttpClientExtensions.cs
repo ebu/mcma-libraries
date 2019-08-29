@@ -12,7 +12,7 @@ namespace Mcma.Client
         public static async Task<HttpResponseMessage> WithErrorHandling(this Task<HttpResponseMessage> responseTask)
             => await (await responseTask).ThrowIfFailedAsync();
 
-        public static async Task<T> ReadAsObjectFromJsonAsync<T>(this Task<HttpResponseMessage> responseTask)
+        public static async Task<T> ReadAsObjectFromJsonAsync<T>(this Task<HttpResponseMessage> responseTask) where T : class
             => await (await responseTask.WithErrorHandling()).Content.ReadAsObjectFromJsonAsync<T>();
 
         public static async Task<T[]> ReadAsArrayFromJsonAsync<T>(this Task<HttpResponseMessage> responseTask)
@@ -31,6 +31,7 @@ namespace Mcma.Client
                                                                        string url,
                                                                        IDictionary<string, string> queryParams = null,
                                                                        IDictionary<string, string> headers = null)
+            where T : class
             =>
                 await (await client.GetAsync(url, queryParams, headers).WithErrorHandling()).Content.ReadAsObjectFromJsonAsync<T>();
 

@@ -28,14 +28,7 @@ namespace Mcma.Core.Serialization
         {
             writer.WriteStartObject();
 
-            foreach (var keyValuePair in (IDictionary<string, object>)value)
-            {
-                if (keyValuePair.Value == null && serializer.NullValueHandling == NullValueHandling.Ignore)
-                    continue;
-
-                writer.WritePropertyName(keyValuePair.Key);
-                serializer.Serialize(writer, keyValuePair.Value);
-            }
+            WriteProperties(writer, serializer, (IDictionary<string, object>)value, true);
 
             writer.WriteEndObject();
         }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using Mcma.Core.Logging;
 using Mcma.Core.Utility;
@@ -13,9 +12,10 @@ namespace Mcma.Core.Serialization
     {
         protected const string TypeJsonPropertyName = "@type";
 
-        protected Type GetSerializedType(JObject jObj, Type objectType)
+        protected Type GetSerializedType(JObject jObj, Type objectType) => GetSerializedType(jObj.Property(TypeJsonPropertyName), objectType);
+
+        protected Type GetSerializedType(JProperty typeProperty, Type objectType)
         {
-            var typeProperty = jObj.Property(TypeJsonPropertyName);
             if (typeProperty != null)
             {
                 var typeString = typeProperty.Value.Value<string>();
@@ -23,7 +23,7 @@ namespace Mcma.Core.Serialization
                 objectType = McmaTypes.FindType(typeString);
                 if (objectType != null)
                 {
-                    jObj.Remove(TypeJsonPropertyName);
+                    typeProperty.Remove();
                     
                     return objectType;
                 }
@@ -75,6 +75,23 @@ namespace Mcma.Core.Serialization
                     return IsMcmaObject(jObj) ? CreateMcmaObject(jObj, serializer) : jObj.ToObject<McmaExpandoObject>(serializer);
                 default:
                     return token;
+            }
+        }
+
+        protected IDictionary<string, object> GetPropertyDictionary(object value)
+            => value.GetType().GetProperties()
+                    .Where(p => p.Name != nameof(McmaObject.Type) && p.CanRead && p.GetIndexParameters().Length == 0)
+                    .ToDictionary(p => p.Name, p => p.GetValue(value));
+
+        protected void WriteProperties(JsonWriter writer, JsonSerializer serializer, IDictionary<string, object> properties, bool preserveCasing)
+        {
+            foreach (var keyValuePair in properties)
+            {
+                if (keyValuePair.Value == null && serializer.NullValueHandling == NullValueHandling.Ignore)
+                    continue;
+
+                writer.WritePropertyName(preserveCasing ? keyValuePair.Key : keyValuePair.Key.PascalCaseToCamelCase());
+                serializer.Serialize(writer, keyValuePair.Value);
             }
         }
     }
