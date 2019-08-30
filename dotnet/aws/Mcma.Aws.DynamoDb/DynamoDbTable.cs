@@ -104,13 +104,18 @@ namespace Mcma.Aws.DynamoDb
             }
         }
 
-        public async Task<IEnumerable<TResource>> QueryAsync(Expression<Func<TResource, bool>> filter)
+        public async Task<IEnumerable<TResource>> QueryAsync(Expression<Func<TResource, bool>> filter = null)
         {
             var query = Table.Query(typeof(TResource).Name, new QueryFilter());
 
             var documents = await query.GetRemainingAsync();
 
-            return documents.Select(DocumentToResource).Where(filter != null ? filter.Compile() : x => true).ToList();
+            var results = documents.Select(DocumentToResource);
+            
+            if (filter != null)
+                results = results.Where(filter.Compile());
+                
+            return results.ToList();
         }
 
         public async Task<TResource> GetAsync(string id, TPartitionKey partitionKey)

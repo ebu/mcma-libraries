@@ -13,7 +13,7 @@ namespace Mcma.Api.QueryFilters
             var resourceProps = typeof(T).GetProperties();
             var parameter = Expression.Parameter(typeof(T), "resource");
             
-            Expression clause = Expression.Constant(true);
+            Expression clause = null;
 
             foreach (var keyValuePair in queryParams)
             {
@@ -34,7 +34,7 @@ namespace Mcma.Api.QueryFilters
                     clause = Expression.AndAlso(clause, equalityComparison);
             }
 
-            return Expression.Lambda<Func<T, bool>>(clause, parameter);
+            return clause != null ? Expression.Lambda<Func<T, bool>>(clause, parameter) : null;
         }
     }
 }

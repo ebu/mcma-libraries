@@ -8,7 +8,7 @@ namespace Mcma.Data
 {
     public interface IDbTable<TResource, TPartitionKey> where TResource : McmaResource
     {
-        Task<IEnumerable<TResource>> QueryAsync(Expression<Func<TResource, bool>> filter);
+        Task<IEnumerable<TResource>> QueryAsync(Expression<Func<TResource, bool>> filter = null);
 
         Task<TResource> GetAsync(string id, TPartitionKey partitionKey);
 

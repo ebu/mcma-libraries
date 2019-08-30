@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Mcma.Azure.CosmosDb.Json;
+using Mcma.Azure.CosmosDb.FilterExpressions;
 using Mcma.Core;
 using Mcma.Core.Logging;
 using Mcma.Core.Serialization;
 using Mcma.Data;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Linq;
-using Newtonsoft.Json;
 
 namespace Mcma.Azure.CosmosDb
 {
@@ -52,11 +49,23 @@ namespace Mcma.Azure.CosmosDb
         {
             var container = await GetContainerAsync();
 
-            IQueryable<TResource> query = container.GetItemLinqQueryable<TResource>();
-            if (filter != null)
-                query = query.Where(filter);
+            // This currently does not work due to issues with camel-case in the V3 Cosmos DB SDK:
+            // https://github.com/Azure/azure-cosmos-dotnet-v3/issues/570
+            // The fix is awaiting release, so once the new version is available on NuGet, we should
+            // be able to put this back
+
+            // var typeName = typeof(TResource).Name;
+            // IQueryable<TResource> query = container.GetItemLinqQueryable<TResource>().Where(x => x.Type == typeName);
+            // if (filter != null)
+            //     query = query.Where(filter);
                 
-            var queryIterator = query.ToFeedIterator();
+            // var queryIterator = query.ToFeedIterator();
+
+            var cosmosDbFilter = new CosmosDbFilter<TResource>(filter);
+
+            var queryDefinition = cosmosDbFilter.ToQueryDefinition();
+
+            var queryIterator = container.GetItemQueryIterator<TResource>(queryDefinition);
 
             while (queryIterator.HasMoreResults)
             {
@@ -69,7 +78,7 @@ namespace Mcma.Azure.CosmosDb
                 await AddQueryResultsAsync(filter, results, continuationToken);
         }
 
-        public async Task<IEnumerable<TResource>> QueryAsync(Expression<Func<TResource, bool>> filter)
+        public async Task<IEnumerable<TResource>> QueryAsync(Expression<Func<TResource, bool>> filter = null)
         {
             var results = new List<TResource>();
 

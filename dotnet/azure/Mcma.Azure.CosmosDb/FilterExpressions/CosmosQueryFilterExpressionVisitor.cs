@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Mcma.Core;
+using Mcma.Core.Utility;
 
 namespace Mcma.Azure.CosmosDb.FilterExpressions
 {
@@ -37,7 +38,7 @@ namespace Mcma.Azure.CosmosDb.FilterExpressions
 
         public string WhereClause { get; private set; } = string.Empty;
 
-        public List<string> Parameters { get; } = new List<string>();
+        public List<object> Parameters { get; } = new List<object>();
 
         public void Visit(Expression<Func<T, bool>> filter) => Visit(filter.Body);
 
@@ -142,11 +143,11 @@ namespace Mcma.Azure.CosmosDb.FilterExpressions
             else if (node.Member.DeclaringType == typeof(DateTime) && node.Member.Name == nameof(DateTime.UtcNow))
                 WhereClause += "GETUTCDATE()";
             else if (node.Member is PropertyInfo)
-                WhereClause += "[" + node.Member.Name + "]";
+                WhereClause += "root[\"" + node.Member.Name.PascalCaseToCamelCase() + "\"]";
             else if (node.Member is FieldInfo)
             {
                 var value = GetValue(node);
-                Parameters.Add(GetSqlTextValue(value));
+                Parameters.Add(value);
                 WhereClause += $"@p{Parameters.Count - 1}";
             }
         }
@@ -158,14 +159,21 @@ namespace Mcma.Azure.CosmosDb.FilterExpressions
                 if (!(node.Object is MemberExpression propertyMember))
                     throw new Exception($"Invalid expression. Cannot use string.{node.Method.Name} to check a value that is not a member of the type being queried.");
 
-                var likeParam = 
-                    (node.Method == StringContainsMethod || node.Method == StringEndsWithMethod ?  "%" : string.Empty) +
-                    GetValue(node.Arguments[0]).ToString() +
-                    (node.Method == StringContainsMethod || node.Method == StringStartsWithMethod ? "%" : string.Empty);
+                var likeClause = "[" + propertyMember.Member.Name + "] LIKE ";
 
+                var likeParam = GetValue(node.Arguments[0]).ToString();
                 Parameters.Add(likeParam);
+                var paramName = "@p" + (Parameters.Count - 1);
 
-                WhereClause += "[" + propertyMember.Member.Name + "] LIKE @p" + (Parameters.Count - 1);
+                if (node.Method == StringContainsMethod || node.Method == StringEndsWithMethod)
+                    likeClause += "'%' + ";
+
+                likeClause += paramName;
+
+                if (node.Method == StringContainsMethod || node.Method == StringStartsWithMethod)
+                    likeClause += " + '%'";
+
+                WhereClause += likeClause;
             }
             else if (node.Method.Name == "Contains")
             {
@@ -191,7 +199,7 @@ namespace Mcma.Azure.CosmosDb.FilterExpressions
                 var startIndex = Parameters.Count;
 
                 foreach (var value in values)
-                    Parameters.Add(GetSqlTextValue(value));
+                    Parameters.Add(value);
                 
                 WhereClause += "[" + propertyMember.Member.Name + "] IN (";
                 WhereClause += string.Join(",", Enumerable.Range(startIndex, Parameters.Count - startIndex).Select(i => $"@p{i}"));
@@ -204,23 +212,8 @@ namespace Mcma.Azure.CosmosDb.FilterExpressions
 
         private void VisitConstant(ConstantExpression node)
         {
-            Parameters.Add(GetSqlTextValue(node.Value));
+            Parameters.Add(node.Value);
             WhereClause += $"@p{Parameters.Count - 1}";
-        }
-
-        private string GetSqlTextValue(object value)
-        {
-            switch (value)
-            {
-                case DateTime dateTime:
-                    return $"'{dateTime:yyyy-MM-ddThh:mm:ss.fff}'";
-                case string str:
-                    return $"'{str}'";
-                case bool boolean:
-                    return boolean ? "1" : "0";
-                default:
-                    return value.ToString();
-            }
         }
 
         private static object GetValue(Expression member)
