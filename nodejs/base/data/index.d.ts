@@ -1,4 +1,4 @@
-import { Resource, JobBase, ResourceType } from "@mcma/core";
+import { JobBase, Resource, ResourceType } from "@mcma/core";
 
 export abstract class DbTable<T extends Resource> {
     constructor(type: ResourceType<T>);

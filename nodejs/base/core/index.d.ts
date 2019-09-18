@@ -12,6 +12,7 @@ export abstract class Resource {
 
 export interface ResourceConstructor<T extends Resource> {
     new(...args): T;
+
     name: string;
 }
 
@@ -46,7 +47,7 @@ export interface ResourceEndpointProperties {
 
 export class ResourceEndpoint extends Resource implements ResourceEndpointProperties {
     constructor(properties: ResourceEndpointProperties);
-    
+
     resourceType: string;
     httpEndpoint: string;
     authType?: string;
@@ -226,15 +227,19 @@ export class JobStatus {
 
 export interface ILogger {
     debug(msg: string, ...args: any[]): void;
+
     info(msg: string, ...args: any[]): void;
+
     warn(msg: string, ...args: any[]): void;
+
     error(msg: string, ...args: any[]): void;
+
     exception(error: Error): void;
 }
 
 export class Logger {
     static global: ILogger;
-    
+
     static debug(msg: string, ...args: any[]): void;
     static info(msg: string, ...args: any[]): void;
     static warn(msg: string, ...args: any[]): void;

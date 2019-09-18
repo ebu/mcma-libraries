@@ -69,6 +69,11 @@ subprojects {
                     object.peerDependencies[it] = it.startsWith("@mcma/") ? VERSION : object.peerDependencies[it]
                 }
             }
+            if (object.devDependencies != null) {
+                object.devDependencies.keySet().each {
+                    object.devDependencies[it] = it.startsWith("@mcma/") ? VERSION : object.devDependencies[it]
+                }
+            }
 
             def json = JsonOutput.toJson(object)
             def jsonPretty = JsonOutput.prettyPrint(json)

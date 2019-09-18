@@ -31,7 +31,7 @@ export enum HttpStatusCode {
     BAD_GATEWAY = 502,
     UNAVAILABLE = 503,
     GATEWAY_TIMEOUT = 504,
-    VERSION = 50 
+    VERSION = 50
 }
 
 export class McmaApiRequestConfig {
@@ -68,13 +68,14 @@ export class McmaApiRequestContext extends ContextVariableProvider {
     setResponseBody<T extends Resource>(resource: T): void;
 
     setResponseResourceCreated<T extends Resource>(resource: T): void;
-    setResponseBadRequestDueToMissingBody():void;
+    setResponseBadRequestDueToMissingBody(): void;
     setResponseResourceNotFound(): void;
 }
 
 declare module "@mcma/core" {
     interface ContextVariableProvider {
         publicUrl(): string;
+
         workerFunctionId(): string;
     }
 }
@@ -115,8 +116,11 @@ export type DbTableProviderFactory<T extends Resource> = (type: ResourceType<T>)
 
 export interface DefaultRouteBuilder<T> {
     overrideHandler(handler: McmaApiRouteHandler): void;
+
     onStarted(handleOnStarted: ((requestContext: McmaApiRequestContext) => Promise<void>)): boolean | void;
+
     onCompleted(handleOnCompleted: ((requestContext: McmaApiRequestContext) => Promise<T>)): void;
+
     build(): McmaApiRoute;
 }
 
@@ -130,7 +134,9 @@ export interface DefaultRoutes<T extends Resource> {
 
 export interface DefaultRouteConfigurator<T extends Resource> {
     configure<TConfigure = T | T[]>(configureRoute: (defaultRouteBuilder: DefaultRouteBuilder<TConfigure>) => void): DefaultRouteCollectionBuilder<T>;
+
     add(): DefaultRouteCollectionBuilder<T>;
+
     remove(): DefaultRouteCollectionBuilder<T>;
 }
 

@@ -1,5 +1,5 @@
 //import { Lambda } from "aws-sdk";
-import { Authenticator, AuthProvider, HttpRequestConfig, ResourceManager, ResourceManagerProvider } from "@mcma/client";
+import { Authenticator, AuthProvider, HttpRequestConfig } from "@mcma/client";
 
 interface AwsConfig {
     credentials: {

@@ -36,6 +36,9 @@
         "@mcma/data": "0.5.3"
     },
     "devDependencies": {
+        "@mcma/client": "0.5.3",
+        "@mcma/core": "0.5.3",
+        "@mcma/data": "0.5.3",
         "jasmine": "^3.2.0"
     }
 }

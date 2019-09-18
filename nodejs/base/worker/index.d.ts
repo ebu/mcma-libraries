@@ -1,6 +1,6 @@
-import { ContextVariableProvider, JobAssignment, Job, JobProfile, JobParameterBag, JobStatus, Resource, ResourceType } from "@mcma/core";
+import { ContextVariableProvider, Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, ResourceType } from "@mcma/core";
 import { ResourceManager, ResourceManagerProvider } from "@mcma/client";
-import { DbTableProvider, DbTable } from "@mcma/data";
+import { DbTable, DbTableProvider } from "@mcma/data";
 
 export class WorkerRequest extends ContextVariableProvider {
     constructor(request: { operationName: string, contextVariables?: { [key: string]: string }, input?: any });
@@ -50,14 +50,17 @@ export interface NamedProfile extends Profile {
 
 export interface JobHandlerBuilder {
     addProfile(profileName: string, profileHandler: ProfileHandler): JobHandlerBuilder;
+
     addProfile(profileName: string, profile: Profile): JobHandlerBuilder;
+
     addProfile(profile: NamedProfileHandler): JobHandlerBuilder;
+
     addProfile(profile: NamedProfile): JobHandlerBuilder;
 }
 
 export class WorkerJobHelper<T extends Job> {
     constructor(jobType: ResourceType<T>, dbTable: DbTable<T>, resourceManager: ResourceManager, request: WorkerRequest, jobAssignmentId: string);
-    
+
     getTable(): DbTable<T>;
     getResourceManager(): ResourceManager;
     getRequest(): WorkerRequest;
@@ -76,7 +79,7 @@ export class WorkerJobHelper<T extends Job> {
     updateJobAssignmentOuput(): Promise<JobAssignment>;
     updateJobAssignmentStatus(status: JobStatus | string, statusMessage?: string): Promise<JobAssignment>;
     updateJobAssignment(update: (jobAssignment: JobAssignment) => void, sendNotification?: boolean): Promise<JobAssignment>;
-    sendNotification(): Promise<void>; 
+    sendNotification(): Promise<void>;
 }
 
 export class WorkerBuilder {

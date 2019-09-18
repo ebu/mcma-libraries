@@ -27,6 +27,7 @@
         "@mcma/core": "0.5.3"
     },
     "devDependencies": {
+        "@mcma/core": "0.5.3",
         "jasmine": "^3.3.1"
     }
 }
