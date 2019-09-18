@@ -14,6 +14,7 @@
         "url": "git+https://github.com/ebu/mcma-libraries/mcma-core-nodejs.git"
     },
     "keywords": [
+        "ebu",
         "mcma"
     ],
     "author": "Joost Rovers <joost.rovers@glookast.com>",

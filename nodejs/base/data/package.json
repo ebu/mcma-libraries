@@ -14,8 +14,8 @@
         "url": "git+https://github.com/ebu/mcma-libraries/mcma-data-nodejs.git"
     },
     "keywords": [
-        "mcma",
-        "awsv4"
+        "ebu",
+        "mcma"
     ],
     "author": "Evan Verney-Fink <evan@triskel-inc.com>",
     "license": "Apache-2.0",
@@ -23,7 +23,6 @@
         "url": "https://github.com/ebu/mcma-libraries/mcma-data-nodejs/issues"
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-data-nodejs#readme",
-    "dependencies": {},
     "peerDependencies": {
         "@mcma/core": "0.5.3"
     },

@@ -28,7 +28,7 @@
     "dependencies": {
         "pluralize": "^7.0.0",
         "uri-templates": "^0.2.0",
-        "uuid": "^3.3.2"
+        "uuid": "^3.3.3"
     },
     "peerDependencies": {
         "@mcma/client": "0.5.3",

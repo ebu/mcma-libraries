@@ -23,7 +23,6 @@
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodes/mcma-worker#readme",
-    "dependencies": {},
     "peerDependencies": {
         "@mcma/client": "0.5.3",
         "@mcma/core": "0.5.3",

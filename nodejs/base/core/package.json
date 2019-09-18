@@ -23,8 +23,7 @@
         "url": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs/issues"
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs#readme",
-    "dependencies": {},
     "devDependencies": {
-        "jasmine": "^3.3.1"
+        "jasmine": "^3.4.0"
     }
 }

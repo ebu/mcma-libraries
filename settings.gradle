@@ -1,0 +1,12 @@
+include "nodejs",
+        "nodejs:aws",
+        "nodejs:aws:api-gateway",
+        "nodejs:aws:client",
+        "nodejs:aws:dynamodb",
+        "nodejs:aws:lambda-worker-invoker",
+        "nodejs:base",
+        "nodejs:base:api",
+        "nodejs:base:client",
+        "nodejs:base:core",
+        "nodejs:base:data",
+        "nodejs:base:worker"
