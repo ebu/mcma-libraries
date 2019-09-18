@@ -39,7 +39,10 @@ async function request(config, authenticator) {
     try {
         return await axios(config);
     } catch (error) {
-        throw new Exception("HttpClient: " + config.method + " request to " + config.url + " failed!", error, { config, response: error.response.data });
+        throw new Exception("HttpClient: " + config.method + " request to " + config.url + " failed!", error, {
+            config,
+            response: error.response.data
+        });
     }
 };
 

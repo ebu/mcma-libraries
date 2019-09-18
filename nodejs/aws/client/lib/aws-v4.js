@@ -106,7 +106,7 @@ function buildStringToSign(datetime, credentialScope, hashedCanonicalRequest) {
 }
 
 function buildCredentialScope(datetime, region, service) {
-    return datetime.substr(0, 8) + "/" + region + "/" + service + "/" + AWS4_REQUEST
+    return datetime.substr(0, 8) + "/" + region + "/" + service + "/" + AWS4_REQUEST;
 }
 
 function calculateSigningKey(secretKey, datetime, region, service) {
@@ -129,7 +129,7 @@ function generateSignature(request, credentials, datetime, credentialScope) {
     // parse the url and create a params object from the query string, if any
     const requestUrl = new URL(request.url);
 
-    let requestQueryParams = {}
+    let requestQueryParams = {};
     for (let entry of requestUrl.searchParams.entries()) {
         requestQueryParams[entry[0]] = entry[1];
     }
@@ -213,7 +213,7 @@ class AwsV4PresignedUrlGenerator {
             const requestUrlParsed = new URL(requestUrl);
 
             // gather inputs for generating the signature
-            const headers = {}
+            const headers = {};
             headers[HOST] = requestUrlParsed.host;
 
             const datetime = getAwsDate();
@@ -232,7 +232,7 @@ class AwsV4PresignedUrlGenerator {
                 requestUrlParsed.searchParams.set(X_AMZ_SECURITY_TOKEN_QUERY_PARAM, credentials.sessionToken);
             }
 
-            let params = {}
+            let params = {};
             for (let entry of requestUrlParsed.searchParams.entries()) {
                 params[entry[0]] = entry[1];
             }

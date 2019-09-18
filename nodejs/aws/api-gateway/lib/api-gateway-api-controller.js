@@ -23,13 +23,13 @@ class ApiGatewayApiController {
                 headers: requestContext.response.headers,
                 body: requestContext.response.body
             };
-        }
+        };
     }
 }
 
 McmaApiRouteCollection.prototype.toApiGatewayApiController = function toApiGatewayApiController() {
     return new ApiGatewayApiController(this);
-}
+};
 
 module.exports = {
     ApiGatewayApiController

@@ -17,7 +17,7 @@ class AuthProvider {
 
         this.get = (authType, authContext) => {
             authType = Object.keys(registeredAuthTypes).find(k => k.toLowerCase() === (authType || "").toLowerCase());
-            
+
             return authType && registeredAuthTypes[authType] && registeredAuthTypes[authType](authContext);
         };
     }

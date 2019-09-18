@@ -9,7 +9,7 @@ class WorkerRequest extends ContextVariableProvider {
         if (!operationName || typeof operationName !== "string" || operationName.length === 0) {
             throw new Error("operationName must be a non-empty string.");
         }
-        
+
         super(contextVariables);
 
         this.operationName = operationName;

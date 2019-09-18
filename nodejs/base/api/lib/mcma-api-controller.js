@@ -17,8 +17,8 @@ const getDefaultResponseHeaders = () => {
         "Date": new Date().toUTCString(),
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
-    }
-}
+    };
+};
 
 class McmaApiController {
     constructor(routes) {

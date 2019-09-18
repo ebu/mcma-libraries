@@ -9,8 +9,7 @@ function camelCaseToKebabCase(value) {
                 result += "-";
             }
             result += value[i].toLowerCase();
-        }
-        else {
+        } else {
             result += value[i];
         }
     }

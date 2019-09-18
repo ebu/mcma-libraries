@@ -308,12 +308,12 @@ class Exception extends Error {
 class JobStatus {
     constructor(name) {
         this.name = name;
-        
+
         this.equals = (compareTo) => {
             if (typeof compareTo === "object") {
                 compareTo = compareTo.name;
             }
-            
+
             return typeof compareTo === "string" && this.name.toLowerCase() === compareTo.toLowerCase();
         };
     }

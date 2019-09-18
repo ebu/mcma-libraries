@@ -6,7 +6,7 @@ DbTable.prototype.getAndThrowIfNotFound = async function getAndThrowIfNotFound(i
         throw new Error("Resource of type " + this.type + " with id " + id + " was not found.");
     }
     return resource;
-}
+};
 
 DbTable.prototype.updateJobStatus = async function updateJobStatus(jobId, status, statusMessage) {
     const jobBase = await this.getAndThrowIfNotFound(jobId);
@@ -14,4 +14,4 @@ DbTable.prototype.updateJobStatus = async function updateJobStatus(jobId, status
     jobBase.statusMessage = statusMessage;
     await this.put(jobId, jobBase);
     return jobBase;
-}
+};

@@ -8,7 +8,7 @@ const { McmaApiRouteCollection, McmaApiRoute } = require("./route-collection");
 class DefaultRouteBuilder {
     constructor(httpMethod, path, defaultHandlerBuilder) {
         let handler = null;
-        
+
         this.overrideHandler = (x) => {
             handler = x;
         };
@@ -22,7 +22,7 @@ class DefaultRouteBuilder {
             defaultHandlerBuilder.onCompleted = x;
             return this;
         };
-        
+
         this.build = () => {
             return new McmaApiRoute(httpMethod, path, handler || defaultHandlerBuilder.create());
         };
@@ -111,8 +111,8 @@ class DefaultRouteCollectionBuilder {
                     }
                     return this;
                 }
-            }
-        } 
+            };
+        };
     }
 }
 
@@ -130,7 +130,7 @@ function defaultQueryBuilder(dbTableProvider, root) {
                         }
                     }
 
-                    var filter = 
+                    var filter =
                         requestContext.request.queryStringParameters && Object.keys(requestContext.request.queryStringParameters).length > 0
                             ? filters.inMemoryTextValues(requestContext.request.queryStringParameters)
                             : null;
@@ -143,7 +143,7 @@ function defaultQueryBuilder(dbTableProvider, root) {
                     }
 
                     requestContext.setResponseBody(resources);
-                }
+                };
             }
         )
     );
@@ -178,7 +178,7 @@ function defaultCreateBuilder(dbTableProvider, root) {
                     }
 
                     requestContext.setResponseResourceCreated(resource);
-                }
+                };
             }
         )
     );
@@ -210,7 +210,7 @@ function defaultGetBuilder(dbTableProvider, root) {
                     } else {
                         requestContext.setResponseResourceNotFound();
                     }
-                }
+                };
             }
         )
     );
@@ -222,7 +222,7 @@ function defaultUpdateBuilder(dbTableProvider, root) {
         root + "/{id}",
         defaultRouteHandlerBuilder(
             (onStarted, onCompleted) => {
-               return async (requestContext) => {
+                return async (requestContext) => {
                     if (onStarted) {
                         const continueRequest = await onStarted(requestContext);
                         if (continueRequest !== undefined && !continueRequest) {
@@ -245,7 +245,7 @@ function defaultUpdateBuilder(dbTableProvider, root) {
                     }
 
                     requestContext.setResponseBody(resource);
-                }
+                };
             }
         )
     );
@@ -281,7 +281,7 @@ function defaultDeleteBuilder(dbTableProvider, root) {
                     if (onCompleted) {
                         await onCompleted(requestContext, resource);
                     }
-                }
+                };
             }
         )
     );

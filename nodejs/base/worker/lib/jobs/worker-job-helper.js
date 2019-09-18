@@ -1,4 +1,4 @@
- const { JobStatus, JobParameterBag, Utils } = require("@mcma/core");
+const { JobStatus, JobParameterBag, Utils } = require("@mcma/core");
 
 class WorkerJobHelper {
     constructor(jobType, dbTable, resourceManager, request, jobAssignmentId) {
@@ -75,7 +75,7 @@ class WorkerJobHelper {
         };
 
         this.updateJobAssignmentStatus = async (status, statusMessage) => {
-            if (typeof status === 'object' && status.name) {
+            if (typeof status === "object" && status.name) {
                 status = status.name;
             }
             return await this.updateJobAssignment(
