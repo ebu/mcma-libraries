@@ -86,7 +86,10 @@ export class JobParameterBag extends Resource {
 }
 
 export class Locator extends Resource {
-    constructor(properties: any);
+    constructor();
+    constructor(type: string);
+    constructor(properties: object);
+    constructor(type: string, properties: object);
 
     [key: string]: any;
 }
@@ -119,7 +122,7 @@ export interface JobBaseProperties {
 }
 
 export abstract class JobBase extends Resource implements JobBaseProperties {
-    constructor(properties: JobBaseProperties);
+    protected constructor(type: string, properties: JobBaseProperties);
     notificationEndpoint?: NotificationEndpointProperties;
     status?: string;
     statusMessage?: string;

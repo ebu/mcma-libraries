@@ -62,7 +62,7 @@ class Resource {
 
         if (properties) {
             for (const prop in properties) {
-                if (prop !== "@type") {
+                if (properties.hasOwnProperty(prop) && prop !== "@type") {
                     this[prop] = properties[prop];
                 }
             }
@@ -70,6 +70,8 @@ class Resource {
 
         this.onCreate = (id) => onResourceCreate(this, id);
         this.onUpsert = (id) => onResourceUpsert(this, id);
+
+        this.checkProperty = (propertyName, expectedType, required) => checkProperty(this, propertyName, expectedType, required);
     }
 }
 
@@ -133,8 +135,12 @@ class JobParameterBag extends Resource {
 }
 
 class Locator extends Resource {
-    constructor(properties) {
-        super("Locator", properties);
+    constructor(type, properties) {
+        if (typeof type === "object" && !properties) {
+            properties = type;
+            type = "Locator";
+        }
+        super(type, properties);
     }
 }
 

@@ -18,7 +18,7 @@
         "mcma",
         "aws"
     ],
-    "author": "Joost Rovers <joost.rovers@glookast.com>",
+    "author": "Joost Rovers <joost@rovers.pt>",
     "license": "Apache-2.0",
     "bugs": {
         "url": "https://github.com/ebu/mcma-libraries/issues"
