@@ -40,7 +40,7 @@ class ProcessJobAssignment {
             } catch (e) {
                 Logger.exception(e);
                 try {
-                    await workerJobHelper.fail(e);
+                    await workerJobHelper.fail(e.message);
                 } catch (inner) {
                     Logger.exception(inner);
                 }

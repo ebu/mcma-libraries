@@ -30,7 +30,7 @@ class WorkerJobHelper {
 
             profile = await resourceManager.resolve(job.jobProfile);
 
-            job.jobOutput = new JobParameterBag();
+            job.jobOutput = jobAssignment.jobOutput || new JobParameterBag();
         };
 
         this.validateJob = (supportedProfiles) => {

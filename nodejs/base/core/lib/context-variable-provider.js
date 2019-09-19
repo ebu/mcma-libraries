@@ -2,6 +2,7 @@ class ContextVariableProvider {
     constructor(contextVariables) {
         contextVariables = contextVariables || {};
 
+        this.contextVariables = contextVariables;
         this.getAllContextVariables = () => contextVariables;
 
         this.getRequiredContextVariable = (key) => {
