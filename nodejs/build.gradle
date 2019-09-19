@@ -107,7 +107,7 @@ subprojects {
         enabled file("package.json").exists()
         inputs.file("package.json")
         commandLine npmExecutable
-        args "publish"
+        args "publish", "--access", "public"
     }
 
     task clean(type: Delete) {
