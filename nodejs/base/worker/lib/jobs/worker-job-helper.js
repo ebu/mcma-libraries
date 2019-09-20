@@ -24,7 +24,7 @@ class WorkerJobHelper {
         this.getJobOutput = () => job.jobOutput;
 
         this.initialize = async () => {
-            jobAssignment = await this.updateJobAssignmentStatus(JobStatus.running);
+            jobAssignment = await this.updateJobAssignmentStatus(JobStatus.RUNNING);
 
             job = await resourceManager.resolve(jobAssignment.job);
 
@@ -62,12 +62,12 @@ class WorkerJobHelper {
             if (typeof error !== "string") {
                 error = JSON.stringify(error);
             }
-            return await this.updateJobAssignmentStatus(JobStatus.failed, error);
+            return await this.updateJobAssignmentStatus(JobStatus.FAILED, error);
         };
 
         this.complete = async () => {
             await this.updateJobAssignmentOutput();
-            return await this.updateJobAssignmentStatus(JobStatus.completed);
+            return await this.updateJobAssignmentStatus(JobStatus.COMPLETED);
         };
 
         this.updateJobAssignmentOutput = async () => {
@@ -75,9 +75,6 @@ class WorkerJobHelper {
         };
 
         this.updateJobAssignmentStatus = async (status, statusMessage) => {
-            if (typeof status === "object" && status.name) {
-                status = status.name;
-            }
             return await this.updateJobAssignment(
                 ja => {
                     ja.status = status;

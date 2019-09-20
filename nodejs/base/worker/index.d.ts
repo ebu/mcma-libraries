@@ -77,7 +77,7 @@ export class WorkerJobHelper<T extends Job> {
     complete(): Promise<JobAssignment>;
     fail(error: Error | string | any): Promise<JobAssignment>;
     updateJobAssignmentOuput(): Promise<JobAssignment>;
-    updateJobAssignmentStatus(status: JobStatus | string, statusMessage?: string): Promise<JobAssignment>;
+    updateJobAssignmentStatus(status: JobStatus, statusMessage?: string): Promise<JobAssignment>;
     updateJobAssignment(update: (jobAssignment: JobAssignment) => void, sendNotification?: boolean): Promise<JobAssignment>;
     sendNotification(): Promise<void>;
 }
