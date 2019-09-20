@@ -311,26 +311,14 @@ class Exception extends Error {
     }
 }
 
-class JobStatus {
-    constructor(name) {
-        this.name = name;
-
-        this.equals = (compareTo) => {
-            if (typeof compareTo === "object") {
-                compareTo = compareTo.name;
-            }
-
-            return typeof compareTo === "string" && this.name.toLowerCase() === compareTo.toLowerCase();
-        };
-    }
-}
-
-JobStatus.new = new JobStatus("NEW");
-JobStatus.queued = new JobStatus("QUEUED");
-JobStatus.scheduled = new JobStatus("SCHEDULED");
-JobStatus.running = new JobStatus("RUNNING");
-JobStatus.completed = new JobStatus("COMPLETED");
-JobStatus.failed = new JobStatus("FAILED");
+const JobStatus = Object.freeze({
+    NEW: "NEW",
+    QUEUED: "QUEUED",
+    SCHEDULED: "SCHEDULED",
+    RUNNING: "RUNNING",
+    COMPLETED: "COMPLETED",
+    FAILED: "FAILED",
+});
 
 module.exports = {
     onResourceCreate,

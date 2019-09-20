@@ -214,18 +214,13 @@ export class Exception extends Error {
     constructor(message: string, cause: string, context: any);
 }
 
-export class JobStatus {
-    constructor(name: string);
-
-    name: string;
-    equals(compareTo: string | JobStatus): boolean;
-
-    static new: JobStatus;
-    static queued: JobStatus;
-    static scheduled: JobStatus;
-    static running: JobStatus;
-    static completed: JobStatus;
-    static failed: JobStatus;
+export enum JobStatus {
+    NEW = "NEW",
+    QUEUED = "QUEUED",
+    SCHEDULED = "SCHEDULED",
+    RUNNING = "RUNNING",
+    COMPLETED = "COMPLETED",
+    FAILED = "FAILED",
 }
 
 export interface ILogger {
