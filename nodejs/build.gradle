@@ -76,7 +76,7 @@ subprojects {
             }
 
             def json = JsonOutput.toJson(object)
-            def jsonPretty = JsonOutput.prettyPrint(json)
+            def jsonPretty = JsonOutput.prettyPrint(json) + "\n"
 
             packageJson.write(jsonPretty)
         }
