@@ -221,6 +221,7 @@ export enum JobStatus {
     RUNNING = "RUNNING",
     COMPLETED = "COMPLETED",
     FAILED = "FAILED",
+    CANCELED = "CANCELED",
 }
 
 export interface ILogger {

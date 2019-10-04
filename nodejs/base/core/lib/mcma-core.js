@@ -318,6 +318,7 @@ const JobStatus = Object.freeze({
     RUNNING: "RUNNING",
     COMPLETED: "COMPLETED",
     FAILED: "FAILED",
+    CANCELED: "CANCELED",
 });
 
 module.exports = {
