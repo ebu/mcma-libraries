@@ -58,16 +58,23 @@ class WorkerJobHelper {
             }
         };
 
+        this.complete = async () => {
+            await this.updateJobAssignmentOutput();
+            return await this.updateJobAssignmentStatus(JobStatus.COMPLETED);
+        };
+
         this.fail = async (error) => {
-            if (typeof error !== "string") {
+            if (!!error && typeof error !== "string") {
                 error = JSON.stringify(error);
             }
             return await this.updateJobAssignmentStatus(JobStatus.FAILED, error);
         };
 
-        this.complete = async () => {
-            await this.updateJobAssignmentOutput();
-            return await this.updateJobAssignmentStatus(JobStatus.COMPLETED);
+        this.cancel = async (message) => {
+            if (!!message && typeof message !== "string") {
+                message = JSON.stringify(message);
+            }
+            return await this.updateJobAssignmentStatus(JobStatus.CANCELED, message);
         };
 
         this.updateJobAssignmentOutput = async () => {

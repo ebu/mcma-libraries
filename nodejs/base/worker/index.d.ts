@@ -76,6 +76,7 @@ export class WorkerJobHelper<T extends Job> {
     validateJob(supportedProfiles: string[]): void;
     complete(): Promise<JobAssignment>;
     fail(error: Error | string | any): Promise<JobAssignment>;
+    cancel(message: string | any): Promise<JobAssignment>;
     updateJobAssignmentOuput(): Promise<JobAssignment>;
     updateJobAssignmentStatus(status: JobStatus, statusMessage?: string): Promise<JobAssignment>;
     updateJobAssignment(update: (jobAssignment: JobAssignment) => void, sendNotification?: boolean): Promise<JobAssignment>;
