@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-client",
-    "version": "0.5.3",
+    "version": "0.6.3",
     "description": "Node module with code for using AWS V4 authentication in MCMA API handlers and workers",
     "engines": {
         "node": "~8.10.0"
@@ -18,7 +18,7 @@
         "mcma",
         "aws"
     ],
-    "author": "Joost Rovers <joost.rovers@glookast.com>",
+    "author": "Joost Rovers <joost@rovers.pt>",
     "license": "Apache-2.0",
     "bugs": {
         "url": "https://github.com/ebu/mcma-libraries/issues"
@@ -28,10 +28,12 @@
         "crypto-js": "^3.1.9-1"
     },
     "peerDependencies": {
-        "@mcma/client": "0.5.3",
-        "@mcma/core": "0.5.3"
+        "@mcma/client": "0.6.3",
+        "@mcma/core": "0.6.3"
     },
     "devDependencies": {
+        "@mcma/client": "0.6.3",
+        "@mcma/core": "0.6.3",
         "jasmine": "^3.2.0"
     }
 }

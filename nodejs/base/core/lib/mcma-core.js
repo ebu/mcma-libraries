@@ -62,7 +62,7 @@ class Resource {
 
         if (properties) {
             for (const prop in properties) {
-                if (prop !== "@type") {
+                if (properties.hasOwnProperty(prop) && prop !== "@type") {
                     this[prop] = properties[prop];
                 }
             }
@@ -70,6 +70,8 @@ class Resource {
 
         this.onCreate = (id) => onResourceCreate(this, id);
         this.onUpsert = (id) => onResourceUpsert(this, id);
+
+        this.checkProperty = (propertyName, expectedType, required) => checkProperty(this, propertyName, expectedType, required);
     }
 }
 
@@ -133,8 +135,12 @@ class JobParameterBag extends Resource {
 }
 
 class Locator extends Resource {
-    constructor(properties) {
-        super("Locator", properties);
+    constructor(type, properties) {
+        if (typeof type === "object" && !properties) {
+            properties = type;
+            type = "Locator";
+        }
+        super(type, properties);
     }
 }
 
@@ -305,26 +311,15 @@ class Exception extends Error {
     }
 }
 
-class JobStatus {
-    constructor(name) {
-        this.name = name;
-        
-        this.equals = (compareTo) => {
-            if (typeof compareTo === "object") {
-                compareTo = compareTo.name;
-            }
-            
-            return typeof compareTo === "string" && this.name.toLowerCase() === compareTo.toLowerCase();
-        };
-    }
-}
-
-JobStatus.new = new JobStatus("NEW");
-JobStatus.queued = new JobStatus("QUEUED");
-JobStatus.scheduled = new JobStatus("SCHEDULED");
-JobStatus.running = new JobStatus("RUNNING");
-JobStatus.completed = new JobStatus("COMPLETED");
-JobStatus.failed = new JobStatus("FAILED");
+const JobStatus = Object.freeze({
+    NEW: "NEW",
+    QUEUED: "QUEUED",
+    SCHEDULED: "SCHEDULED",
+    RUNNING: "RUNNING",
+    COMPLETED: "COMPLETED",
+    FAILED: "FAILED",
+    CANCELED: "CANCELED",
+});
 
 module.exports = {
     onResourceCreate,

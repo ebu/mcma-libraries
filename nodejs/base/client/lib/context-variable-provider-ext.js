@@ -6,4 +6,4 @@ ContextVariableProvider.prototype.getResourceManagerConfig = function getResourc
         servicesAuthType: this.getOptionalContextVariable("ServicesAuthType"),
         servicesAuthContext: this.getOptionalContextVariable("ServicesAuthContext")
     };
-}
+};

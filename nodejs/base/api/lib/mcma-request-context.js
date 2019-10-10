@@ -24,7 +24,7 @@ class McmaApiResponse {
 class McmaApiRequestContext extends ContextVariableProvider {
     constructor(request, contextVariables) {
         super(contextVariables);
-        
+
         this.request = request;
         this.response = new McmaApiResponse();
     }
@@ -41,7 +41,7 @@ class McmaApiRequestContext extends ContextVariableProvider {
         this.response.statusCode = statusCode;
         this.response.statusMessage = statusMessage;
     }
-    
+
     setResponseBody(body) {
         this.response.body = body;
     }
@@ -49,13 +49,13 @@ class McmaApiRequestContext extends ContextVariableProvider {
     setResponseBadRequestDueToMissingBody() {
         this.setResponseStatusCode(HttpStatusCode.BAD_REQUEST, "Missing request body.");
     }
-    
+
     setResponseResourceCreated(resource) {
         this.response.headers["Location"] = resource.id;
         this.setResponseStatusCode(HttpStatusCode.CREATED);
         this.setResponseBody(resource);
     }
-    
+
     setResponseResourceNotFound() {
         this.setResponseStatusCode(HttpStatusCode.NOT_FOUND, "No resource found on path '" + this.request.path + "'.");
     }
@@ -63,11 +63,11 @@ class McmaApiRequestContext extends ContextVariableProvider {
 
 ContextVariableProvider.prototype.publicUrl = function publicUrl() {
     return this.getRequiredContextVariable("PublicUrl");
-}
+};
 
 ContextVariableProvider.prototype.workerFunctionId = function workerFunctionId() {
     return this.getRequiredContextVariable("WorkerFunctionId");
-}
+};
 
 module.exports = {
     McmaApiRequest,

@@ -96,7 +96,7 @@ const getStatusError = (statusCode) => {
     }
 
     return "";
-}
+};
 
 module.exports = {
     HttpStatusCode,

@@ -12,6 +12,7 @@ export abstract class Resource {
 
 export interface ResourceConstructor<T extends Resource> {
     new(...args): T;
+
     name: string;
 }
 
@@ -46,7 +47,7 @@ export interface ResourceEndpointProperties {
 
 export class ResourceEndpoint extends Resource implements ResourceEndpointProperties {
     constructor(properties: ResourceEndpointProperties);
-    
+
     resourceType: string;
     httpEndpoint: string;
     authType?: string;
@@ -85,7 +86,10 @@ export class JobParameterBag extends Resource {
 }
 
 export class Locator extends Resource {
-    constructor(properties: any);
+    constructor();
+    constructor(type: string);
+    constructor(properties: object);
+    constructor(type: string, properties: object);
 
     [key: string]: any;
 }
@@ -118,7 +122,7 @@ export interface JobBaseProperties {
 }
 
 export abstract class JobBase extends Resource implements JobBaseProperties {
-    constructor(properties: JobBaseProperties);
+    protected constructor(type: string, properties: JobBaseProperties);
     notificationEndpoint?: NotificationEndpointProperties;
     status?: string;
     statusMessage?: string;
@@ -210,31 +214,31 @@ export class Exception extends Error {
     constructor(message: string, cause: string, context: any);
 }
 
-export class JobStatus {
-    constructor(name: string);
-
-    name: string;
-    equals(compareTo: string | JobStatus): boolean;
-
-    static new: JobStatus;
-    static queued: JobStatus;
-    static scheduled: JobStatus;
-    static running: JobStatus;
-    static completed: JobStatus;
-    static failed: JobStatus;
+export enum JobStatus {
+    NEW = "NEW",
+    QUEUED = "QUEUED",
+    SCHEDULED = "SCHEDULED",
+    RUNNING = "RUNNING",
+    COMPLETED = "COMPLETED",
+    FAILED = "FAILED",
+    CANCELED = "CANCELED",
 }
 
 export interface ILogger {
     debug(msg: string, ...args: any[]): void;
+
     info(msg: string, ...args: any[]): void;
+
     warn(msg: string, ...args: any[]): void;
+
     error(msg: string, ...args: any[]): void;
+
     exception(error: Error): void;
 }
 
 export class Logger {
     static global: ILogger;
-    
+
     static debug(msg: string, ...args: any[]): void;
     static info(msg: string, ...args: any[]): void;
     static warn(msg: string, ...args: any[]): void;

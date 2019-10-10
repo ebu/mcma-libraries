@@ -4,7 +4,7 @@ const { Worker } = require("../worker");
 class WorkerBuilder {
     constructor() {
         const operationHandlerBuilders = {};
-        
+
         this.handleOperation = (operationName, configureOperation) => {
             if (!configureOperation) {
                 if (typeof operationName === "function" && operationName.name !== "Function") {

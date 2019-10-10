@@ -40,7 +40,7 @@ class JobHandlerBuilder {
             return this;
         };
 
-        this.applyTo = (workerBuilder) => 
+        this.applyTo = (workerBuilder) =>
             workerBuilder.handleOperation(ProcessJobAssignment.name, configureOperation => configureOperation.handle(jobHandler));
     }
 }
@@ -49,4 +49,4 @@ WorkerBuilder.prototype.handleJobsOfType = function handleJobsOfType(jobType, db
     const jobHandlerBuilder = new JobHandlerBuilder(Utils.getTypeName(jobType), dbTableProvider, resourceManagerProvider);
     configure(jobHandlerBuilder);
     return jobHandlerBuilder.applyTo(this);
-}
+};

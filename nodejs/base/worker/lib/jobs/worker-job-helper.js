@@ -1,4 +1,4 @@
- const { JobStatus, JobParameterBag, Utils } = require("@mcma/core");
+const { JobStatus, JobParameterBag, Utils } = require("@mcma/core");
 
 class WorkerJobHelper {
     constructor(jobType, dbTable, resourceManager, request, jobAssignmentId) {
@@ -24,13 +24,13 @@ class WorkerJobHelper {
         this.getJobOutput = () => job.jobOutput;
 
         this.initialize = async () => {
-            jobAssignment = await this.updateJobAssignmentStatus(JobStatus.running);
+            jobAssignment = await this.updateJobAssignmentStatus(JobStatus.RUNNING);
 
             job = await resourceManager.resolve(jobAssignment.job);
 
             profile = await resourceManager.resolve(job.jobProfile);
 
-            job.jobOutput = new JobParameterBag();
+            job.jobOutput = jobAssignment.jobOutput || new JobParameterBag();
         };
 
         this.validateJob = (supportedProfiles) => {
@@ -58,16 +58,23 @@ class WorkerJobHelper {
             }
         };
 
-        this.fail = async (error) => {
-            if (typeof error !== "string") {
-                error = JSON.stringify(error);
-            }
-            return await this.updateJobAssignmentStatus(JobStatus.failed, error);
-        };
-
         this.complete = async () => {
             await this.updateJobAssignmentOutput();
-            return await this.updateJobAssignmentStatus(JobStatus.completed);
+            return await this.updateJobAssignmentStatus(JobStatus.COMPLETED);
+        };
+
+        this.fail = async (error) => {
+            if (!!error && typeof error !== "string") {
+                error = JSON.stringify(error);
+            }
+            return await this.updateJobAssignmentStatus(JobStatus.FAILED, error);
+        };
+
+        this.cancel = async (message) => {
+            if (!!message && typeof message !== "string") {
+                message = JSON.stringify(message);
+            }
+            return await this.updateJobAssignmentStatus(JobStatus.CANCELED, message);
         };
 
         this.updateJobAssignmentOutput = async () => {
@@ -75,9 +82,6 @@ class WorkerJobHelper {
         };
 
         this.updateJobAssignmentStatus = async (status, statusMessage) => {
-            if (typeof status === 'object' && status.name) {
-                status = status.name;
-            }
             return await this.updateJobAssignment(
                 ja => {
                     ja.status = status;

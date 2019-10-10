@@ -20,7 +20,9 @@ class ConsoleLogger {
     }
 }
 
-function Logger() {}
+function Logger() {
+}
+
 Logger.global = new ConsoleLogger();
 Logger.debug = (msg, ...args) => Logger.global.debug(msg, ...args);
 Logger.info = (msg, ...args) => Logger.global.info(msg, ...args);

@@ -1,6 +1,6 @@
 {
     "name": "@mcma/core",
-    "version": "0.5.3",
+    "version": "0.6.3",
     "description": "Node module with type definitions and helper utils for the EBU MCMA framework",
     "engines": {
         "node": "~8.10.0"
@@ -14,17 +14,16 @@
         "url": "git+https://github.com/ebu/mcma-libraries/mcma-core-nodejs.git"
     },
     "keywords": [
-        "mcma",
-        "awsv4"
+        "ebu",
+        "mcma"
     ],
-    "author": "Joost Rovers <joost.rovers@glookast.com>",
+    "author": "Joost Rovers <joost@rovers.pt>",
     "license": "Apache-2.0",
     "bugs": {
         "url": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs/issues"
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs#readme",
-    "dependencies": {},
     "devDependencies": {
-        "jasmine": "^3.3.1"
+        "jasmine": "^3.4.0"
     }
 }

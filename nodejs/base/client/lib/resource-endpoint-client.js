@@ -24,14 +24,14 @@ class ResourceEndpointClient {
             } catch (error) {
                 throw new Exception("ResourceEndpoint: Error occurred while getting authenticator", error, resourceEndpoint);
             }
-        }
+        };
 
         this.request = async (config) => {
             config.baseURL = resourceEndpoint.httpEndpoint;
 
             httpClient.authenticator = await getAuthenticator();
             return await httpClient.request(config);
-        }
+        };
 
         this.get = async (url, config) => {
             if (typeof url === "object" && config === undefined) {
@@ -49,7 +49,7 @@ class ResourceEndpointClient {
 
             httpClient.authenticator = await getAuthenticator();
             return await httpClient.get(url, config);
-        }
+        };
 
         this.post = async (url, data, config) => {
             if (typeof url === "object" && config === undefined) {
@@ -68,7 +68,7 @@ class ResourceEndpointClient {
 
             httpClient.authenticator = await getAuthenticator();
             return await httpClient.post(url, data, config);
-        }
+        };
 
         this.put = async (url, data, config) => {
             if (typeof url === "object" && config === undefined) {
@@ -89,7 +89,7 @@ class ResourceEndpointClient {
 
             httpClient.authenticator = await getAuthenticator();
             return await httpClient.put(url, data, config);
-        }
+        };
 
         this.patch = async (url, data, config) => {
             if (typeof url === "object" && typeof data === "object" && config === undefined) {
@@ -109,7 +109,7 @@ class ResourceEndpointClient {
             config.baseURL = resourceEndpoint.httpEndpoint;
             httpClient.authenticator = await getAuthenticator();
             return await httpClient.patch(url, data, config);
-        }
+        };
 
         this.delete = async (url, config) => {
             if (typeof url === "object" && config === undefined) {
@@ -125,7 +125,7 @@ class ResourceEndpointClient {
             config.baseURL = resourceEndpoint.httpEndpoint;
             httpClient.authenticator = await getAuthenticator();
             return await httpClient.delete(url, config);
-        }
+        };
     }
 }
 

@@ -1,5 +1,5 @@
-import { AxiosRequestConfig, AxiosPromise } from "axios";
-import { Resource, ResourceType, Service, ResourceEndpoint, ContextVariableProvider, JobBase } from "@mcma/core";
+import { AxiosPromise, AxiosRequestConfig } from "axios";
+import { ContextVariableProvider, JobBase, Resource, ResourceEndpoint, ResourceType, Service } from "@mcma/core";
 
 export type HttpRequestConfig = AxiosRequestConfig;
 export type HttpResponsePromise = AxiosPromise;
@@ -12,23 +12,28 @@ export type AuthenticatorFactory = (authContext?: any) => Authenticator;
 
 export class AuthProvider {
     constructor();
-    
+
     add(authType: string, authenticatorFactory: AuthenticatorFactory): void;
     get(authType: string, authContext?: any): Authenticator;
 }
 
 export interface Http {
     request(config: HttpRequestConfig): HttpResponsePromise;
+
     get(url: string, config?: HttpRequestConfig): HttpResponsePromise;
+
     post(url: string, data?: any, config?: HttpRequestConfig): HttpResponsePromise;
+
     put(url: string, data?: any, config?: HttpRequestConfig): HttpResponsePromise;
+
     patch(url: string, data?: any, config?: HttpRequestConfig): HttpResponsePromise;
+
     delete(url: string, config?: HttpRequestConfig): HttpResponsePromise;
 }
 
 export class HttpClient implements Http {
     constructor(authenticator?: Authenticator);
-    
+
     authenticator: Authenticator;
 
     request(config: HttpRequestConfig): HttpResponsePromise;
@@ -49,9 +54,9 @@ export class ServiceClient {
 
 export class ResourceEndpointClient implements Http {
     constructor(resourceEndpoint: ResourceEndpoint, authProvider?: AuthProvider, serviceAuthType?: string, serviceAuthContext?: any);
-    
+
     httpEndpoint: string;
-    
+
     request(config: HttpRequestConfig): HttpResponsePromise;
     get(url: string, config?: HttpRequestConfig): HttpResponsePromise;
     post(url: string, data?: any, config?: HttpRequestConfig): HttpResponsePromise;

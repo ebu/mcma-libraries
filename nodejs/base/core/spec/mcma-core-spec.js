@@ -2,7 +2,7 @@ const MCMA_CORE = require("../index");
 const axios = require("axios");
 
 const creds = require("../aws-credentials.json");
-const url = ""
+const url = "";
 
 describe("The AWS V4 Presigned Url Generator", () => {
 
@@ -31,7 +31,7 @@ describe("The AWS V4 Presigned Url Generator", () => {
 
         const presignedUrl = presignedUrlGenerator.generatePresignedUrl("POST", url, 7200);
 
-        const headers = { "X-Amz-Content-Sha256": "UNSIGNED-PAYLOAD" }
+        const headers = { "X-Amz-Content-Sha256": "UNSIGNED-PAYLOAD" };
 
         try {
             let response = await axios.post(presignedUrl, {}, { headers });
@@ -44,18 +44,18 @@ describe("The AWS V4 Presigned Url Generator", () => {
         }
     });
 
-})
+});
 
 describe("The MCMA_CORE.Exception class can ", () => {
 
     it("print a stack trace", async () => {
-        
+
         let test1 = new MCMA_CORE.Exception("test1");
 
         let test2 = new MCMA_CORE.Exception("test2", test1);
 
-        let test3 = new MCMA_CORE.Exception(test2, { hello: "World"});
+        let test3 = new MCMA_CORE.Exception(test2, { hello: "World" });
 
         console.log(test3.toString());
     });
-})
+});
