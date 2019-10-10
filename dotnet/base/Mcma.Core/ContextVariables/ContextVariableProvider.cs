@@ -8,18 +8,26 @@ namespace Mcma.Core.ContextVariables
     {
         protected ContextVariableProvider(IDictionary<string, string> contextVariables)
         {
-            ContextVariables =
-                new ReadOnlyDictionary<string, string>(
-                    new Dictionary<string, string>(contextVariables, StringComparer.OrdinalIgnoreCase)
-                );
+            ContextVariables = new Dictionary<string, string>(contextVariables, StringComparer.OrdinalIgnoreCase);
         }
 
-        private IReadOnlyDictionary<string, string> ContextVariables { get; }
+        private Dictionary<string, string> ContextVariables { get; }
 
-        public IReadOnlyDictionary<string, string> GetAllContextVariables() => ContextVariables;
+        public IReadOnlyDictionary<string, string> GetAllContextVariables() => new ReadOnlyDictionary<string, string>(ContextVariables);
 
         public string GetRequiredContextVariable(string key) => ContextVariables.ContainsKey(key) ? ContextVariables[key] : throw new Exception($"Required context variable with key '{key}' is missing.");
 
         public string GetOptionalContextVariable(string key, string defaultValue = null) => ContextVariables.ContainsKey(key) ? ContextVariables[key] : defaultValue;
+
+        public IContextVariableProvider Merge(IContextVariableProvider contextVariableProvider)
+            => Merge(contextVariableProvider.GetAllContextVariables().ToDictionary());
+
+        public IContextVariableProvider Merge(IDictionary<string, string> contextVariables)
+        {
+            foreach (var kvp in contextVariables)
+                ContextVariables[kvp.Key] = kvp.Value;
+
+            return this;
+        }
     }
 }

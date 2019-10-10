@@ -20,8 +20,11 @@ namespace Mcma.Azure.Client
         public Task SignAsync(HttpRequestMessage request)
         {
             request.Headers.Add(AzureConstants.FunctionKeyHeader, FunctionKey.Value);
-
+#if NET45
+            return Task.FromResult(true);
+#else
             return Task.CompletedTask;
+#endif
         }
 
         private string GetFunctionKey(AzureFunctionKeyAuthContext authContext)

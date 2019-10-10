@@ -9,7 +9,7 @@ namespace Mcma.Worker
     public class WorkerRequest : ContextVariableProvider
     {
         public WorkerRequest(string operationName, IDictionary<string, string> contextVariables)
-            : base(contextVariables)
+            : base(new EnvironmentVariableProvider().Merge(contextVariables).ToDictionary())
         {
             OperationName = operationName;
         }

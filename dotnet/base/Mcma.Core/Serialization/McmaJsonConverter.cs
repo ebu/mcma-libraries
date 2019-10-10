@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mcma.Core.Logging;
 using Mcma.Core.Utility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -10,7 +9,7 @@ namespace Mcma.Core.Serialization
 {
     public abstract class McmaJsonConverter : JsonConverter
     {
-        protected const string TypeJsonPropertyName = "@type";
+        protected virtual string TypeJsonPropertyName => "@type";
 
         protected Type GetSerializedType(JObject jObj, Type objectType) => GetSerializedType(jObj.Property(TypeJsonPropertyName), objectType);
 
@@ -29,20 +28,14 @@ namespace Mcma.Core.Serialization
                 }
             }
 
-            return objectType;
+            return objectType ?? throw new Exception($"Unrecognized @type specified in JSON: {typeProperty?.Value?.Value<string>() ?? "<null>"}");
         }
 
         protected bool IsMcmaObject(JObject jObj)
             => jObj.Properties().Any(p => p.Name.Equals(TypeJsonPropertyName, StringComparison.OrdinalIgnoreCase));
 
         protected object CreateMcmaObject(JObject jObj, JsonSerializer serializer)
-        {
-            var objType = GetSerializedType(jObj, null);
-            if (objType == null)
-                throw new Exception($"Unrecognized @type specified in JSON: {jObj[TypeJsonPropertyName]}");
-            
-            return jObj.ToObject(objType, serializer);
-        }
+            => jObj.ToObject(GetSerializedType(jObj, null), serializer);
 
         protected object ConvertJsonToClr(JToken token, JsonSerializer serializer)
         {

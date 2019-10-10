@@ -28,7 +28,11 @@ namespace Mcma.Azure.Client
                 rsa.ImportJson(publicKeyJson);
 
                 var encryptedBytes = 
+#if NET45
+                    rsa.EncryptValue(Encoding.UTF8.GetBytes(toEncrypt));
+#else
                     rsa.Encrypt(Encoding.UTF8.GetBytes(toEncrypt), RSAEncryptionPadding.OaepSHA256);
+#endif
 
                 return Convert.ToBase64String(encryptedBytes);
             }
@@ -41,7 +45,11 @@ namespace Mcma.Azure.Client
                 rsa.ImportJson(privateKeyJson);
 
                 var decryptedBytes = 
+#if NET45
+                    rsa.DecryptValue(Encoding.UTF8.GetBytes(toDecrypt));
+#else
                     rsa.Decrypt(Convert.FromBase64String(toDecrypt), RSAEncryptionPadding.OaepSHA256);
+#endif
 
                 return Encoding.UTF8.GetString(decryptedBytes);
             }

@@ -20,7 +20,7 @@ namespace Mcma.Azure.CosmosDb
                     new CosmosClientOptions
                     {
                         ApplicationRegion = options.Region,
-                        Serializer = new CosmosJsonDotNetSerializer(McmaJson.DefaultSettings().ForCosmosDb())
+                        Serializer = new CosmosJsonDotNetSerializer(McmaJson.DefaultSettings())
                     });
         }
 
@@ -39,8 +39,7 @@ namespace Mcma.Azure.CosmosDb
             return new CosmosDbTable<TResource, TPartitionKey>(
                 CosmosClient,
                 Options.DatabaseId,
-                tableName ?? typeof(TResource).Name,
-                Options.GetPartitionKeyPath<TResource>());
+                tableName ?? typeof(TResource).Name);
         }
 
         public void Dispose() => CosmosClient?.Dispose();

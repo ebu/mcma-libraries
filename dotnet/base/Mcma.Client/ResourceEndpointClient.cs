@@ -20,9 +20,11 @@ namespace Mcma.Client
 
             HttpClientTask =
                 new Lazy<Task<McmaHttpClient>>(async () =>
-                    new McmaHttpClient(
-                        authProvider != null ? await authProvider.GetAsync(authType, authContext) : null,
-                        HttpEndpoint));
+                {
+                    var authenticator = authProvider != null ? await authProvider.GetAsync(authType, authContext) : null;
+
+                    return new McmaHttpClient(authenticator, HttpEndpoint);
+                });
         }
 
         public string HttpEndpoint { get; }

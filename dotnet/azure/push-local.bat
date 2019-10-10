@@ -10,6 +10,9 @@ dotnet nuget push azure/Mcma.Azure.Functions.Logging/bin/packages/Mcma.Azure.Fun
 dotnet pack azure/Mcma.Azure.BlobStorage -p:PackageVersion=%1
 dotnet nuget push azure/Mcma.Azure.BlobStorage/bin/packages/Mcma.Azure.BlobStorage.%1.nupkg -s=Local
 
+dotnet pack azure/Mcma.Azure.Functions.Configuration -p:PackageVersion=%1
+dotnet nuget push azure/Mcma.Azure.Functions.Configuration/bin/packages/Mcma.Azure.Functions.Configuration.%1.nupkg -s=Local
+
 dotnet pack azure/Mcma.Azure.Functions.Api -p:PackageVersion=%1
 dotnet nuget push azure/Mcma.Azure.Functions.Api/bin/packages/Mcma.Azure.Functions.Api.%1.nupkg -s=Local
 

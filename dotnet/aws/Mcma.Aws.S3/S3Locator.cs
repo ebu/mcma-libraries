@@ -2,12 +2,10 @@ using Mcma.Core;
 
 namespace Mcma.Aws.S3
 {
-    public class S3Locator : HttpEndpointLocator
+    public abstract class S3Locator : IUrlLocator
     {
-        public string AwsS3Bucket { get; set; }
+        public string Bucket { get; set; }
 
-        public string AwsS3Key { get; set; }
-
-        public string AwsS3KeyPrefix { get; set; }
+        public abstract string Url { get; }
     }
 }

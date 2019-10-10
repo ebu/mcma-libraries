@@ -43,11 +43,11 @@ namespace Mcma.Api
             {
                 var requestBodyOk = true;
 
-                if (!string.IsNullOrEmpty(request.Body))
+                if (requestContext.MethodSupportsRequestBody() && !string.IsNullOrWhiteSpace(request.Body))
                 {
                     try
                     {
-                        request.JsonBody = JObject.Parse(request.Body);
+                        request.JsonBody = JToken.Parse(request.Body);
                     }
                     catch (Exception ex)
                     {

@@ -2,21 +2,22 @@
 
 namespace Mcma.Azure.BlobStorage
 {
-    public class BlobStorageLocator : Locator
+    public abstract class BlobStorageLocator : IUrlLocator
     {
+        /// <summary>
+        /// Gets or sets the name of the storage account
+        /// </summary>
+        /// <value></value>
+        public string StorageAccountName { get; }
+
         /// <summary>
         /// Gets or sets the share on which the file resides
         /// </summary>
-        public string Share { get; set; }
+        public string Container { get; set; }
 
         /// <summary>
-        /// Gets or sets the directory in which the file resides
+        /// Gets the url to the file on Blob storage
         /// </summary>
-        public string Directory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the file
-        /// </summary>
-        public string FileName { get; set; }
+        public abstract string Url { get; }
     }
 }

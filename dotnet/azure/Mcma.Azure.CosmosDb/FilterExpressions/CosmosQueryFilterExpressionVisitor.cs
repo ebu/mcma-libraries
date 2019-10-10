@@ -138,18 +138,19 @@ namespace Mcma.Azure.CosmosDb.FilterExpressions
 
         private void VisitMember(MemberExpression node)
         {
-            if (node.Member.DeclaringType == typeof(DateTime) && node.Member.Name == nameof(DateTime.Now))
-                WhereClause += "GETDATE()";
-            else if (node.Member.DeclaringType == typeof(DateTime) && node.Member.Name == nameof(DateTime.UtcNow))
-                WhereClause += "GETUTCDATE()";
-            else if (node.Member is PropertyInfo)
-                WhereClause += "root[\"" + node.Member.Name.PascalCaseToCamelCase() + "\"]";
-            else if (node.Member is FieldInfo)
+            if (node.Member.DeclaringType == typeof(DateTime))
             {
-                var value = GetValue(node);
-                Parameters.Add(value);
-                WhereClause += $"@p{Parameters.Count - 1}";
+                if (node.Member.Name == nameof(DateTime.Now))
+                    WhereClause += "GETDATE()";
+                else if (node.Member.Name == nameof(DateTime.UtcNow))
+                    WhereClause += "GETUTCDATE()";
             }
+            else if (typeof(T).IsAssignableFrom(node.Member.DeclaringType))
+            {
+                WhereClause += "root[\"resource\"][\"" + node.Member.Name.PascalCaseToCamelCase() + "\"]";
+            }
+            else
+                throw new Exception($"Cannot access member '{node.Member.Name}' on type '{node.Member.DeclaringType}'. Expected members on type '{typeof(T).Name}'.");
         }
 
         private void VisitMethodCall(MethodCallExpression node)

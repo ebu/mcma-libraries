@@ -72,11 +72,14 @@ namespace Mcma.Worker
             await UpdateJobAssignmentStatusAsync(JobStatus.Failed, error);
         }
 
-        public async Task CompleteAsync()
-        {
-            await UpdateJobAssignmentOutputAsync();
-            await UpdateJobAssignmentStatusAsync(JobStatus.Completed);
-        }
+        public Task CompleteAsync()
+            => UpdateJobAssignmentAsync(
+                ja =>
+                {
+                    ja.Status = JobStatus.Completed;
+                    ja.JobOutput = JobOutput;
+                },
+                true);
 
         public async Task UpdateJobAssignmentAsync(Action<JobAssignment> update, bool sendNotification = false)
         {

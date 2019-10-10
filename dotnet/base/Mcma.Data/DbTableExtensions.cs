@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Mcma.Core;
+using Mcma.Core.Serialization;
 
 namespace Mcma.Data
 {
@@ -32,5 +33,8 @@ namespace Mcma.Data
 
         public static Task DeleteAsync<T>(this IDbTable<T, Type> dbTablePartitionedByType, string id) where T : McmaResource
             => dbTablePartitionedByType.DeleteAsync(id, typeof(T));
+
+        public static Task DeleteAsync<T>(this IDbTable<T, Type> dbTablePartitionedByType, T resource) where T : McmaResource
+            => dbTablePartitionedByType.DeleteAsync(resource.Id, typeof(T));
     }
 }

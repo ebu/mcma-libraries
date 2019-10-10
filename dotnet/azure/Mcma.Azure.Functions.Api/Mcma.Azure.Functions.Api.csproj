@@ -3,12 +3,17 @@
   <ItemGroup>
     <ProjectReference Include="..\..\base\Mcma.Core\Mcma.Core.csproj" />
     <ProjectReference Include="..\..\base\Mcma.Api\Mcma.Api.csproj" />
+    <ProjectReference Include="..\Mcma.Azure.Client\Mcma.Azure.Client.csproj" />
+    <ProjectReference Include="..\Mcma.Azure.Functions.Configuration\Mcma.Azure.Functions.Configuration.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+
     <PackageReference Include="Microsoft.Azure.WebJobs.Core" Version="3.0.11" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.0.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Microsoft.Azure.Storage.Common" Version="11.1.0" />
+    <PackageReference Include="Microsoft.Azure.Storage.Queue" Version="11.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
   <PropertyGroup>

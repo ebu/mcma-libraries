@@ -34,7 +34,7 @@ namespace Mcma.Aws.DynamoDb
         {
             var jObj = new JObject
             {
-                ["resource_type"] = JToken.FromObject(partitionKey),
+                ["resource_type"] = JToken.FromObject(GetPartitionKeyText(partitionKey)),
                 ["resource_id"] = id,
                 ["resource"] = resource.ToMcmaJson()
             };
@@ -44,36 +44,10 @@ namespace Mcma.Aws.DynamoDb
             return Document.FromJson(jObj.ToString());
         }
 
-        private Primitive GetRangeKey(TPartitionKey partitionKey)
-        {
-            if (partitionKey == null)
-                return new Primitive();
+        private Primitive GetRangeKey(TPartitionKey partitionKey) => partitionKey.ToPrimitive(GetPartitionKeyText(partitionKey));
 
-            var primitive = new Primitive(partitionKey.ToString());
-
-            switch (partitionKey)
-            {
-                case float partitionKeyFloat:
-                case double partitionKeyDouble:
-                case decimal partitionKeyDecimal:
-                case int partitionKeyInt:
-                case uint partitionKeyUInt:
-                case long partitionKeyLong:
-                case ulong partitionKeyULong:
-                case short partitionKeyShort:
-                case ushort partitionKeyUShort:
-                    primitive.Type = DynamoDBEntryType.Numeric;
-                    break;
-
-                case string partitionKeyStr:
-                case DateTime dateTime:
-                case Guid guid:
-                    primitive.Type = DynamoDBEntryType.String;
-                    break;
-            }
-
-            return primitive;
-        }
+        private string GetPartitionKeyText(TPartitionKey partitionKey)
+            => partitionKey is Type typePartitionKey ? typePartitionKey.Name : partitionKey.ToString();
 
         private void RemoveEmptyStrings(JToken jToken)
         {
