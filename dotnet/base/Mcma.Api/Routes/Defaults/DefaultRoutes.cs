@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Mcma.Core;
-using Mcma.Core.ContextVariables;
 using Mcma.Core.Utility;
 using Mcma.Data;
 
@@ -36,14 +35,31 @@ namespace Mcma.Api.Routes.Defaults
         public static DefaultRouteCollectionBuilder<T> Builder<T>(IDbTableProvider dbTableProvider, string root = null) where T : McmaResource
             => new DefaultRouteCollectionBuilder<T>(dbTableProvider, root ?? typeof(T).Name.CamelCaseToKebabCase().PluralizeKebabCase());
 
-        public static McmaApiRouteCollection ForJobAssignments<T>(this DefaultRouteCollectionBuilder<JobAssignment> builder)
+        public static DefaultRouteCollectionBuilder<JobAssignment> ForJobAssignments<T>(IDbTableProvider dbTableProvider, string root = null) where T : IWorkerInvoker, new()
+            => DefaultRoutes.Builder<JobAssignment>(dbTableProvider, root).ForJobAssignments<T>();
+
+        public static DefaultRouteCollectionBuilder<JobAssignment> ForJobAssignments(
+            IDbTableProvider dbTableProvider,
+            IWorkerInvoker workerInvoker,
+            string root = null,
+            Func<McmaApiRequestContext, IDictionary<string, string>> contextVariables = null)
+            => DefaultRoutes.Builder<JobAssignment>(dbTableProvider, root).ForJobAssignments(workerInvoker, contextVariables);
+
+        public static DefaultRouteCollectionBuilder<JobAssignment> ForJobAssignments(
+            IDbTableProvider dbTableProvider,
+            Func<McmaApiRequestContext, JobAssignment, IWorkerInvoker> createWorkerInvoker,
+            string root = null,
+            Func<McmaApiRequestContext, IDictionary<string, string>> contextVariables = null)
+            => DefaultRoutes.Builder<JobAssignment>(dbTableProvider, root).ForJobAssignments(createWorkerInvoker, contextVariables);
+
+        public static DefaultRouteCollectionBuilder<JobAssignment> ForJobAssignments<T>(this DefaultRouteCollectionBuilder<JobAssignment> builder)
             where T : IWorkerInvoker, new()
             => builder.ForJobAssignments(new T());
 
-        public static McmaApiRouteCollection ForJobAssignments(
+        public static DefaultRouteCollectionBuilder<JobAssignment> ForJobAssignments(
             this DefaultRouteCollectionBuilder<JobAssignment> builder,
             IWorkerInvoker workerInvoker,
-            Func<McmaApiRequestContext, IDictionary<string, string>> contextVariableProvider = null)
+            Func<McmaApiRequestContext, IDictionary<string, string>> contextVariables = null)
             =>
             builder
                 .AddAll()
@@ -52,18 +68,17 @@ namespace Mcma.Api.Routes.Defaults
                         rb.OnCompleted(
                             (requestContext, jobAssignment) =>
                                 workerInvoker.InvokeAsync(
-                                    requestContext.WorkerFunctionId(),
+                                    requestContext.Variables.WorkerFunctionId(),
                                     "ProcessJobAssignment",
-                                    contextVariableProvider?.Invoke(requestContext),
+                                    contextVariables?.Invoke(requestContext),
                                     new { jobAssignmentId = jobAssignment.Id }
                                 ))
-                )
-                .Build();
+                );
 
-        public static McmaApiRouteCollection ForJobAssignments(
+        public static DefaultRouteCollectionBuilder<JobAssignment> ForJobAssignments(
             this DefaultRouteCollectionBuilder<JobAssignment> builder,
             Func<McmaApiRequestContext, JobAssignment, IWorkerInvoker> createWorkerInvoker,
-            Func<McmaApiRequestContext, IDictionary<string, string>> contextVariableProvider = null)
+            Func<McmaApiRequestContext, IDictionary<string, string>> contextVariables = null)
             =>
             builder
                 .AddAll()
@@ -73,12 +88,11 @@ namespace Mcma.Api.Routes.Defaults
                             (requestContext, jobAssignment) =>
                                 createWorkerInvoker(requestContext, jobAssignment)
                                     .InvokeAsync(
-                                        requestContext.WorkerFunctionId(),
+                                        requestContext.Variables.WorkerFunctionId(),
                                         "ProcessJobAssignment",
-                                        contextVariableProvider?.Invoke(requestContext),
+                                        contextVariables?.Invoke(requestContext),
                                         new { jobAssignmentId = jobAssignment.Id }
                                     ))
-                )
-                .Build();
+                );
     }
 }

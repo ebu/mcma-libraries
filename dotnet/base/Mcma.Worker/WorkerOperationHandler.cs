@@ -15,7 +15,7 @@ namespace Mcma.Worker
 
             var input = request.GetInput<T>();
 
-            Logger.Debug("Got input of type '" + typeof(T).Name + "' from worker request.");
+            request.Logger.Debug("Got input of type '" + typeof(T).Name + "' from worker request.");
             
             return ExecuteAsync(request, input);
         }

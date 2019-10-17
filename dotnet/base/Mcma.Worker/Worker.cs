@@ -24,7 +24,7 @@ namespace Mcma.Worker
             if (operationFilter == null)
                 throw new Exception($"No handler found for '{request.OperationName}' that can handle this request.");
 
-            Logger.Debug("Handling worker operation '" + request.OperationName + "' with handler of type '" + operationFilter.GetType().Name + "'");
+            request.Logger.Debug("Handling worker operation '" + request.OperationName + "' with handler of type '" + operationFilter.GetType().Name + "'");
             
             try
             {
@@ -32,8 +32,8 @@ namespace Mcma.Worker
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to process worker operation '{request.OperationName}'.");
-                Logger.Exception(ex);
+                request.Logger.Error($"Failed to process worker operation '{request.OperationName}'.");
+                request.Logger.Exception(ex);
                 
                 throw;
             }

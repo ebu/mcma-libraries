@@ -4,13 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Mcma.Core;
-using Mcma.Core.ContextVariables;
+using Mcma.Core.Context;
 using Mcma.Core.Serialization;
 using Newtonsoft.Json.Linq;
 
 namespace Mcma.Api
 {
-    public class McmaApiRequestContext : ContextVariableProvider
+    public class McmaApiRequestContext : Context
     {
         private static readonly HttpMethod[] MethodsSupportingRequestBody = {HttpMethod.Post, HttpMethod.Put, new HttpMethod("PATCH")};
 

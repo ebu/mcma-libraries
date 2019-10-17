@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Mcma.Api;
-using Mcma.Core.ContextVariables;
+using Mcma.Core.Context;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -15,10 +15,10 @@ namespace Mcma.Azure.Functions.Api
     {
         public static async Task<McmaApiRequestContext> ToMcmaApiRequestContextAsync(
             this HttpRequest request,
-            IContextVariableProvider contextVariableProvider = null)
+            IContextVariables contextVariables = null)
             => new McmaApiRequestContext(
                 await request.ToMcmaApiRequestAsync(),
-                (contextVariableProvider ?? new EnvironmentVariableProvider()).GetAllContextVariables().ToDictionary());
+                (contextVariables ?? new EnvironmentVariables()).GetAll().ToDictionary());
 
         public static async Task<McmaApiRequest> ToMcmaApiRequestAsync(this HttpRequest request)
             => new McmaApiRequest

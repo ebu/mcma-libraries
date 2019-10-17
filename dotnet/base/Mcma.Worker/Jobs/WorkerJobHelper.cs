@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Mcma.Client;
 using Mcma.Core;
+using Mcma.Core.Context;
+using Mcma.Core.Logging;
 using Mcma.Data;
 
 namespace Mcma.Worker
 {
-    public class WorkerJobHelper<T> where T : Job
+    public class WorkerJobHelper<T> : IContext where T : Job
     {
         public WorkerJobHelper(
             IDbTable<JobAssignment, Type> table,
@@ -37,13 +39,17 @@ namespace Mcma.Worker
 
         public JobProfile Profile { get; private set; }
 
+        public ILogger Logger => Request.Logger;
+
+        public IContextVariables Variables => Request.Variables;
+
         public JobParameterBag JobInput => Job.JobInput;
 
         public JobParameterBag JobOutput => Job.JobOutput;
 
         public async Task InitializeAsync()
         {
-            JobAssignment = await Table.UpdateJobStatusAsync(JobAssignmentId, JobStatus.Running);
+            await UpdateJobAssignmentStatusAsync(JobStatus.Running);
 
             Job = await ResourceManager.ResolveResourceFromFullUrl<T>(JobAssignment.Job);
 

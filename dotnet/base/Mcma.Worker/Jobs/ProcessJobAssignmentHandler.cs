@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mcma.Client;
 using Mcma.Core;
-using Mcma.Core.ContextVariables;
+using Mcma.Core.Context;
 using Mcma.Core.Logging;
 using Mcma.Data;
 
@@ -36,39 +36,39 @@ namespace Mcma.Worker
 
             var workerJobHelper =
                 new WorkerJobHelper<T>(
-                    DbTableProvider.Table<JobAssignment>(request.TableName()),
-                    ResourceManagerProvider.Get(request),
+                    DbTableProvider.Table<JobAssignment>(request.Variables.TableName()),
+                    ResourceManagerProvider.Get(request.Variables),
                     request,
                     requestInput.JobAssignmentId);
 
             try
             {
-                Logger.Debug("Initializing job helper...");
+                workerJobHelper.Logger.Debug("Initializing job helper...");
 
                 await workerJobHelper.InitializeAsync();
                 
-                Logger.Debug("Validating job...");
+                workerJobHelper.Logger.Debug("Validating job...");
                 
                 workerJobHelper.ValidateJob(ProfileHandlers.Keys);
                 
-                Logger.Debug("Getting handler for profile '" + workerJobHelper.Profile?.Name + "'...");
+                workerJobHelper.Logger.Debug("Getting handler for profile '" + workerJobHelper.Profile?.Name + "'...");
 
                 var profileHandler = ProfileHandlers[workerJobHelper.Profile.Name];
 
-                Logger.Debug("Using profile handler of type '" + profileHandler.GetType().Name + "' for profile '" + workerJobHelper.Profile?.Name + "'...");
+                workerJobHelper.Logger.Debug("Using profile handler of type '" + profileHandler.GetType().Name + "' for profile '" + workerJobHelper.Profile?.Name + "'...");
                 
                 await profileHandler.ExecuteAsync(workerJobHelper);
             }
             catch (Exception ex)
             {
-                Logger.Exception(ex);
+                workerJobHelper.Logger.Exception(ex);
                 try
                 {
                     await workerJobHelper.FailAsync(ex.ToString());
                 }
                 catch (Exception innerEx)
                 {
-                    Logger.Exception(innerEx);
+                    workerJobHelper.Logger.Exception(innerEx);
                 }
             }
         }

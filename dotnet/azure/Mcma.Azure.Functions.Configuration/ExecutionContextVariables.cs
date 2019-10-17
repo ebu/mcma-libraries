@@ -1,11 +1,11 @@
-using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 
 namespace Mcma.Azure.Functions
 {
-    public class ExecutionContextVariableProvider : ConfigurationContextVariableProvider
+    public class ExecutionContextVariables : ConfigurationContextVariables
     {
-        public ExecutionContextVariableProvider(ExecutionContext executionContext)
+        public ExecutionContextVariables(ExecutionContext executionContext)
             : base(BuildConfiguration(executionContext))
         {
         }

@@ -3,19 +3,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Mcma.Api;
 using Mcma.Azure.Client;
-using Mcma.Core.ContextVariables;
+using Mcma.Core.Context;
 using Mcma.Core.Serialization;
 
 namespace Mcma.Azure.Functions.Api
 {
     public class HttpWorkerInvoker : WorkerInvoker
     {
-        public HttpWorkerInvoker(IContextVariableProvider contextVariableProvider)
+        public HttpWorkerInvoker(IContext context)
+            : base(context)
         {
-            ContextVariableProvider = contextVariableProvider;
         }
-
-        private IContextVariableProvider ContextVariableProvider { get; }
 
         private HttpClient HttpClient { get; } = new HttpClient();
 
@@ -28,7 +26,7 @@ namespace Mcma.Azure.Functions.Api
             };
 
             // if we have a function key
-            var functionKey = ContextVariableProvider.GetOptionalContextVariable("WorkerFunctionKey");
+            var functionKey = Context.Variables.GetOptional("WorkerFunctionKey");
             if (functionKey != null)
                 httpRequest.Headers.Add(AzureConstants.FunctionKeyHeader, functionKey);
 

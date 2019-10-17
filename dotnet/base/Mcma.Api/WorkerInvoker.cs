@@ -1,10 +1,18 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Mcma.Core.Context;
 
 namespace Mcma.Api
 {
     public abstract class WorkerInvoker : IWorkerInvoker
     {
+        protected WorkerInvoker(IContext context)
+        {
+            Context = context;
+        }
+
+        protected IContext Context { get; }
+
         public Task InvokeAsync(string workerFunctionId, string operationName, IDictionary<string, string> contextVariables = null, object input = null)
             =>
             InvokeAsync(

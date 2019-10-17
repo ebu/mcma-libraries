@@ -1,15 +1,15 @@
 
-using Mcma.Core.ContextVariables;
+using Mcma.Core.Context;
 
 namespace Mcma.Client
 {
     public static class ContextVariableProviderExtensions
     {
-        public static ResourceManagerConfig GetResourceManagerConfig(this IContextVariableProvider contextVariableProvider)
-            => new ResourceManagerConfig(contextVariableProvider.GetRequiredContextVariable(nameof(ResourceManagerConfig.ServicesUrl)))
+        public static ResourceManagerConfig GetResourceManagerConfig(this IContextVariables contextVariables)
+            => new ResourceManagerConfig(contextVariables.GetRequired(nameof(ResourceManagerConfig.ServicesUrl)))
             {
-                ServicesAuthType = contextVariableProvider.GetOptionalContextVariable(nameof(ResourceManagerConfig.ServicesAuthType)),
-                ServicesAuthContext = contextVariableProvider.GetOptionalContextVariable(nameof(ResourceManagerConfig.ServicesAuthContext))
+                ServicesAuthType = contextVariables.GetOptional(nameof(ResourceManagerConfig.ServicesAuthType)),
+                ServicesAuthContext = contextVariables.GetOptional(nameof(ResourceManagerConfig.ServicesAuthContext))
             };
     }
 } 

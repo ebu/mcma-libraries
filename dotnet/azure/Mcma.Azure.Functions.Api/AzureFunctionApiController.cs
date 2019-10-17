@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Mcma.Api;
 using Mcma.Api.Routes;
-using Mcma.Core.ContextVariables;
+using Mcma.Core.Context;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -17,9 +17,9 @@ namespace Mcma.Azure.Functions.Api
 
         private McmaApiController McmaApiController { get; }
 
-        public async Task<IActionResult> HandleRequestAsync(HttpRequest request, IContextVariableProvider contextVariableProvider = null)
+        public async Task<IActionResult> HandleRequestAsync(HttpRequest request, IContextVariables contextVariables = null)
         {
-            var requestContext = await request.ToMcmaApiRequestContextAsync(contextVariableProvider ?? new EnvironmentVariableProvider());
+            var requestContext = await request.ToMcmaApiRequestContextAsync(contextVariables ?? new EnvironmentVariables());
 
             await McmaApiController.HandleRequestAsync(requestContext);
 

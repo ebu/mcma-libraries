@@ -41,7 +41,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Azure.Functions.Loggin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Azure.BlobStorage", "azure\Mcma.Azure.BlobStorage\Mcma.Azure.BlobStorage.csproj", "{531147C0-B0EC-4E10-B885-468302120AFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Azure.Functions.Configuration", "azure\Mcma.Azure.Functions\Mcma.Azure.Functions.Configuration.csproj", "{D00F0D65-17C1-4988-A3C2-4C36DAD7DD76}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Azure.Functions.Configuration", "azure\Mcma.Azure.Functions.Configuration\Mcma.Azure.Functions.Configuration.csproj", "{D00F0D65-17C1-4988-A3C2-4C36DAD7DD76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

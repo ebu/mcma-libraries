@@ -14,9 +14,10 @@ namespace Mcma.Azure.BlobStorage.Proxies
 
         public async Task<BlobStorageFileLocator> PutAsync(string fileName, Stream readFrom)
         {
-            var blobRef = Container.GetBlockBlobReference(fileName);
+            var fileLocator = Locator.FileLocator(fileName);
+            var blobRef = Container.GetBlockBlobReference(fileLocator.FilePath);
             await blobRef.UploadFromStreamAsync(readFrom);
-            return Locator.FileLocator(fileName);
+            return fileLocator;
         }
 
         public async Task<BlobStorageFileLocator> PutAsTextAsync(string fileName, string content)
