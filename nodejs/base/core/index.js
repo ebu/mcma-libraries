@@ -1,12 +1,49 @@
 //"use strict";
-const Core = require("./lib/mcma-core");
+const {
+    onResourceCreate, onResourceUpsert, McmaObject, McmaTracker, Resource, Service, ResourceEndpoint, BMContent,
+    BMEssence, DescriptiveMetadata, TechnicalMetadata, JobProfile, Locator, JobStatus, JobBase, JobProcess,
+    JobAssignment, Job, JobParameter, JobParameterBag, AIJob, AmeJob, CaptureJob, QAJob, TransferJob, TransformJob,
+    WorkflowJob, Notification, NotificationEndpoint, Exception,
+} = require("./lib/mcma-core");
 const { ContextVariableProvider, EnvironmentVariableProvider } = require("./lib/context-variable-provider");
-const { Logger } = require("./lib/logger");
+const { Logger, ConsoleLogger, ConsoleLoggerProvider } = require("./lib/logger");
 const Utils = require("./lib/utils");
 
-module.exports = Object.assign(Core, {
+module.exports = {
+    onResourceCreate,
+    onResourceUpsert,
+    McmaObject,
+    McmaTracker,
+    Resource,
+    Service,
+    ResourceEndpoint,
+    BMContent,
+    BMEssence,
+    DescriptiveMetadata,
+    TechnicalMetadata,
+    JobProfile,
+    Locator,
+    JobStatus,
+    JobBase,
+    JobProcess,
+    JobAssignment,
+    Job,
+    JobParameter,
+    JobParameterBag,
+    AIJob,
+    AmeJob,
+    CaptureJob,
+    QAJob,
+    TransferJob,
+    TransformJob,
+    WorkflowJob,
+    Notification,
+    NotificationEndpoint,
+    Exception,
     Logger,
+    ConsoleLogger,
+    ConsoleLoggerProvider,
     ContextVariableProvider,
     EnvironmentVariableProvider,
-    Utils
-});
+    Utils,
+};

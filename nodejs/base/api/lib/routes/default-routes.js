@@ -136,7 +136,7 @@ function defaultQueryBuilder(dbTableProvider, root) {
                             : null;
 
                     var resources =
-                        await dbTableProvider.table(requestContext.tableName()).query(filter);
+                        await dbTableProvider.get(requestContext.tableName()).query(filter);
 
                     if (onCompleted) {
                         await onCompleted(requestContext, resources);
@@ -171,7 +171,7 @@ function defaultCreateBuilder(dbTableProvider, root) {
 
                     onResourceCreate(resource, requestContext.publicUrl() + root + "/" + uuidv4());
 
-                    await dbTableProvider.table(requestContext.tableName()).put(resource.id, resource);
+                    await dbTableProvider.get(requestContext.tableName()).put(resource.id, resource);
 
                     if (onCompleted) {
                         await onCompleted(requestContext, resource);
@@ -199,7 +199,7 @@ function defaultGetBuilder(dbTableProvider, root) {
                     }
 
                     const resource =
-                        await dbTableProvider.table(requestContext.tableName()).get(requestContext.publicUrl() + requestContext.request.path);
+                        await dbTableProvider.get(requestContext.tableName()).get(requestContext.publicUrl() + requestContext.request.path);
 
                     if (onCompleted) {
                         await onCompleted(requestContext, resource);
@@ -238,7 +238,7 @@ function defaultUpdateBuilder(dbTableProvider, root) {
 
                     onResourceUpsert(resource, requestContext.publicUrl() + requestContext.request.path);
 
-                    await dbTableProvider.table(requestContext.tableName()).put(resource.id, resource);
+                    await dbTableProvider.get(requestContext.tableName()).put(resource.id, resource);
 
                     if (onCompleted) {
                         await onCompleted(requestContext, resource);
@@ -265,7 +265,7 @@ function defaultDeleteBuilder(dbTableProvider, root) {
                         }
                     }
 
-                    const table = dbTableProvider.table(requestContext.tableName());
+                    const table = dbTableProvider.get(requestContext.tableName());
 
                     const id = requestContext.publicUrl() + requestContext.request.path;
 

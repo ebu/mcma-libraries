@@ -1,12 +1,13 @@
+const { ProviderCollection } = require("./lib/provider-collection");
+const { ProcessJobOperation } = require("./lib/jobs/process-job-operation");
+const { ProcessJobHelper } = require("./lib/jobs/process-job-helper");
+const { Worker } = require("./lib/worker");
 const { WorkerRequest } = require("./lib/worker-request");
-const { WorkerBuilder } = require("./lib/builders/worker-builder");
-const { WorkerJobHelper } = require("./lib/jobs/worker-job-helper");
-const { ProcessJobAssignment } = require("./lib/jobs/process-job-assignment");
-require("./lib/jobs/job-handler-builder");
 
 module.exports = {
+    ProcessJobOperation,
+    ProcessJobHelper,
+    ProviderCollection,
+    Worker,
     WorkerRequest,
-    WorkerBuilder,
-    WorkerJobHelper,
-    ProcessJobAssignment
 };

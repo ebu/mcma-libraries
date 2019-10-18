@@ -14,10 +14,12 @@ const removeEmptyStrings = (object) => {
             }
         } else if (typeof object === "object") {
             for (let prop in object) {
-                if (object[prop] === "") {
-                    delete object[prop];
-                } else if (typeof object[prop] === "object") {
-                    removeEmptyStrings(object[prop]);
+                if (object.hasOwnProperty(prop)) {
+                    if (object[prop] === "") {
+                        delete object[prop];
+                    } else if (typeof object[prop] === "object") {
+                        removeEmptyStrings(object[prop]);
+                    }
                 }
             }
         }
@@ -25,7 +27,7 @@ const removeEmptyStrings = (object) => {
 };
 
 class DynamoDbTable extends DbTable {
-    constructor(type, tableName) {
+    constructor(tableName, type) {
         super(type);
 
         const docClient = new AWS.DynamoDB.DocumentClient();
@@ -113,7 +115,7 @@ class DynamoDbTable extends DbTable {
 
 class DynamoDbTableProvider {
     constructor(type) {
-        this.table = (name) => new DynamoDbTable(type, name);
+        this.get = (name) => new DynamoDbTable(name, type);
     }
 }
 

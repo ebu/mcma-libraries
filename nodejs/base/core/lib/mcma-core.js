@@ -56,7 +56,7 @@ const onResourceUpsert = (resource, id) => {
     }
 };
 
-class Resource {
+class McmaObject {
     constructor(type, properties) {
         this["@type"] = type;
 
@@ -68,10 +68,25 @@ class Resource {
             }
         }
 
+        this.checkProperty = (propertyName, expectedType, required) => checkProperty(this, propertyName, expectedType, required);
+    }
+}
+
+class McmaTracker extends McmaObject {
+    constructor(properties) {
+        super("McmaTracker", properties);
+
+        this.checkProperty("id", "string", true);
+        this.checkProperty("label", "string", true);
+    }
+}
+
+class Resource extends McmaObject {
+    constructor(type, properties) {
+        super(type, properties);
+
         this.onCreate = (id) => onResourceCreate(this, id);
         this.onUpsert = (id) => onResourceUpsert(this, id);
-
-        this.checkProperty = (propertyName, expectedType, required) => checkProperty(this, propertyName, expectedType, required);
     }
 }
 
@@ -79,11 +94,11 @@ class Service extends Resource {
     constructor(properties) {
         super("Service", properties);
 
-        checkProperty(this, "name", "string", true);
-        checkProperty(this, "resources", "Array", true);
-        checkProperty(this, "authType", "string", false);
-        checkProperty(this, "jobType", "string", false);
-        checkProperty(this, "jobProfiles", "Array", false);
+        this.checkProperty("name", "string", true);
+        this.checkProperty("resources", "Array", true);
+        this.checkProperty("authType", "string", false);
+        this.checkProperty("jobType", "string", false);
+        this.checkProperty("jobProfiles", "Array", false);
 
         for (let i = 0; i < this.resources.length; i++) {
             this.resources[i] = new ResourceEndpoint(this.resources[i]);
@@ -99,13 +114,13 @@ class Service extends Resource {
     }
 }
 
-class ResourceEndpoint extends Resource {
+class ResourceEndpoint extends McmaObject {
     constructor(properties) {
         super("ResourceEndpoint", properties);
 
-        checkProperty(this, "resourceType", "string", true);
-        checkProperty(this, "httpEndpoint", "url", true);
-        checkProperty(this, "authType", "string", false);
+        this.checkProperty("resourceType", "string", true);
+        this.checkProperty("httpEndpoint", "url", true);
+        this.checkProperty("authType", "string", false);
     }
 }
 
@@ -113,9 +128,9 @@ class JobProfile extends Resource {
     constructor(properties) {
         super("JobProfile", properties);
 
-        checkProperty(this, "inputParameters", "Array", false);
-        checkProperty(this, "outputParameters", "Array", false);
-        checkProperty(this, "optionalInputParameters", "Array", false);
+        this.checkProperty("inputParameters", "Array", false);
+        this.checkProperty("outputParameters", "Array", false);
+        this.checkProperty("optionalInputParameters", "Array", false);
     }
 }
 
@@ -123,12 +138,12 @@ class JobParameter extends Resource {
     constructor(properties) {
         super("JobParameter", properties);
 
-        checkProperty(this, "parameterName", "string", true);
-        checkProperty(this, "parameterType", "string", false);
+        this.checkProperty("parameterName", "string", true);
+        this.checkProperty("parameterType", "string", false);
     }
 }
 
-class JobParameterBag extends Resource {
+class JobParameterBag extends McmaObject {
     constructor(properties) {
         super("JobParameterBag", properties);
     }
@@ -148,10 +163,13 @@ class JobBase extends Resource {
     constructor(type, properties) {
         super(type, properties);
 
-        checkProperty(this, "notificationEndpoint", "resource", false);
-        checkProperty(this, "status", "string", false);
-        checkProperty(this, "statusMessage", "string", false);
-        checkProperty(this, "jobOutput", "resource", false);
+        this.checkProperty("tracker", "object", false);
+        this.checkProperty("notificationEndpoint", "resource", false);
+        this.checkProperty("status", "string", false);
+        this.checkProperty("statusMessage", "string", false);
+        this.checkProperty("jobOutput", "resource", false);
+
+        this.tracker = new McmaTracker(this.tracker);
 
         if (typeof this.notificationEndpoint === "object") {
             this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
@@ -163,8 +181,9 @@ class Job extends JobBase {
     constructor(type, properties) {
         super(type, properties);
 
-        checkProperty(this, "jobProfile", "resource", true);
-        checkProperty(this, "jobInput", "resource", true);
+        this.checkProperty("jobProfile", "resource", true);
+        this.checkProperty("jobInput", "resource", true);
+        this.checkProperty("tracker", "object", false);
 
         if (typeof this.jobProfile === "object") {
             this.jobProfile = new JobProfile(this.jobProfile);
@@ -221,7 +240,7 @@ class JobProcess extends JobBase {
     constructor(properties) {
         super("JobProcess", properties);
 
-        checkProperty(this, "job", "resource");
+        this.checkProperty("job", "resource");
     }
 }
 
@@ -229,7 +248,7 @@ class JobAssignment extends JobBase {
     constructor(properties) {
         super("JobAssignment", properties);
 
-        checkProperty(this, "job", "resource");
+        this.checkProperty("job", "resource");
     }
 }
 
@@ -237,8 +256,8 @@ class Notification extends Resource {
     constructor(properties) {
         super("Notification", properties);
 
-        checkProperty(this, "source", "string", false);
-        checkProperty(this, "content", "resource", true);
+        this.checkProperty("source", "string", false);
+        this.checkProperty("content", "resource", true);
     }
 }
 
@@ -246,7 +265,7 @@ class NotificationEndpoint extends Resource {
     constructor(properties) {
         super("NotificationEndpoint", properties);
 
-        checkProperty(this, "httpEndpoint", "url", true);
+        this.checkProperty("httpEndpoint", "url", true);
     }
 }
 
@@ -324,6 +343,8 @@ const JobStatus = Object.freeze({
 module.exports = {
     onResourceCreate,
     onResourceUpsert,
+    McmaObject,
+    McmaTracker,
     Resource,
     Service,
     ResourceEndpoint,
@@ -349,5 +370,5 @@ module.exports = {
     WorkflowJob,
     Notification,
     NotificationEndpoint,
-    Exception
+    Exception,
 };

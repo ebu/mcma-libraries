@@ -1,25 +1,22 @@
-const { JobStatus, JobParameterBag, Utils } = require("@mcma/core");
+const { JobStatus, JobParameterBag, Exception } = require("@mcma/core");
 
-class WorkerJobHelper {
-    constructor(jobType, dbTable, resourceManager, request, jobAssignmentId) {
-        jobType = Utils.getTypeName(jobType);
-        if (!jobType) {
-            throw new Error("Worker job helper requires a valid job type to be specified.");
-        }
+class ProcessJobHelper {
+    constructor(dbTable, resourceManager, logger, workerRequest) {
+        const jobAssignmentId = workerRequest.input.jobAssignmentId;
 
         let jobAssignment;
         let job;
         let profile;
-        let matchedProfileName;
 
         this.getTable = () => dbTable;
         this.getResourceManager = () => resourceManager;
-        this.getRequest = () => request;
+        this.getLogger = () => logger;
+        this.getRequest = () => workerRequest;
+
         this.getJobAssignmentId = () => jobAssignmentId;
         this.getJobAssignment = () => jobAssignment;
         this.getJob = () => job;
         this.getProfile = () => profile;
-        this.getMatchedProfileName = () => matchedProfileName;
         this.getJobInput = () => job.jobInput;
         this.getJobOutput = () => job.jobOutput;
 
@@ -33,17 +30,7 @@ class WorkerJobHelper {
             job.jobOutput = jobAssignment.jobOutput || new JobParameterBag();
         };
 
-        this.validateJob = (supportedProfiles) => {
-            if ((job["@type"] || "").toLowerCase() !== jobType.toLowerCase()) {
-                throw new Error("Job has type '" + job["@type"] + "', which does not match expected job type '" + jobType + "'.");
-            }
-
-            supportedProfiles = supportedProfiles || [];
-            matchedProfileName = supportedProfiles.find(x => x && profile.name.toLowerCase() === x.toLowerCase());
-            if (!matchedProfileName) {
-                throw new Error(`Job profile "${profile.name}" is not supported.`);
-            }
-
+        this.validateJob = () => {
             if (profile.inputParameters) {
                 const missingInputParams = [];
                 const jobInputKeys = job.jobInput && Object.keys(job.jobInput);
@@ -53,7 +40,7 @@ class WorkerJobHelper {
                     }
                 }
                 if (missingInputParams.length > 0) {
-                    throw new Error("One or more required input parameters are missing from the job: " + missingInputParams.join(", "));
+                    throw new Exception("One or more required input parameters are missing from the job: " + missingInputParams.join(", "));
                 }
             }
         };
@@ -92,11 +79,11 @@ class WorkerJobHelper {
 
         this.updateJobAssignment = async (update, sendNotification = false) => {
             if (typeof update !== "function") {
-                throw new Error("update must be a function that modifies the JobAssignment.");
+                throw new Exception("update must be a function that modifies the JobAssignment.");
             }
             jobAssignment = await dbTable.get(jobAssignmentId);
             if (!jobAssignment) {
-                throw new Error("JobAssignment with id '" + jobAssignmentId + "' not found.");
+                throw new Exception("JobAssignment with id '" + jobAssignmentId + "' not found.");
             }
 
             update(jobAssignment);
@@ -120,5 +107,5 @@ class WorkerJobHelper {
 }
 
 module.exports = {
-    WorkerJobHelper
+    ProcessJobHelper
 };

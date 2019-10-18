@@ -1,4 +1,4 @@
-import { ContextVariableProvider, Resource, ResourceType } from "@mcma/core";
+import { ContextVariableProvider, Resource, ResourceType, McmaTracker } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
 
 export enum HttpStatusCode {
@@ -108,7 +108,7 @@ export type InvokeWorker = (workerFunctionId: string, payload: WorkerRequest) =>
 export class WorkerInvoker {
     constructor(invokeWorker: InvokeWorker);
 
-    invoke(workerFunctionId: string, operationName: string, contextVariables: { [key: string]: string }, input: any): Promise<void>;
+    invoke(workerFunctionId: string, operationName: string, contextVariables: { [key: string]: string }, input: any, tracker?: McmaTracker): Promise<void>;
     invoke(workerFunctionId: string, workerRequest: WorkerRequest): Promise<void>;
 }
 
@@ -117,9 +117,9 @@ export type DbTableProviderFactory<T extends Resource> = (type: ResourceType<T>)
 export interface DefaultRouteBuilder<T> {
     overrideHandler(handler: McmaApiRouteHandler): void;
 
-    onStarted(handleOnStarted: ((requestContext: McmaApiRequestContext) => Promise<void>)): boolean | void;
+    onStarted(handleOnStarted: ((requestContext: McmaApiRequestContext) => Promise<boolean>)): DefaultRouteBuilder<T>;
 
-    onCompleted(handleOnCompleted: ((requestContext: McmaApiRequestContext) => Promise<T>)): void;
+    onCompleted(handleOnCompleted: ((requestContext: McmaApiRequestContext, resource: Resource) => Promise<T>)): DefaultRouteBuilder<T>;
 
     build(): McmaApiRoute;
 }

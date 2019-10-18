@@ -1,19 +1,21 @@
-const { ContextVariableProvider } = require("@mcma/core");
+const { ContextVariableProvider, Exception } = require("@mcma/core");
 
 class WorkerRequest extends ContextVariableProvider {
     constructor(request) {
         const operationName = request && request.operationName;
         const contextVariables = request && request.contextVariables;
         const input = request && request.input;
+        const tracker = request && request.tracker;
 
-        if (!operationName || typeof operationName !== "string" || operationName.length === 0) {
-            throw new Error("operationName must be a non-empty string.");
+        if (!operationName || typeof operationName !== "string") {
+            throw new Exception("operationName must be a non-empty string.");
         }
 
         super(contextVariables);
 
         this.operationName = operationName;
         this.input = input;
+        this.tracker = tracker;
     }
 }
 

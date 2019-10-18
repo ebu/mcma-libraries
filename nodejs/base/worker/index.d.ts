@@ -1,74 +1,54 @@
-import { ContextVariableProvider, Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, ResourceType } from "@mcma/core";
+import { ContextVariableProvider, EnvironmentVariableProvider, ILogger, LoggerProvider, Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, McmaTracker, ResourceType } from "@mcma/core";
 import { ResourceManager, ResourceManagerProvider } from "@mcma/client";
 import { DbTable, DbTableProvider } from "@mcma/data";
 
+export class ProviderCollection {
+    constructor(dbTableProvider, environmentVariableProvider, loggerProvider, resourceManagerProvider);
+
+    dbTableProvider: DbTableProvider<JobAssignment>;
+    environmentVariableProvider: EnvironmentVariableProvider;
+    loggerProvider: LoggerProvider;
+    resourceManagerProvider: ResourceManagerProvider;
+}
+
 export class WorkerRequest extends ContextVariableProvider {
-    constructor(request: { operationName: string, contextVariables?: { [key: string]: string }, input?: any });
+    constructor(request: { operationName: string, contextVariables?: { [key: string]: string }, input?: any, tracker: McmaTracker });
 
     operationName: string;
     input: any;
+    tracker: McmaTracker;
 }
 
-export interface OperationHandler {
-    (workerRequest: WorkerRequest): Promise<void>;
-}
-
-export class OperationFilter {
-    filter(request: WorkerRequest): boolean;
-}
+export type OperationFilter = (providers: ProviderCollection, request: WorkerRequest) => Promise<boolean>;
+export type OperationHandler = (providers: ProviderCollection, request: WorkerRequest) => Promise<void>;
 
 export interface WorkerOperation {
-    handler: OperationHandler;
-    filter?: OperationFilter;
+    accepts: OperationFilter;
+    execute: OperationHandler;
 }
 
-export interface OperationBuilder {
-    handle(handler: OperationHandler, filter?: OperationFilter): OperationBuilder;
+export class Worker {
+    constructor(providerCollection: ProviderCollection);
+
+    addOperation(operationName: string, handler: OperationHandler): Worker;
+    addOperation(operationFilter: OperationFilter, handler: OperationHandler): Worker;
+    addOperation(operation: WorkerOperation): Worker;
+
+    doWork(request: WorkerRequest): Promise<void>;
 }
 
-export type OperationConfigurator = (operationHandlerBuilder: OperationBuilder) => void;
+export class ProcessJobHelper<T extends Job> {
+    constructor(dbTable: DbTable<JobAssignment>, resourceManager: ResourceManager, logger: ILogger, request: WorkerRequest);
 
-export interface NamedOperationHandler extends OperationHandler {
-    name: string;
-}
-
-export interface ProfileHandler {
-    (request: WorkerRequest): Promise<void>;
-}
-
-export interface NamedProfileHandler extends ProfileHandler {
-    name: string;
-}
-
-export interface Profile {
-    execute: ProfileHandler;
-}
-
-export interface NamedProfile extends Profile {
-    name: string;
-}
-
-export interface JobHandlerBuilder {
-    addProfile(profileName: string, profileHandler: ProfileHandler): JobHandlerBuilder;
-
-    addProfile(profileName: string, profile: Profile): JobHandlerBuilder;
-
-    addProfile(profile: NamedProfileHandler): JobHandlerBuilder;
-
-    addProfile(profile: NamedProfile): JobHandlerBuilder;
-}
-
-export class WorkerJobHelper<T extends Job> {
-    constructor(jobType: ResourceType<T>, dbTable: DbTable<T>, resourceManager: ResourceManager, request: WorkerRequest, jobAssignmentId: string);
-
-    getTable(): DbTable<T>;
     getResourceManager(): ResourceManager;
+    getTable(): DbTable<JobAssignment>;
+    getLogger(): ILogger;
     getRequest(): WorkerRequest;
+
     getJobAssignmentId(): string;
     getJobAssignment(): JobAssignment;
     getJob(): T;
     getProfile(): JobProfile;
-    getMatchedProfileName(): string;
     getJobInput(): JobParameterBag;
     getJobOutput(): JobParameterBag;
 
@@ -77,24 +57,25 @@ export class WorkerJobHelper<T extends Job> {
     complete(): Promise<JobAssignment>;
     fail(error: Error | string | any): Promise<JobAssignment>;
     cancel(message: string | any): Promise<JobAssignment>;
-    updateJobAssignmentOuput(): Promise<JobAssignment>;
+    updateJobAssignmentOutput(): Promise<JobAssignment>;
     updateJobAssignmentStatus(status: JobStatus, statusMessage?: string): Promise<JobAssignment>;
     updateJobAssignment(update: (jobAssignment: JobAssignment) => void, sendNotification?: boolean): Promise<JobAssignment>;
     sendNotification(): Promise<void>;
 }
 
-export class WorkerBuilder {
-    handleOperation(operationName: string, configureOperation: OperationConfigurator): WorkerBuilder;
-    handleOperation(operationHandler: NamedOperationHandler): WorkerBuilder;
-    build(): Worker;
+export type ProcessJobProfileHandler<T extends Job> = (processJobHelper: ProcessJobHelper<T>) => Promise<void>
 
-    handleJobsOfType<T extends Job>(
-        jobType: ResourceType<T>,
-        dbTableProvider: DbTableProvider<JobAssignment>,
-        resourceManagerProvider: ResourceManagerProvider,
-        configure: (jobHandlerBuilder: JobHandlerBuilder) => void): WorkerBuilder;
+export interface ProcessJobProfile<T extends Job> {
+    name: string;
+    execute: ProcessJobProfileHandler<T>;
 }
 
-export class Worker {
-    doWork(request: WorkerRequest): Promise<void>;
+export class ProcessJobOperation<T extends Job> implements WorkerOperation {
+    constructor(jobType: ResourceType<T>)
+
+    addProfile(profileName: string, handler: ProcessJobProfileHandler<T>): ProcessJobOperation<T>
+    addProfile(profile: ProcessJobProfile<T>): ProcessJobOperation<T>
+
+    accepts: OperationFilter;
+    execute: OperationHandler;
 }

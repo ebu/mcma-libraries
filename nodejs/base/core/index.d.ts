@@ -1,8 +1,20 @@
-export abstract class Resource {
-    constructor(type: string, properties: any);
+export abstract class McmaObject {
+    protected constructor(type: string, properties: object);
+
+    ["@type"]: string;
+}
+
+export class McmaTracker extends McmaObject {
+    constructor(properties: object)
 
     id: string;
-    ["@type"]: string;
+    label: string;
+}
+
+export abstract class Resource extends McmaObject {
+    protected constructor(type: string, properties: object);
+
+    id: string;
     dateCreated?: string;
     dateModified?: string;
 
@@ -43,14 +55,16 @@ export interface ResourceEndpointProperties {
     resourceType: string;
     httpEndpoint: string;
     authType?: string;
+    authContext?: string;
 }
 
-export class ResourceEndpoint extends Resource implements ResourceEndpointProperties {
+export class ResourceEndpoint extends McmaObject implements ResourceEndpointProperties {
     constructor(properties: ResourceEndpointProperties);
 
     resourceType: string;
     httpEndpoint: string;
     authType?: string;
+    authContext?: string;
 }
 
 export interface JobProfileProperties {
@@ -79,8 +93,8 @@ export class JobParameter extends Resource implements JobParameterProperties {
     parameterType?: string;
 }
 
-export class JobParameterBag extends Resource {
-    constructor(properties: any);
+export class JobParameterBag extends McmaObject {
+    constructor(properties: object);
 
     [key: string]: any;
 }
@@ -115,6 +129,7 @@ export class NotificationEndpoint extends Resource implements NotificationEndpoi
 }
 
 export interface JobBaseProperties {
+    tracker?: McmaTracker;
     notificationEndpoint?: NotificationEndpointProperties;
     status?: string;
     statusMessage?: string;
@@ -123,6 +138,8 @@ export interface JobBaseProperties {
 
 export abstract class JobBase extends Resource implements JobBaseProperties {
     protected constructor(type: string, properties: JobBaseProperties);
+
+    tracker?: McmaTracker;
     notificationEndpoint?: NotificationEndpointProperties;
     status?: string;
     statusMessage?: string;
@@ -187,25 +204,25 @@ export class WorkflowJob extends Job {
 }
 
 export class BMContent extends Resource {
-    constructor(properties: any);
+    constructor(properties: object);
 
     [key: string]: any;
 }
 
 export class BMEssence extends Resource {
-    constructor(properties: any);
+    constructor(properties: object);
 
     [key: string]: any;
 }
 
 export class DescriptiveMetadata extends Resource {
-    constructor(properties: any);
+    constructor(properties: object);
 
     [key: string]: any;
 }
 
 export class TechnicalMetadata extends Resource {
-    constructor(properties: any);
+    constructor(properties: object);
 
     [key: string]: any;
 }
@@ -226,28 +243,41 @@ export enum JobStatus {
 
 export interface ILogger {
     debug(msg: string, ...args: any[]): void;
-
     info(msg: string, ...args: any[]): void;
-
     warn(msg: string, ...args: any[]): void;
-
     error(msg: string, ...args: any[]): void;
-
-    exception(error: Error): void;
 }
 
-export class Logger {
-    static global: ILogger;
+export abstract class Logger implements ILogger {
+    protected constructor(source: string, tracker: McmaTracker);
 
-    static debug(msg: string, ...args: any[]): void;
-    static info(msg: string, ...args: any[]): void;
-    static warn(msg: string, ...args: any[]): void;
-    static error(msg: string, ...args: any[]): void;
-    static exception(error: Error): void;
+    abstract debug(msg: string, ...args: any[]): void;
+    abstract error(msg: string, ...args: any[]): void;
+    abstract info(msg: string, ...args: any[]): void;
+    abstract warn(msg: string, ...args: any[]): void;
+}
+
+export class ConsoleLogger extends Logger {
+    constructor(source: string, tracker: McmaTracker);
+
+    debug(msg: string, ...args: any[]): void;
+    error(msg: string, ...args: any[]): void;
+    info(msg: string, ...args: any[]): void;
+    warn(msg: string, ...args: any[]): void;
+}
+
+export interface LoggerProvider {
+    get(tracker: McmaTracker): ILogger
+}
+
+export class ConsoleLoggerProvider implements LoggerProvider {
+    constructor(source: string);
+
+    get(tracker: McmaTracker): ILogger;
 }
 
 export abstract class ContextVariableProvider {
-    constructor(contextVariables: { [key: string]: string });
+    protected constructor(contextVariables: { [key: string]: string });
 
     getAllContextVariables(): { [key: string]: string };
     getRequiredContextVariable(key: string): string;
