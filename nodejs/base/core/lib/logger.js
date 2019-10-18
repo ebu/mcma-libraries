@@ -46,7 +46,7 @@ class ConsoleLoggerProvider {
         this.source = source;
     }
 
-    getLogger(tracker) {
+    get(tracker) {
         return ConsoleLogger(this.source, tracker);
     }
 }

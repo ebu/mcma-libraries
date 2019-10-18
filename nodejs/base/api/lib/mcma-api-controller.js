@@ -91,11 +91,13 @@ class McmaApiController {
 
                         // checking if its a CORS pre-flight request
                         for (const prop in request.headers) {
-                            if (prop.toLowerCase() === "access-control-request-method") {
-                                corsMethod = request.headers[prop];
-                            }
-                            if (prop.toLowerCase() === "access-control-request-headers") {
-                                corsHeaders = request.headers[prop];
+                            if (request.headers.hasOwnProperty(prop)) {
+                                if (prop.toLowerCase() === "access-control-request-method") {
+                                    corsMethod = request.headers[prop];
+                                }
+                                if (prop.toLowerCase() === "access-control-request-headers") {
+                                    corsHeaders = request.headers[prop];
+                                }
                             }
                         }
 
@@ -124,7 +126,7 @@ class McmaApiController {
         } catch (error) {
             console.error(error);
 
-            response.statusCode = HttpStatusCode.INTERNAL_ERROR;
+            response.statusCode = HttpStatusCode.INTERNAL_SERVER_ERROR;
             response.headers = getDefaultResponseHeaders();
             response.body = new McmaApiError(response.statusCode, error.message, request.path);
         }
