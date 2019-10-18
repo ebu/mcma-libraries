@@ -5,7 +5,7 @@ export class DynamoDbTable<T extends Resource> extends DbTable<T> {
     constructor(type: string, tableName: string);
 }
 
-export class DynamoDbTableProvider<T extends Resource> implements DbTableProvider {
+export class DynamoDbTableProvider<T extends Resource> implements DbTableProvider<T> {
     constructor(type: ResourceType<T>);
 
     get(tableName: string): DbTable<T>;
