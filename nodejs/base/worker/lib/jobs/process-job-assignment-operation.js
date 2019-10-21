@@ -1,5 +1,5 @@
 const { Exception } = require("@mcma/core");
-const { ProcessJobHelper } = require("./process-job-assignment-helper");
+const { ProcessJobAssignmentHelper } = require("./process-job-assignment-helper");
 
 class ProcessJobAssignmentOperation {
     constructor(jobType) {
@@ -15,8 +15,8 @@ class ProcessJobAssignmentOperation {
             execute: JobProfileHandler<T>;
         }
 
-        addProfile(profileName: string, handler: ProcessJobProfileHandler<T>): ProcessJobOperation<T>
-        addProfile(profile: ProcessJobProfile<T>): ProcessJobOperation<T>
+        addProfile(profileName: string, handler: ProcessJobProfileHandler<T>): ProcessJobAssignmentOperation<T>
+        addProfile(profile: ProcessJobProfile<T>): ProcessJobAssignmentOperation<T>
     */
 
     addProfile(profile, handler) {
@@ -55,33 +55,33 @@ class ProcessJobAssignmentOperation {
         const dbTable = providerCollection.dbTableProvider.get(workerRequest.tableName());
         const resourceManager = providerCollection.resourceManagerProvider.get(workerRequest);
 
-        const processJobHelper = new ProcessJobHelper(dbTable, resourceManager, logger, workerRequest);
+        const processJobAssignmentHelper = new ProcessJobAssignmentHelper(dbTable, resourceManager, logger, workerRequest);
 
         try {
             logger.debug("Initializing job helper...");
 
-            await processJobHelper.initialize();
+            await processJobAssignmentHelper.initialize();
 
             logger.debug("Validating job...");
 
-            if (processJobHelper.getJob()["@type"] !== this.jobType) {
-                return await processJobHelper.fail("Job has type '" + processJobHelper.getJob()["@type"] + "', which does not match expected job type '" + this.jobType + "'.");
+            if (processJobAssignmentHelper.getJob()["@type"] !== this.jobType) {
+                return await processJobAssignmentHelper.fail("Job has type '" + processJobAssignmentHelper.getJob()["@type"] + "', which does not match expected job type '" + this.jobType + "'.");
             }
 
-            const matchedProfile = this.profiles.find(p => processJobHelper.getProfile().name === p.name);
+            const matchedProfile = this.profiles.find(p => processJobAssignmentHelper.getProfile().name === p.name);
             if (!matchedProfile) {
-                return await processJobHelper.fail("Job profile '" + processJobHelper.getProfile().name + "' is not supported.");
+                return await processJobAssignmentHelper.fail("Job profile '" + processJobAssignmentHelper.getProfile().name + "' is not supported.");
             }
 
-            processJobHelper.validateJob();
+            processJobAssignmentHelper.validateJob();
 
-            logger.debug("Found handler for job profile '" + processJobHelper.getProfile().name + "'");
+            logger.debug("Found handler for job profile '" + processJobAssignmentHelper.getProfile().name + "'");
 
-            await matchedProfile.execute(processJobHelper);
+            await matchedProfile.execute(processJobAssignmentHelper);
         } catch (e) {
             logger.error(e);
             try {
-                await processJobHelper.fail(e.message);
+                await processJobAssignmentHelper.fail(e.message);
             } catch (inner) {
                 logger.error(inner);
             }
@@ -90,5 +90,5 @@ class ProcessJobAssignmentOperation {
 }
 
 module.exports = {
-    ProcessJobOperation: ProcessJobAssignmentOperation
+    ProcessJobAssignmentOperation
 };

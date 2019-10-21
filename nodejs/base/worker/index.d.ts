@@ -1,10 +1,11 @@
 import { ContextVariableProvider, EnvironmentVariableProvider, ILogger, LoggerProvider, Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, McmaTracker, ResourceType } from "@mcma/core";
-import { ResourceManager, ResourceManagerProvider } from "@mcma/client";
+import { AuthProvider, ResourceManager, ResourceManagerProvider } from "@mcma/client";
 import { DbTable, DbTableProvider } from "@mcma/data";
 
 export class ProviderCollection {
     constructor(dbTableProvider, environmentVariableProvider, loggerProvider, resourceManagerProvider);
 
+    authProvider: AuthProvider;
     dbTableProvider: DbTableProvider<JobAssignment>;
     environmentVariableProvider: EnvironmentVariableProvider;
     loggerProvider: LoggerProvider;

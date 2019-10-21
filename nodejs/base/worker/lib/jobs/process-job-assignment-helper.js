@@ -107,5 +107,5 @@ class ProcessJobAssignmentHelper {
 }
 
 module.exports = {
-    ProcessJobHelper: ProcessJobAssignmentHelper
+    ProcessJobAssignmentHelper
 };
