@@ -72,6 +72,8 @@ class Worker {
         try {
             await operation.execute(this.providerCollection, workerRequest);
         } catch (e) {
+            logger.error(e.message);
+            logger.error(e);
             throw new Exception("Failed to process worker operation '" + workerRequest.operationName + "'", e);
         }
     }

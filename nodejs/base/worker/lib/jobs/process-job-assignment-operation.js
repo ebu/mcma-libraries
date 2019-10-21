@@ -1,8 +1,12 @@
-const { Exception } = require("@mcma/core");
+const { Exception, Utils } = require("@mcma/core");
 const { ProcessJobAssignmentHelper } = require("./process-job-assignment-helper");
 
 class ProcessJobAssignmentOperation {
     constructor(jobType) {
+        jobType = Utils.getTypeName(jobType);
+        if (!jobType) {
+            throw new Exception("Worker job helper requires a valid job type to be specified.");
+        }
         this.jobType = jobType;
         this.profiles = [];
     }
@@ -23,7 +27,7 @@ class ProcessJobAssignmentOperation {
         if (handler) {
             profile = {
                 name: profile,
-                handler: handler,
+                execute: handler,
             };
         }
 
@@ -65,12 +69,16 @@ class ProcessJobAssignmentOperation {
             logger.debug("Validating job...");
 
             if (processJobAssignmentHelper.getJob()["@type"] !== this.jobType) {
-                return await processJobAssignmentHelper.fail("Job has type '" + processJobAssignmentHelper.getJob()["@type"] + "', which does not match expected job type '" + this.jobType + "'.");
+                const errorMessage = "Job has type '" + processJobAssignmentHelper.getJob()["@type"] + "', which does not match expected job type '" + this.jobType + "'.";
+                logger.error(errorMessage);
+                return await processJobAssignmentHelper.fail(errorMessage);
             }
 
             const matchedProfile = this.profiles.find(p => processJobAssignmentHelper.getProfile().name === p.name);
             if (!matchedProfile) {
-                return await processJobAssignmentHelper.fail("Job profile '" + processJobAssignmentHelper.getProfile().name + "' is not supported.");
+                const errorMessage = "Job profile '" + processJobAssignmentHelper.getProfile().name + "' is not supported.";
+                logger.error(errorMessage);
+                return await processJobAssignmentHelper.fail(errorMessage);
             }
 
             processJobAssignmentHelper.validateJob();
@@ -78,7 +86,10 @@ class ProcessJobAssignmentOperation {
             logger.debug("Found handler for job profile '" + processJobAssignmentHelper.getProfile().name + "'");
 
             await matchedProfile.execute(processJobAssignmentHelper);
+
+            logger.debug("Handler for job profile '" + processJobAssignmentHelper.getProfile().name + "' completed")
         } catch (e) {
+            logger.error(e.message);
             logger.error(e);
             try {
                 await processJobAssignmentHelper.fail(e.message);
