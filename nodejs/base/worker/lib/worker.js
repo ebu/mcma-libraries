@@ -28,7 +28,8 @@ class Worker {
     addOperation(operation, handler) {
         if (handler) {
             if (typeof operation === "string") { // case 1. we turn operation into OperationFilter by converting it to a function that checks for operationName equality
-                operation = async (providers, workerRequest) => workerRequest.operationName === operation;
+                const operationName = operation;
+                operation = async (providers, workerRequest) => workerRequest.operationName === operationName;
             }
 
             // build a workerOperation from the operation and handler
