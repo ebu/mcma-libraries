@@ -1,6 +1,6 @@
 const { JobStatus, JobParameterBag, Exception } = require("@mcma/core");
 
-class ProcessJobHelper {
+class ProcessJobAssignmentHelper {
     constructor(dbTable, resourceManager, logger, workerRequest) {
         const jobAssignmentId = workerRequest.input.jobAssignmentId;
 
@@ -107,5 +107,5 @@ class ProcessJobHelper {
 }
 
 module.exports = {
-    ProcessJobHelper
+    ProcessJobHelper: ProcessJobAssignmentHelper
 };

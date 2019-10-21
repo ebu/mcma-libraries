@@ -1,9 +1,10 @@
 class ProviderCollection {
-    constructor(dbTableProvider, environmentVariableProvider, loggerProvider, resourceManagerProvider) {
-        this.dbTableProvider = dbTableProvider;
-        this.environmentVariableProvider = environmentVariableProvider;
-        this.loggerProvider = loggerProvider;
-        this.resourceManagerProvider = resourceManagerProvider;
+    constructor(providers) {
+        this.authProvider = providers && providers.authProvider;
+        this.dbTableProvider = providers && providers.dbTableProvider;
+        this.environmentVariableProvider = providers && providers.environmentVariableProvider;
+        this.loggerProvider = providers && providers.loggerProvider;
+        this.resourceManagerProvider = providers && providers.resourceManagerProvider;
     }
 }
 

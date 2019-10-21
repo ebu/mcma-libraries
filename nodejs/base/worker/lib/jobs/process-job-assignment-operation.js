@@ -1,7 +1,7 @@
 const { Exception } = require("@mcma/core");
-const { ProcessJobHelper } = require("./process-job-helper");
+const { ProcessJobHelper } = require("./process-job-assignment-helper");
 
-class ProcessJobOperation {
+class ProcessJobAssignmentOperation {
     constructor(jobType) {
         this.jobType = jobType;
         this.profiles = [];
@@ -90,5 +90,5 @@ class ProcessJobOperation {
 }
 
 module.exports = {
-    ProcessJobOperation
+    ProcessJobOperation: ProcessJobAssignmentOperation
 };

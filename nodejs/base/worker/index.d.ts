@@ -37,7 +37,7 @@ export class Worker {
     doWork(request: WorkerRequest): Promise<void>;
 }
 
-export class ProcessJobHelper<T extends Job> {
+export class ProcessJobAssignmentHelper<T extends Job> {
     constructor(dbTable: DbTable<JobAssignment>, resourceManager: ResourceManager, logger: ILogger, request: WorkerRequest);
 
     getResourceManager(): ResourceManager;
@@ -63,18 +63,18 @@ export class ProcessJobHelper<T extends Job> {
     sendNotification(): Promise<void>;
 }
 
-export type ProcessJobProfileHandler<T extends Job> = (processJobHelper: ProcessJobHelper<T>) => Promise<void>
+export type ProcessJobProfileHandler<T extends Job> = (processJobHelper: ProcessJobAssignmentHelper<T>) => Promise<void>
 
 export interface ProcessJobProfile<T extends Job> {
     name: string;
     execute: ProcessJobProfileHandler<T>;
 }
 
-export class ProcessJobOperation<T extends Job> implements WorkerOperation {
+export class ProcessJobAssignmentOperation<T extends Job> implements WorkerOperation {
     constructor(jobType: ResourceType<T>)
 
-    addProfile(profileName: string, handler: ProcessJobProfileHandler<T>): ProcessJobOperation<T>
-    addProfile(profile: ProcessJobProfile<T>): ProcessJobOperation<T>
+    addProfile(profileName: string, handler: ProcessJobProfileHandler<T>): ProcessJobAssignmentOperation<T>
+    addProfile(profile: ProcessJobProfile<T>): ProcessJobAssignmentOperation<T>
 
     accepts: OperationFilter;
     execute: OperationHandler;
