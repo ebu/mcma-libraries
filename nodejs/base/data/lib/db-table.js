@@ -4,15 +4,23 @@ class DbTable {
     constructor(type) {
         this.type = Utils.getTypeName(type);
     }
+
+    async query(filter) {
+        return [];
+    }
+
+    async get(id) {
+        return null;
+    }
+
+    async put(id, resource) {
+        return resource;
+    }
+
+    async delete(id) {
+    }
 }
 
-DbTable.prototype.query = async function (filter) {
+module.exports = {
+    DbTable
 };
-DbTable.prototype.get = async function (id) {
-};
-DbTable.prototype.put = async function (id, resource) {
-};
-DbTable.prototype.delete = async function (id) {
-};
-
-module.exports = DbTable;

@@ -242,28 +242,40 @@ export enum JobStatus {
 }
 
 export interface ILogger {
-    debug(msg: string, ...args: any[]): void;
-    info(msg: string, ...args: any[]): void;
-    warn(msg: string, ...args: any[]): void;
-    error(msg: string, ...args: any[]): void;
+    log(level: number, type: string, msg: any, ...args: any[]);
+
+    fatal(msg: any, ...args: any[]): void;
+    error(msg: any, ...args: any[]): void;
+    warn(msg: any, ...args: any[]): void;
+    info(msg: any, ...args: any[]): void;
+    debug(msg: any, ...args: any[]): void;
+
+    function_start(msg: any, ...args: any[]): void;
+    function_end(msg: any, ...args: any[]): void;
+    job_start(msg: any, ...args: any[]): void;
+    job_end(msg: any, ...args: any[]): void;
 }
 
 export abstract class Logger implements ILogger {
     protected constructor(source: string, tracker: McmaTracker);
 
-    abstract debug(msg: string, ...args: any[]): void;
-    abstract error(msg: string, ...args: any[]): void;
-    abstract info(msg: string, ...args: any[]): void;
-    abstract warn(msg: string, ...args: any[]): void;
+    abstract log(level: number, type: string, msg: any, ...args: any[]);
+    fatal(msg: any, ...args: any[]): void;
+    error(msg: any, ...args: any[]): void;
+    warn(msg: any, ...args: any[]): void;
+    info(msg: any, ...args: any[]): void;
+    debug(msg: any, ...args: any[]): void;
+
+    function_start(msg: any, ...args: any[]): void;
+    function_end(msg: any, ...args: any[]): void;
+    job_start(msg: any, ...args: any[]): void;
+    job_end(msg: any, ...args: any[]): void;
 }
 
 export class ConsoleLogger extends Logger {
     constructor(source: string, tracker: McmaTracker);
 
-    debug(msg: string, ...args: any[]): void;
-    error(msg: string, ...args: any[]): void;
-    info(msg: string, ...args: any[]): void;
-    warn(msg: string, ...args: any[]): void;
+    log(level: number, type: string, msg: any, ...args: any[]);
 }
 
 export interface LoggerProvider {

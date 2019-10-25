@@ -6,16 +6,53 @@ class Logger {
         this.tracker = tracker;
     }
 
-    buildLogEvent(level, message, ...args) {
+    buildLogEvent(level, type, message, ...args) {
         const logEvent = {
             trackerId: this.tracker && this.tracker.id || "",
             trackerLabel: this.tracker && this.tracker.label || "",
             source: this.source || "",
             timestamp: Date.now(),
             level: level,
+            type: type,
             message: util.format(message, ...args),
         };
         return JSON.stringify(logEvent, null, 2);
+    }
+
+    fatal(msg, ...args) {
+        this.log(100, "FATAL", msg, ...args);
+    }
+
+    error(msg, ...args) {
+        this.log(200, "ERROR", msg, ...args);
+    }
+
+    warn(msg, ...args) {
+        this.log(300, "WARN", msg, ...args);
+    }
+
+    info(msg, ...args) {
+        this.log(400, "INFO", msg, ...args);
+    }
+
+    debug(msg, ...args) {
+        this.log(500, "DEBUG", msg, ...args);
+    }
+
+    function_start(msg, ...args) {
+        this.log(450, "FUNCTION_START", msg, ...args);
+    }
+
+    function_end(msg, ...args) {
+        this.log(450, "FUNCTION_END", msg, ...args);
+    }
+
+    job_start(msg, ...args) {
+        this.log(400, "JOB_START", msg, ...args);
+    }
+
+    job_end(msg, ...args) {
+        this.log(400, "JOB_END", msg, ...args);
     }
 }
 
@@ -24,20 +61,16 @@ class ConsoleLogger extends Logger {
         super(source, tracker);
     }
 
-    debug(msg, ...args) {
-        console.log(this.buildLogEvent("DEBUG", msg, ...args));
-    }
-
-    info(msg, ...args) {
-        console.log(this.buildLogEvent("INFO", msg, ...args));
-    }
-
-    warn(msg, ...args) {
-        console.warn(this.buildLogEvent("WARN", msg, ...args));
-    }
-
-    error(msg, ...args) {
-        console.error(this.buildLogEvent("ERROR", msg, ...args));
+    log(level, type, msg, ...args) {
+        if (level > 0) {
+            if (level <= 200) {
+                console.error(this.buildLogEvent(level, type, msg, ...args));
+            } else if (level < 400) {
+                console.warn(this.buildLogEvent(level, type, msg, ...args));
+            } else {
+                console.log(this.buildLogEvent(level, type, msg, ...args));
+            }
+        }
     }
 }
 

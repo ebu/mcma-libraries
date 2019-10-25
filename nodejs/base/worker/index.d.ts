@@ -10,6 +10,12 @@ export class ProviderCollection {
     environmentVariableProvider: EnvironmentVariableProvider;
     loggerProvider: LoggerProvider;
     resourceManagerProvider: ResourceManagerProvider;
+
+    getAuthProvider(): AuthProvider;
+    getDbTableProvider(): DbTableProvider<JobAssignment>;
+    getEnvironmentVariableProvider(): EnvironmentVariableProvider;
+    getLoggerProvider(): LoggerProvider;
+    getResourceManagerProvider(); ResourceManagerProvider;
 }
 
 export class WorkerRequest extends ContextVariableProvider {
@@ -20,8 +26,8 @@ export class WorkerRequest extends ContextVariableProvider {
     tracker: McmaTracker;
 }
 
-export type OperationFilter = (providers: ProviderCollection, request: WorkerRequest) => Promise<boolean>;
-export type OperationHandler = (providers: ProviderCollection, request: WorkerRequest) => Promise<void>;
+export type OperationFilter = (providers: ProviderCollection, request: WorkerRequest, ctx?: any) => Promise<boolean>;
+export type OperationHandler = (providers: ProviderCollection, request: WorkerRequest, ctx?: any) => Promise<void>;
 
 export interface WorkerOperation {
     accepts: OperationFilter;
@@ -35,7 +41,7 @@ export class Worker {
     addOperation(operationFilter: OperationFilter, handler: OperationHandler): Worker;
     addOperation(operation: WorkerOperation): Worker;
 
-    doWork(request: WorkerRequest): Promise<void>;
+    doWork(request: WorkerRequest, ctx?: any): Promise<void>;
 }
 
 export class ProcessJobAssignmentHelper<T extends Job> {
@@ -64,7 +70,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     sendNotification(): Promise<void>;
 }
 
-export type ProcessJobProfileHandler<T extends Job> = (processJobHelper: ProcessJobAssignmentHelper<T>) => Promise<void>
+export type ProcessJobProfileHandler<T extends Job> = (providers: ProviderCollection, processJobHelper: ProcessJobAssignmentHelper<T>, ctx?: any) => Promise<void>
 
 export interface ProcessJobProfile<T extends Job> {
     name: string;

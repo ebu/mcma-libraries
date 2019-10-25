@@ -40,11 +40,11 @@ class ProcessJobAssignmentOperation {
         return this;
     }
 
-    async accepts(providerCollection, workerRequest) {
+    async accepts(providerCollection, workerRequest, ctx) {
         return workerRequest.operationName === "ProcessJobAssignment";
     }
 
-    async execute(providerCollection, workerRequest) {
+    async execute(providerCollection, workerRequest, ctx) {
         if (!workerRequest) {
             throw new Exception("request must be provided");
         }
@@ -55,44 +55,40 @@ class ProcessJobAssignmentOperation {
             throw new Exception("request.input does not specify a jobAssignmentId");
         }
 
-        const logger = providerCollection.loggerProvider.get(workerRequest.tracker);
-        const dbTable = providerCollection.dbTableProvider.get(workerRequest.tableName());
-        const resourceManager = providerCollection.resourceManagerProvider.get(workerRequest);
+        const dbTable = providerCollection.getDbTableProvider().get(workerRequest.tableName());
+        const logger = providerCollection.getLoggerProvider().get(workerRequest.tracker);
+        const resourceManager = providerCollection.getResourceManagerProvider().get(workerRequest);
 
-        const processJobAssignmentHelper = new ProcessJobAssignmentHelper(dbTable, resourceManager, logger, workerRequest);
+        const jobAssignmentHelper = new ProcessJobAssignmentHelper(dbTable, resourceManager, logger, workerRequest);
 
         try {
-            logger.debug("Initializing job helper...");
+            logger.info("Initializing job helper...");
 
-            await processJobAssignmentHelper.initialize();
+            await jobAssignmentHelper.initialize();
 
-            logger.debug("Validating job...");
+            logger.info("Validating job...");
 
-            if (processJobAssignmentHelper.getJob()["@type"] !== this.jobType) {
-                const errorMessage = "Job has type '" + processJobAssignmentHelper.getJob()["@type"] + "', which does not match expected job type '" + this.jobType + "'.";
-                logger.error(errorMessage);
-                return await processJobAssignmentHelper.fail(errorMessage);
+            if (jobAssignmentHelper.getJob()["@type"] !== this.jobType) {
+                throw new Exception("Job has type '" + jobAssignmentHelper.getJob()["@type"] + "', which does not match expected job type '" + this.jobType + "'.");
             }
 
-            const matchedProfile = this.profiles.find(p => processJobAssignmentHelper.getProfile().name === p.name);
+            const matchedProfile = this.profiles.find(p => jobAssignmentHelper.getProfile().name === p.name);
             if (!matchedProfile) {
-                const errorMessage = "Job profile '" + processJobAssignmentHelper.getProfile().name + "' is not supported.";
-                logger.error(errorMessage);
-                return await processJobAssignmentHelper.fail(errorMessage);
+                throw new Exception("Job profile '" + jobAssignmentHelper.getProfile().name + "' is not supported.");
             }
 
-            processJobAssignmentHelper.validateJob();
+            jobAssignmentHelper.validateJob();
 
-            logger.debug("Found handler for job profile '" + processJobAssignmentHelper.getProfile().name + "'");
+            logger.info("Found handler for job profile '" + jobAssignmentHelper.getProfile().name + "'");
 
-            await matchedProfile.execute(processJobAssignmentHelper);
+            await matchedProfile.execute(providerCollection, jobAssignmentHelper, ctx);
 
-            logger.debug("Handler for job profile '" + processJobAssignmentHelper.getProfile().name + "' completed")
+            logger.info("Handler for job profile '" + jobAssignmentHelper.getProfile().name + "' completed")
         } catch (e) {
             logger.error(e.message);
             logger.error(e);
             try {
-                await processJobAssignmentHelper.fail(e.message);
+                await jobAssignmentHelper.fail(e.message);
             } catch (inner) {
                 logger.error(inner);
             }
