@@ -6,14 +6,14 @@ class Logger {
         this.tracker = tracker;
     }
 
-    buildLogEvent(level, type, message, ...args) {
+    buildLogEvent(timestamp, level, type, message, ...args) {
         const logEvent = {
             trackerId: this.tracker && this.tracker.id || "",
             trackerLabel: this.tracker && this.tracker.label || "",
             source: this.source || "",
-            timestamp: Date.now(),
-            level: level,
-            type: type,
+            timestamp,
+            level,
+            type,
             message: util.format(message, ...args),
         };
         return JSON.stringify(logEvent, null, 2);
@@ -64,11 +64,11 @@ class ConsoleLogger extends Logger {
     log(level, type, msg, ...args) {
         if (level > 0) {
             if (level <= 200) {
-                console.error(this.buildLogEvent(level, type, msg, ...args));
+                console.error(this.buildLogEvent(Date.now(), level, type, msg, ...args));
             } else if (level < 400) {
-                console.warn(this.buildLogEvent(level, type, msg, ...args));
+                console.warn(this.buildLogEvent(Date.now(), level, type, msg, ...args));
             } else {
-                console.log(this.buildLogEvent(level, type, msg, ...args));
+                console.log(this.buildLogEvent(Date.now(), level, type, msg, ...args));
             }
         }
     }
