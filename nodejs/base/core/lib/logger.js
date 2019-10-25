@@ -6,7 +6,22 @@ class Logger {
         this.tracker = tracker;
     }
 
-    buildLogEvent(timestamp, level, type, message, ...args) {
+    buildLogEvent(timestamp, level, type, msg, ...args) {
+
+        let message;
+
+        if (args.length) {
+            if (typeof message === "string") {
+                message = util.format(msg, ...args);
+            } else {
+                message = [];
+                message.push(msg);
+                message.push(...args);
+            }
+        } else {
+            message = msg;
+        }
+
         const logEvent = {
             trackerId: this.tracker && this.tracker.id || "",
             trackerLabel: this.tracker && this.tracker.label || "",
@@ -14,7 +29,7 @@ class Logger {
             timestamp,
             level,
             type,
-            message: util.format(message, ...args),
+            message,
         };
         return JSON.stringify(logEvent, null, 2);
     }

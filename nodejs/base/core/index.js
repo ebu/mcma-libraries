@@ -6,7 +6,7 @@ const {
     WorkflowJob, Notification, NotificationEndpoint, Exception,
 } = require("./lib/mcma-core");
 const { ContextVariableProvider, EnvironmentVariableProvider } = require("./lib/context-variable-provider");
-const { Logger, ConsoleLogger, ConsoleLoggerProvider } = require("./lib/logger");
+const { Logger, ConsoleLoggerProvider } = require("./lib/logger");
 const Utils = require("./lib/utils");
 
 module.exports = {
@@ -41,7 +41,6 @@ module.exports = {
     NotificationEndpoint,
     Exception,
     Logger,
-    ConsoleLogger,
     ConsoleLoggerProvider,
     ContextVariableProvider,
     EnvironmentVariableProvider,

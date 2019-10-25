@@ -272,12 +272,6 @@ export abstract class Logger implements ILogger {
     job_end(msg: any, ...args: any[]): void;
 }
 
-export class ConsoleLogger extends Logger {
-    constructor(source: string, tracker: McmaTracker);
-
-    log(level: number, type: string, msg: any, ...args: any[]);
-}
-
 export interface LoggerProvider {
     get(tracker: McmaTracker): ILogger
 }

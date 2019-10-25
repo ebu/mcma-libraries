@@ -1,4 +1,5 @@
 const AWS = require("aws-sdk");
+const uuidv4 = require("uuid/v4");
 
 const { Exception, Logger } = require("@mcma/core");
 
@@ -25,7 +26,7 @@ class AwsCloudWatchLoggerProvider {
             throw new Exception("Failed to initialize AwsCloudWatchLoggerProvider with params source: '" + source + "' and logGroupName: '" + logGroupName + "'");
         }
 
-        const logStreamName = source + "-" + Date.now();
+        const logStreamName = source + "-" + uuidv4();
 
         let logEvents = [];
         let logGroupVerified = false;
