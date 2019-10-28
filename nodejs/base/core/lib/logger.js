@@ -31,6 +31,13 @@ class Logger {
             type,
             message,
         };
+        try {
+            return JSON.stringify(logEvent, null, 2);
+        } catch (error) {
+            console.error(error);
+            logEvent.message = logEvent.message + "";
+        }
+
         return JSON.stringify(logEvent, null, 2);
     }
 

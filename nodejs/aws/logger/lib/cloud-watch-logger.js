@@ -41,7 +41,7 @@ class AwsCloudWatchLoggerProvider {
             try {
                 processing = true;
 
-                while (logEvents.length) {
+                while (logEvents.length > 0) {
                     if (!logGroupVerified) {
                         let nextToken = undefined;
 
@@ -117,6 +117,16 @@ class AwsCloudWatchLoggerProvider {
         };
 
         this.get = (tracker) => new AwsCloudWatchLogger(source, tracker, addLogEvent);
+
+        const sleep = async (timeout) => {
+            return new Promise((resolve) => setTimeout(() => resolve(), timeout));
+        };
+
+        this.flush = async () => {
+            while (processing) {
+                await sleep(10);
+            }
+        };
     }
 }
 
