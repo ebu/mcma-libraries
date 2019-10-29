@@ -57,7 +57,33 @@ namespace Mcma.Client
             return objects.ToArray();
         }
 
+        public static async Task<object[]> ReadAsArrayFromJsonAsync(this HttpContent content, Type objectType, bool throwIfAnyFailToDeserialize = true)
+        {
+            var jsonArray = await content.ReadAsJsonArrayAsync();
+
+            var objects = new List<object>();
+            foreach (var item in jsonArray.OfType<JObject>())
+            {
+                try
+                {
+                    objects.Add(item.ToMcmaObject(objectType));
+                }
+                catch (Exception ex)
+                {
+                    if (throwIfAnyFailToDeserialize) 
+                        throw;
+
+                    Logger.Warn($"Failed to instantiate json {item.ToString()} as a {objectType.Name} due to error {ex}");
+                }
+            }
+
+            return objects.ToArray();
+        }
+
         public static async Task<T> ReadAsObjectFromJsonAsync<T>(this HttpContent content) where T : class
             => (await content.ReadAsJsonObjectAsync())?.ToMcmaObject<T>();
+
+        public static async Task<object> ReadAsObjectFromJsonAsync(this HttpContent content, Type objectType)
+            => (await content.ReadAsJsonObjectAsync())?.ToMcmaObject(objectType);
     }
 }

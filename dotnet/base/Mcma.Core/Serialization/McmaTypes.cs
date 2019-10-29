@@ -41,6 +41,9 @@ namespace Mcma.Core.Serialization
 
         public static Type FindType(string typeString)
         {
+            if (typeString == null)
+                return null;
+
             // check for match in explicitly-provided type collection
             var objectType = Types.FirstOrDefault(t => t.Name.Equals(typeString, StringComparison.OrdinalIgnoreCase));
             if (objectType == null)

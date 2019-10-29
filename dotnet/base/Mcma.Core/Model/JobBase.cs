@@ -15,5 +15,7 @@ namespace Mcma.Core
         public NotificationEndpoint NotificationEndpoint { get; set; }
 
         public JobParameterBag JobOutput { get; set; }
+
+        public McmaTracker Tracker { get; set; }
     }
 }

@@ -55,7 +55,7 @@ namespace Mcma.Client
                 var serviceRegistry = GetDefaultServiceRegistryServiceClient();
                 Services.Add(serviceRegistry);
 
-                var servicesEndpoint = serviceRegistry.GetResourceEndpoint<Service>();
+                var servicesEndpoint = serviceRegistry.GetResourceEndpointClient<Service>();
 
                 Logger.Debug($"Retrieving services from {Options.ServicesUrl}...");
 
@@ -77,7 +77,7 @@ namespace Mcma.Client
             var results = new List<T>();
             var usedHttpEndpoints = new Dictionary<string, bool>();
 
-            foreach (var resourceEndpoint in Services.Where(s => s.HasResourceEndpointClient<T>()).Select(s => s.GetResourceEndpoint<T>()))
+            foreach (var resourceEndpoint in Services.Where(s => s.HasResourceEndpointClient<T>()).Select(s => s.GetResourceEndpointClient<T>()))
             {
                 try
                 {
@@ -99,18 +99,77 @@ namespace Mcma.Client
             return new ReadOnlyCollection<T>(results);
         }
 
+        public async Task<IEnumerable<McmaResource>> GetAsync(Type resourceType, params (string, string)[] filter)
+        {
+            if (!Services.Any())
+                await InitAsync();
+
+            var results = new List<McmaResource>();
+            var usedHttpEndpoints = new Dictionary<string, bool>();
+
+            foreach (var resourceEndpoint in Services.Where(s => s.HasResourceEndpointClient(resourceType)).Select(s => s.GetResourceEndpointClient(resourceType)))
+            {
+                try
+                {
+                    if (!usedHttpEndpoints.ContainsKey(resourceEndpoint.HttpEndpoint))
+                    {
+                        var response = await resourceEndpoint.GetCollectionAsync(resourceType, filter: filter.ToDictionary(x => x.Item1, x => x.Item2));
+                        results.AddRange(response);
+                    }
+
+                    usedHttpEndpoints[resourceEndpoint.HttpEndpoint] = true;
+                }
+                catch (Exception error)
+                {
+                    Logger.Error("Failed to retrieve '" + resourceType.Name + "' from endpoint '" + resourceEndpoint.HttpEndpoint + "'");
+                    Logger.Exception(error);
+                }
+            }
+
+            return new ReadOnlyCollection<McmaResource>(results);
+        }
+
         public async Task<T> CreateAsync<T>(T resource) where T : McmaResource
         {
             if (!Services.Any())
                 await InitAsync();
 
-            var resourceEndpoint = Services.Where(s => s.HasResourceEndpointClient<T>()).Select(s => s.GetResourceEndpoint<T>()).FirstOrDefault();
+            var resourceEndpoint =
+                Services.Where(s => s.HasResourceEndpointClient<T>())
+                    .Select(s => s.GetResourceEndpointClient<T>())
+                    .FirstOrDefault();
             if (resourceEndpoint != null)
                 return await resourceEndpoint.PostAsync<T>(resource);
+
+            if (string.IsNullOrWhiteSpace(resource.Id))
+                throw new Exception($"There is no endpoint available for creating resources of type '{typeof(T).Name}', and the provided resource does not specify an endpoint in its 'id' property.");
 
             var resp = await HttpClient.PostAsJsonAsync(resource.Id, resource);
             await resp.ThrowIfFailedAsync();
             return await resp.Content.ReadAsObjectFromJsonAsync<T>();
+        }
+
+        public async Task<McmaResource> CreateAsync(Type resourceType, McmaResource resource)
+        {
+            if (!resourceType.IsInstanceOfType(resource))
+                throw new Exception($"Cannot update resource of type '{resourceType.Name}' with object of type '{resource?.GetType().Name ?? "(null)"}'.");
+
+            if (!Services.Any())
+                await InitAsync();
+
+            var resourceEndpoint =
+                Services.Where(s => s.HasResourceEndpointClient(resourceType))
+                    .Select(s => s.GetResourceEndpointClient(resourceType))
+                    .FirstOrDefault();
+            if (resourceEndpoint != null)
+                return await resourceEndpoint.PostAsync(resourceType, resource);
+
+            if (string.IsNullOrWhiteSpace(resource.Id))
+                throw new Exception($"There is no endpoint available for creating resources of type '{resourceType.Name}', and the provided resource does not specify an endpoint in its 'id' property.");
+
+            var resp = await HttpClient.PostAsJsonAsync(resource.Id, resource);
+            await resp.ThrowIfFailedAsync();
+            return (McmaResource) await resp.Content.ReadAsObjectFromJsonAsync(resourceType);
         }
 
         public async Task<T> UpdateAsync<T>(T resource) where T : McmaResource
@@ -120,7 +179,7 @@ namespace Mcma.Client
 
             var resourceEndpoint =
                 Services.Where(s => s.HasResourceEndpointClient<T>())
-                    .Select(s => s.GetResourceEndpoint<T>())
+                    .Select(s => s.GetResourceEndpointClient<T>())
                     .FirstOrDefault(re => resource.Id.StartsWith(re.HttpEndpoint, StringComparison.OrdinalIgnoreCase));
             if (resourceEndpoint != null)
                 return await resourceEndpoint.PutAsync<T>(resource);
@@ -128,6 +187,26 @@ namespace Mcma.Client
             var resp = await HttpClient.PutAsJsonAsync(resource.Id, resource);
             await resp.ThrowIfFailedAsync();
             return await resp.Content.ReadAsObjectFromJsonAsync<T>();
+        }
+
+        public async Task<McmaResource> UpdateAsync(Type resourceType, McmaResource resource)
+        {
+            if (!resourceType.IsInstanceOfType(resource))
+                throw new Exception($"Cannot update resource of type '{resourceType.Name}' with object of type '{resource?.GetType().Name ?? "(null)"}'.");
+
+            if (!Services.Any())
+                await InitAsync();
+
+            var resourceEndpoint =
+                Services.Where(s => s.HasResourceEndpointClient(resourceType))
+                    .Select(s => s.GetResourceEndpointClient(resourceType))
+                    .FirstOrDefault(re => resource.Id.StartsWith(re.HttpEndpoint, StringComparison.OrdinalIgnoreCase));
+            if (resourceEndpoint != null)
+                return await resourceEndpoint.PutAsync(resourceType, resource);
+
+            var resp = await HttpClient.PutAsJsonAsync(resource.Id, resource);
+            await resp.ThrowIfFailedAsync();
+            return (McmaResource) await resp.Content.ReadAsObjectFromJsonAsync(resourceType);
         }
 
         public Task DeleteAsync(McmaResource resource) => DeleteAsync(resource.Type, resource.Id);
@@ -171,6 +250,15 @@ namespace Mcma.Client
             return resourceEndpoint != null
                 ? await resourceEndpoint.GetAsync<T>(url)
                 : await HttpClient.GetAndReadAsObjectFromJsonAsync<T>(url);
+        }
+
+        public async Task<McmaResource> ResolveAsync(Type resourceType, string url)
+        {
+            var resourceEndpoint = await GetResourceEndpointAsync(url);
+
+            return resourceEndpoint != null
+                ? await resourceEndpoint.GetAsync(resourceType, url)
+                : (McmaResource) await HttpClient.GetAndReadAsObjectFromJsonAsync(resourceType, url);
         }
 
         public async Task SendNotificationAsync<T>(T resource, NotificationEndpoint notificationEndpoint) where T : McmaResource
