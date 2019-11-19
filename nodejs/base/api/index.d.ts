@@ -72,7 +72,6 @@ export class McmaApiRequestConfig {
     pathVariables?: { [key: string]: string };
     queryStringParameters?: { [key: string]: string };
     body?: any;
-
 }
 
 export class McmaApiRequest extends McmaApiRequestConfig {
@@ -95,12 +94,14 @@ export class McmaApiRequestContext extends ContextVariableProvider {
     hasRequestBody(): boolean;
     getRequestBody<T extends Resource>(): T;
 
-    setResponseCode(statusCode: number | HttpStatusCode, statusMessage?: string): void;
+    setResponseStatusCode(statusCode: number | HttpStatusCode, statusMessage?: string): void;
     setResponseBody<T extends Resource>(resource: T): void;
 
     setResponseResourceCreated<T extends Resource>(resource: T): void;
     setResponseBadRequestDueToMissingBody(): void;
     setResponseResourceNotFound(): void;
+
+    getTracker(): McmaTracker;
 }
 
 declare module "@mcma/core" {
@@ -175,7 +176,7 @@ export class DefaultRouteCollectionBuilder<T extends Resource> {
     constructor(dbTableProvider: DbTableProvider<T>, resourceType: ResourceType<T>, root?: string);
 
     addAll(): DefaultRouteCollectionBuilder<T>;
-    route(selectRoute: (defaultRoutes: DefaultRoutes<T>) => DefaultRouteBuilder<T>): DefaultRouteConfigurator<T>;
+    route(selectRoute: (defaultRoutes: DefaultRoutes<T>) => DefaultRouteBuilder<T> | DefaultRouteBuilder<T[]>): DefaultRouteConfigurator<T>;
     build(): McmaApiRouteCollection;
 
     forJobAssignments(invokeWorker: InvokeWorker): McmaApiRouteCollection;

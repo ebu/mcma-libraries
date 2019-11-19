@@ -169,7 +169,9 @@ class JobBase extends Resource {
         this.checkProperty("statusMessage", "string", false);
         this.checkProperty("jobOutput", "resource", false);
 
-        this.tracker = new McmaTracker(this.tracker);
+        if (typeof this.tracker === "object") {
+            this.tracker = new McmaTracker(this.tracker);
+        }
 
         if (typeof this.notificationEndpoint === "object") {
             this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
@@ -183,7 +185,6 @@ class Job extends JobBase {
 
         this.checkProperty("jobProfile", "resource", true);
         this.checkProperty("jobInput", "resource", true);
-        this.checkProperty("tracker", "object", false);
 
         if (typeof this.jobProfile === "object") {
             this.jobProfile = new JobProfile(this.jobProfile);

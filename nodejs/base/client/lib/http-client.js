@@ -1,5 +1,6 @@
 //"use strict";
-const { Exception } = require("@mcma/core");
+const { Exception, Utils } = require("@mcma/core");
+const { McmaHeaders } = require("./headers");
 
 const axios = require("axios");
 
@@ -33,6 +34,12 @@ async function request(config, authenticator) {
         }
 
         authenticator.sign(config);
+    }
+
+    // add tracker header, if a tracker is present
+    if (config.tracker) {
+        config.headers[McmaHeaders.tracker] = Utils.toBase64(JSON.stringify(config.tracker));
+        delete config.tracker;
     }
 
     // send request using axios

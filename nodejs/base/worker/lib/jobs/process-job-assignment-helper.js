@@ -23,9 +23,9 @@ class ProcessJobAssignmentHelper {
         this.initialize = async () => {
             jobAssignment = await this.updateJobAssignmentStatus(JobStatus.RUNNING);
 
-            job = await resourceManager.resolve(jobAssignment.job);
+            job = await resourceManager.get(jobAssignment.job);
 
-            profile = await resourceManager.resolve(job.jobProfile);
+            profile = await resourceManager.get(job.jobProfile);
 
             job.jobOutput = jobAssignment.jobOutput || new JobParameterBag();
         };

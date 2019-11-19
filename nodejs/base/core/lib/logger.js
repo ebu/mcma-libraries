@@ -33,9 +33,12 @@ class Logger {
         };
         try {
             return JSON.stringify(logEvent, null, 2);
-        } catch (error) {
-            console.error(error);
-            logEvent.message = logEvent.message + "";
+        } catch {
+            try {
+                logEvent.message = util.inspect(logEvent.message);
+            } catch {
+                logEvent.message = logEvent.message + "";
+            }
         }
 
         return JSON.stringify(logEvent, null, 2);
@@ -61,19 +64,19 @@ class Logger {
         this.log(500, "DEBUG", msg, ...args);
     }
 
-    function_start(msg, ...args) {
+    functionStart(msg, ...args) {
         this.log(450, "FUNCTION_START", msg, ...args);
     }
 
-    function_end(msg, ...args) {
+    functionEnd(msg, ...args) {
         this.log(450, "FUNCTION_END", msg, ...args);
     }
 
-    job_start(msg, ...args) {
+    jobStart(msg, ...args) {
         this.log(400, "JOB_START", msg, ...args);
     }
 
-    job_end(msg, ...args) {
+    jobEnd(msg, ...args) {
         this.log(400, "JOB_END", msg, ...args);
     }
 }

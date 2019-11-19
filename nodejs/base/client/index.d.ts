@@ -1,8 +1,11 @@
 import { AxiosPromise, AxiosRequestConfig } from "axios";
-import { ContextVariableProvider, JobBase, Resource, ResourceEndpoint, ResourceType, Service } from "@mcma/core";
+import { ContextVariableProvider, JobBase, Resource, ResourceEndpoint, ResourceType, Service, McmaTracker } from "@mcma/core";
 
-export type HttpRequestConfig = AxiosRequestConfig;
 export type HttpResponsePromise = AxiosPromise;
+
+export interface HttpRequestConfig extends AxiosRequestConfig {
+    tracker?: McmaTracker;
+}
 
 export interface Authenticator {
     sign(config: HttpRequestConfig): void;
@@ -19,15 +22,10 @@ export class AuthProvider {
 
 export interface Http {
     request(config: HttpRequestConfig): HttpResponsePromise;
-
     get(url: string, config?: HttpRequestConfig): HttpResponsePromise;
-
     post(url: string, data?: any, config?: HttpRequestConfig): HttpResponsePromise;
-
     put(url: string, data?: any, config?: HttpRequestConfig): HttpResponsePromise;
-
     patch(url: string, data?: any, config?: HttpRequestConfig): HttpResponsePromise;
-
     delete(url: string, config?: HttpRequestConfig): HttpResponsePromise;
 }
 
@@ -75,13 +73,14 @@ export class ResourceManager {
     constructor(config: ResourceManagerConfig, authProvider: AuthProvider);
 
     init(): Promise<void>;
-    get<T extends Resource>(resourceType: ResourceType<T>, filter?: any): Promise<T[] | null>;
+
+    query<T extends Resource>(resourceType: ResourceType<T>, filter?: any): Promise<T[] | null>;
     create<T extends Resource>(resource: T): Promise<T>;
+    get<T extends Resource>(resource: T | string): Promise<T | undefined>;
     update<T extends Resource>(resource: T): Promise<T>;
     delete<T extends Resource>(resource: T | string): Promise<void>;
 
     getResourceEndpoint(url: string): Promise<ResourceEndpointClient | undefined>;
-    resolve<T extends Resource>(resource: T | string): Promise<T | undefined>;
     sendNotification(resource: JobBase): Promise<void>;
 }
 
@@ -95,4 +94,9 @@ export class ResourceManagerProvider {
     constructor(authProvider: AuthProvider, defaultConfig?: ResourceManagerConfig);
 
     get(config?: ResourceManagerConfig): ResourceManager;
+}
+
+export namespace McmaHeaders {
+    export const prefix: string;
+    export const tracker: string;
 }

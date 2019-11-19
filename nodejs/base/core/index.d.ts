@@ -1,7 +1,12 @@
+export type TypeOfValue = "boolean"|"number"|"bigint"|"string"|"symbol"|"function"|"object"|"undefined";
+export type PropertyType = "resource"|"url"|"Array"|TypeOfValue;
+
 export abstract class McmaObject {
     protected constructor(type: string, properties: object);
 
     ["@type"]: string;
+    
+    checkProperty(propertyName: string, expectedType: PropertyType, required?: boolean): void;
 }
 
 export class McmaTracker extends McmaObject {
@@ -250,10 +255,10 @@ export interface ILogger {
     info(msg: any, ...args: any[]): void;
     debug(msg: any, ...args: any[]): void;
 
-    function_start(msg: any, ...args: any[]): void;
-    function_end(msg: any, ...args: any[]): void;
-    job_start(msg: any, ...args: any[]): void;
-    job_end(msg: any, ...args: any[]): void;
+    functionStart(msg: any, ...args: any[]): void;
+    functionEnd(msg: any, ...args: any[]): void;
+    jobStart(msg: any, ...args: any[]): void;
+    jobEnd(msg: any, ...args: any[]): void;
 }
 
 export abstract class Logger implements ILogger {
@@ -266,20 +271,20 @@ export abstract class Logger implements ILogger {
     info(msg: any, ...args: any[]): void;
     debug(msg: any, ...args: any[]): void;
 
-    function_start(msg: any, ...args: any[]): void;
-    function_end(msg: any, ...args: any[]): void;
-    job_start(msg: any, ...args: any[]): void;
-    job_end(msg: any, ...args: any[]): void;
+    functionStart(msg: any, ...args: any[]): void;
+    functionEnd(msg: any, ...args: any[]): void;
+    jobStart(msg: any, ...args: any[]): void;
+    jobEnd(msg: any, ...args: any[]): void;
 }
 
 export interface LoggerProvider {
-    get(tracker: McmaTracker): ILogger
+    get(tracker?: McmaTracker): ILogger
 }
 
 export class ConsoleLoggerProvider implements LoggerProvider {
     constructor(source: string);
 
-    get(tracker: McmaTracker): ILogger;
+    get(tracker?: McmaTracker): ILogger;
 }
 
 export abstract class ContextVariableProvider {
@@ -298,6 +303,8 @@ export class EnvironmentVariableProvider extends ContextVariableProvider {
 
 export namespace Utils {
     function getTypeName(type: { name: string } | { ["@type"]: string } | string): string;
+    function toBase64(text: string): string;
+    function fromBase64(base64Text: string): string;
 }
 
 export as namespace McmaCore;

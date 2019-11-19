@@ -1,4 +1,5 @@
-const { ContextVariableProvider } = require("@mcma/core");
+const { ContextVariableProvider, Exception, McmaTracker, Logger, Utils } = require("@mcma/core");
+const { McmaHeaders } = require("@mcma/client");
 const { HttpStatusCode } = require("./http-statuses");
 
 class McmaApiRequest {
@@ -58,6 +59,27 @@ class McmaApiRequestContext extends ContextVariableProvider {
 
     setResponseResourceNotFound() {
         this.setResponseStatusCode(HttpStatusCode.NOT_FOUND, "No resource found on path '" + this.request.path + "'.");
+    }
+
+    getTracker() {
+        // try to get the tracker from the headers or query string first
+        const headerOrQueryParam =
+            (this.request && this.request.headers && this.request.headers[McmaHeaders.tracker]) ||
+            (this.request && this.request.queryStringParameters && this.request.queryStringParameters[McmaHeaders.tracker]);
+        if (headerOrQueryParam) {
+            try {
+                const trackerDataJson = Utils.fromBase64(headerOrQueryParam);
+                if (trackerDataJson) {
+                    return new McmaTracker(JSON.parse(trackerDataJson));
+                }
+            } catch (e) {
+                Logger.warn(`Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: ${e}`);
+                throw new Exception("Invalid MCMA tracker.", e, this.request);
+            }
+        }
+
+        // if we didn't find it in the header or query string, try the body
+        return this.request && this.request.body && this.request.body.tracker;
     }
 }
 

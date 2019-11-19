@@ -1,7 +1,7 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
-def requiredVersionNodeJS = "8.10.0"
+def requiredVersionNodeJS = "10.16.3"
 
 allprojects {
     ext {
@@ -107,7 +107,15 @@ subprojects {
         enabled file("package.json").exists()
         inputs.file("package.json")
         commandLine npmExecutable
-        args "publish", "--access", "public"
+        args "publish", "--access", "public", "--registry", "https://registry.npmjs.org"
+    }
+
+    task npmPublishLocal(type: Exec) {
+        dependsOn verifyNodeJS
+        enabled file("package.json").exists()
+        inputs.file("package.json")
+        commandLine npmExecutable
+        args "publish", "--access", "public", "--registry", "http://localhost:4873"
     }
 
     task clean(type: Delete) {

@@ -3,6 +3,7 @@ const { ResourceEndpointClient } = require("./lib/resource-endpoint-client");
 const { ServiceClient } = require("./lib/service-client");
 const { ResourceManager, ResourceManagerProvider } = require("./lib/resource-manager");
 const { AuthProvider } = require("./lib/auth-provider");
+const { McmaHeaders } = require("./lib/headers");
 require("./lib/context-variable-provider-ext");
 
 module.exports = {
@@ -11,5 +12,6 @@ module.exports = {
     ServiceClient,
     ResourceManager,
     ResourceManagerProvider,
-    AuthProvider
+    AuthProvider,
+    McmaHeaders
 };

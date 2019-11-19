@@ -49,7 +49,7 @@ class ResourceManager {
             }
         };
 
-        this.get = async (resourceType, filter) => {
+        this.query = async (resourceType, filter) => {
             if (typeof resourceType === "function" && resourceType.name) {
                 resourceType = resourceType.name;
             }
@@ -101,6 +101,36 @@ class ResourceManager {
             }
 
             throw new Exception("ResourceManager: Failed to find service to create resource of type '" + resourceType + "'.");
+        };
+
+        this.get = async (resource) => {
+            let resolvedResource;
+
+            if (typeof resource === "string") {
+                let http = await this.getResourceEndpointClient(resource);
+                if (http === undefined) {
+                    http = httpClient;
+                }
+                try {
+                    let response = await http.get(resource);
+                    resolvedResource = response.data;
+                } catch (error) {
+                    throw new Exception("ResourceManager: Failed to get resource from URL '" + resource + "'", error);
+                }
+            } else {
+                resolvedResource = resource;
+            }
+
+            let resolvedType = typeof resolvedResource;
+            if (resolvedType === "object") {
+                if (Array.isArray(resolvedResource)) {
+                    throw new Exception("ResourceManager: Resource at '" + resource + "' has illegal type 'Array'");
+                }
+            } else {
+                throw new Exception("ResourceManager: Resource has illegal type '" + resolvedType + "'");
+            }
+
+            return resolvedResource;
         };
 
         this.update = async (resource) => {
@@ -164,40 +194,10 @@ class ResourceManager {
             return undefined;
         };
 
-        this.resolve = async (resource) => {
-            let resolvedResource;
-
-            if (typeof resource === "string") {
-                let http = await this.getResourceEndpointClient(resource);
-                if (http === undefined) {
-                    http = httpClient;
-                }
-                try {
-                    let response = await http.get(resource);
-                    resolvedResource = response.data;
-                } catch (error) {
-                    throw new Exception("ResourceManager: Failed to resolve resource from URL '" + resource + "'", error);
-                }
-            } else {
-                resolvedResource = resource;
-            }
-
-            let resolvedType = typeof resolvedResource;
-            if (resolvedType === "object") {
-                if (Array.isArray(resolvedResource)) {
-                    throw new Exception("ResourceManager: Resolved resource on URL '" + resource + "' has illegal type 'Array'");
-                }
-            } else {
-                throw new Exception("ResourceManager: Resolved resource has illegal type '" + resolvedType + "'");
-            }
-
-            return resolvedResource;
-        };
-
         this.sendNotification = async (resource) => {
             if (resource.notificationEndpoint) {
                 try {
-                    let notificationEndpoint = await this.resolve(resource.notificationEndpoint);
+                    let notificationEndpoint = await this.get(resource.notificationEndpoint);
 
                     let http = await this.getResourceEndpointClient(notificationEndpoint.httpEndpoint);
                     if (http === undefined) {
