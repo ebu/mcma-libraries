@@ -1,4 +1,4 @@
-const { ContextVariableProvider, Exception, McmaTracker, Logger, Utils } = require("@mcma/core");
+const { ContextVariableProvider, Exception, McmaTracker, Utils } = require("@mcma/core");
 const { McmaHeaders } = require("@mcma/client");
 const { HttpStatusCode } = require("./http-statuses");
 
@@ -73,7 +73,7 @@ class McmaApiRequestContext extends ContextVariableProvider {
                     return new McmaTracker(JSON.parse(trackerDataJson));
                 }
             } catch (e) {
-                Logger.warn(`Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: ${e}`);
+                //Logger.warn(`Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: ${e}`);
                 throw new Exception("Invalid MCMA tracker.", e, this.request);
             }
         }
