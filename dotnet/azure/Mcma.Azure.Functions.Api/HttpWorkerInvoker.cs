@@ -10,8 +10,8 @@ namespace Mcma.Azure.Functions.Api
 {
     public class HttpWorkerInvoker : WorkerInvoker
     {
-        public HttpWorkerInvoker(IContext context)
-            : base(context)
+        public HttpWorkerInvoker(IContextVariableProvider contextVariableProvider)
+            : base(contextVariableProvider)
         {
         }
 
@@ -26,7 +26,7 @@ namespace Mcma.Azure.Functions.Api
             };
 
             // if we have a function key
-            var functionKey = Context.Variables.GetOptional("WorkerFunctionKey");
+            var functionKey = ContextVariableProvider.GetOptionalContextVariable("WorkerFunctionKey");
             if (functionKey != null)
                 httpRequest.Headers.Add(AzureConstants.FunctionKeyHeader, functionKey);
 

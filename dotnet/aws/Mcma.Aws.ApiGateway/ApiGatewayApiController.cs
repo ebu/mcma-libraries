@@ -5,18 +5,11 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
 using Mcma.Api;
 using Mcma.Api.Routes;
-using Mcma.Core.Logging;
-using Mcma.Aws.Lambda;
 
 namespace Mcma.Aws.ApiGateway
 {
     public class ApiGatewayApiController
     {
-        static ApiGatewayApiController()
-        {
-            Logger.Global = new LambdaLoggerWrapper();
-        }
-
         public ApiGatewayApiController(McmaApiRouteCollection routes)
         {
             McmaApiController = new McmaApiController(routes);

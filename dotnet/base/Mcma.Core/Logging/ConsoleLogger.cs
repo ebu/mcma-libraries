@@ -1,25 +1,54 @@
 using System;
+using Mcma.Core.Serialization;
+using Newtonsoft.Json.Linq;
 
 namespace Mcma.Core.Logging
 {
-    public class ConsoleLogger : ILogger
+    public class ConsoleLogger : Logger
     {
-        private void WriteToConsole(string message, object[] args)
+        public ConsoleLogger(string source, McmaTracker tracker = null)
+            : base(source, tracker)
         {
-            if (args != null && args.Length > 0)
-                Console.WriteLine(message, args);
-            else
-                Console.WriteLine(message);
         }
 
-        public void Debug(string message, params object[] args) => WriteToConsole(message, args);
+        protected override void Log(LogEvent logEvent)
+        {
+            if (logEvent.Level <= 0)
+                return;
 
-        public void Info(string message, params object[] args) => WriteToConsole(message, args);
+            if (logEvent.Level < 200)
+                WriteToConsole(logEvent, ConsoleColor.Red);
+            else if (logEvent.Level < 300)
+                WriteToConsole(logEvent, ConsoleColor.Yellow);
+            else
+                WriteToConsole(logEvent);
+        }
 
-        public void Warn(string message, params object[] args) => WriteToConsole(message, args);
+        private static void WriteToConsole(LogEvent logEvent, ConsoleColor? color = null)
+        {
+            var origColor = Console.ForegroundColor;
+            try
+            {
+                if (color.HasValue)
+                    Console.ForegroundColor = color.Value;
 
-        public void Error(string message, params object[] args) => WriteToConsole(message, args);
+                var message =
+                    string.Join("|",
+                        logEvent.Timestamp.ToString("yyyy-MM-ddThh:mm:ss.fff"),
+                        logEvent.Level,
+                        logEvent.Source,
+                        logEvent.Type,
+                        logEvent.TrackerId ?? "(empty)",
+                        logEvent.TrackerLabel ?? "(empty)",
+                        logEvent.Message ?? "(empty)",
+                        logEvent.Args != null ? JArray.FromObject(logEvent.Args).ToString() : "(empty)");
 
-        public void Exception(Exception ex) => Console.WriteLine(ex);
+                Console.WriteLine(message);
+            }
+            finally
+            {
+                Console.ForegroundColor = origColor;
+            }
+        }
     }
 }

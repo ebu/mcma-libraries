@@ -6,35 +6,55 @@ using Mcma.Core.Logging;
 
 namespace Mcma.Worker
 {
-    internal class Worker : IWorker
+    public class Worker : IWorker
     {
-        internal Worker(IEnumerable<IWorkerOperationFilter> operations)
+        public Worker(ProviderCollection providerCollection)
         {
-            OperationFilters = operations?.ToArray() ?? new IWorkerOperationFilter[0];
+            ProviderCollection = providerCollection;
         }
 
-        private IWorkerOperationFilter[] OperationFilters { get; }
+        internal ProviderCollection ProviderCollection { get; }
+
+        private List<IWorkerOperation> Operations { get; } = new List<IWorkerOperation>();
+
+        public Worker AddOperation<TOperation>() where TOperation : IWorkerOperation, new()
+            => AddOperation(new TOperation());
+
+        public Worker AddOperation<TInput>(string operationName,
+                                           Func<WorkerRequest, TInput, Task> handler,
+                                           Func<WorkerRequest, bool> accepts = null)
+            => AddOperation(new DelegateWorkerOperation<TInput>(ProviderCollection, operationName, handler, accepts));
+
+        public Worker AddOperation(IWorkerOperation operation)
+        {
+            var existing = Operations.FirstOrDefault(op => op.Name.Equals(operation.Name, StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+                throw new Exception($"Cannot add duplicate operation with name '{operation.Name}'");
+
+            Operations.Add(operation);
+
+            return this;
+        }
 
         public async Task DoWorkAsync(WorkerRequest request)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var operationFilter = OperationFilters.FirstOrDefault(oh => oh.Filter(request));
-            if (operationFilter == null)
+            var operation = Operations.FirstOrDefault(op => op.Accepts(request));
+            if (operation == null)
                 throw new Exception($"No handler found for '{request.OperationName}' that can handle this request.");
-
-            request.Logger.Debug("Handling worker operation '" + request.OperationName + "' with handler of type '" + operationFilter.GetType().Name + "'");
+                
+            var logger = ProviderCollection.LoggerProvider.Get(request.Tracker);
+            logger.Debug("Handling worker operation '" + request.OperationName + "' with handler of type '" + operation.GetType().Name + "'");
             
             try
             {
-                await operationFilter.Handler.ExecuteAsync(request);
+                await operation.ExecuteAsync(request);
             }
             catch (Exception ex)
             {
-                request.Logger.Error($"Failed to process worker operation '{request.OperationName}'.");
-                request.Logger.Exception(ex);
-                
+                logger.Error($"Failed to process worker operation '{request.OperationName}'. Exception: {ex}");
                 throw;
             }
         }

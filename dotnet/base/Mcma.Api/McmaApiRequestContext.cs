@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using Mcma.Core;
 using Mcma.Core.Context;
+using Mcma.Core.Logging;
 using Mcma.Core.Serialization;
+using Mcma.Client;
 using Newtonsoft.Json.Linq;
 
 namespace Mcma.Api
 {
-    public class McmaApiRequestContext : Context
+    public class McmaApiRequestContext : ContextVariableProvider
     {
         private static readonly HttpMethod[] MethodsSupportingRequestBody = {HttpMethod.Post, HttpMethod.Put, new HttpMethod("PATCH")};
 
@@ -33,7 +36,44 @@ namespace Mcma.Api
 
         public JToken GetRequestBodyJson() => Request?.JsonBody;
 
-        public T GetRequestBody<T>() where T : McmaResource => Request?.JsonBody?.ToMcmaObject<T>();
+        public T GetRequestBody<T>() where T : McmaObject => Request?.JsonBody?.ToMcmaObject<T>();
+
+        public McmaTracker GetTracker()
+        {
+            string tracker = null;
+
+            // try to get the tracker from the headers or query string first
+            var hasTracker =
+                (Request?.Headers?.TryGetValue(McmaHeaders.Tracker, out tracker) ?? false) ||
+                (Request?.QueryStringParameters?.TryGetValue(McmaHeaders.Tracker, out tracker) ?? false);
+            if (hasTracker && tracker != null)
+            {
+                try
+                {
+                    var trackerDataJson = Encoding.UTF8.GetString(Convert.FromBase64String(tracker));
+                    if (!string.IsNullOrWhiteSpace(trackerDataJson))
+                        return JToken.Parse(trackerDataJson).ToMcmaObject<McmaTracker>();
+                }
+                catch (Exception e)
+                {
+                    Logger.System.Warn($"Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: {e}");
+                    throw new Exception($"Invalid MCMA tracker in request: {Request.ToMcmaJson()}", e);
+                }
+            }
+
+            try
+            {
+                // if we didn't find it in the header or query string, try the body
+                return GetRequestBodyJson() is JObject jsonBody
+                    ? jsonBody.GetValue(nameof(JobBase.Tracker), StringComparison.OrdinalIgnoreCase)?.ToMcmaObject<McmaTracker>()
+                    : null;
+            }
+            catch (Exception e)
+            {
+                Logger.System.Warn($"Failed to parse McmaTracker object found in body's 'tracker' property. Error: {e}");
+                throw new Exception($"Invalid MCMA tracker in request: {Request.ToMcmaJson()}", e);
+            }
+        }
 
         public void SetResponseStatusCode(HttpStatusCode status, string statusMessage = null)
             => SetResponseStatus((int)status, statusMessage);

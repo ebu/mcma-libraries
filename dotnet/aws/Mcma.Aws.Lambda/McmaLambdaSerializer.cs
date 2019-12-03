@@ -20,8 +20,7 @@ namespace Mcma.Aws.Lambda
             }
             catch (Exception ex)
             {
-                Logger.Error($"An error occurred serializing object of type {typeof(T).FullName}.");
-                Logger.Exception(ex);
+                Logger.System.Error($"An error occurred serializing object of type {typeof(T).FullName}.", ex);
                 throw;
             }
         }
@@ -34,8 +33,7 @@ namespace Mcma.Aws.Lambda
             }
             catch (Exception ex)
             {
-                Logger.Error($"An error occurred deserializing object of type {typeof(T).FullName}.");
-                Logger.Exception(ex);
+                Logger.System.Error($"An error occurred deserializing object of type {typeof(T).FullName}.", ex);
                 throw;
             }
         }

@@ -10,14 +10,14 @@ namespace Mcma.Azure.Functions.Api
 {
     public class QueueWorkerInvoker : WorkerInvoker
     {
-        public QueueWorkerInvoker(IContext context)
-            : base(context)
+        public QueueWorkerInvoker(IContextVariableProvider contextVariableProvider)
+            : base(contextVariableProvider)
         {
         }
 
         protected override async Task InvokeAsync(string workerFunctionId, WorkerRequest request)
         {
-            var appStorageConnectionString = Context.Variables.GetRequired("WEBSITE_CONTENTAZUREFILECONNECTIONSTRING");
+            var appStorageConnectionString = ContextVariableProvider.GetRequiredContextVariable("WEBSITE_CONTENTAZUREFILECONNECTIONSTRING");
             if (!CloudStorageAccount.TryParse(appStorageConnectionString, out var appStorageAccount))
                 throw new Exception($"Failed to parse app storage connection string '{appStorageConnectionString}'.");
 

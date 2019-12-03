@@ -6,12 +6,12 @@ namespace Mcma.Api
 {
     public abstract class WorkerInvoker : IWorkerInvoker
     {
-        protected WorkerInvoker(IContext context)
+        protected WorkerInvoker(IContextVariableProvider contextVariableProvider)
         {
-            Context = context;
+            ContextVariableProvider = contextVariableProvider;
         }
 
-        protected IContext Context { get; }
+        protected IContextVariableProvider ContextVariableProvider { get; }
 
         public Task InvokeAsync(string workerFunctionId, string operationName, IDictionary<string, string> contextVariables = null, object input = null)
             =>

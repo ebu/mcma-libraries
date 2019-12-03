@@ -18,11 +18,11 @@ namespace Mcma.Azure.CosmosDb
             return options;
         }
 
-        public static CosmosDbTableProviderOptions FromContextVariables(this CosmosDbTableProviderOptions options, IContextVariables contextVariables)
+        public static CosmosDbTableProviderOptions FromContextVariables(this CosmosDbTableProviderOptions options, IContextVariableProvider contextVariableProvider)
         {
             foreach (var prop in typeof(CosmosDbTableProviderOptions).GetProperties().Where(p => p.CanWrite))
             {
-                var contextVariableValue = contextVariables.GetRequired(Prefix + prop.Name);
+                var contextVariableValue = contextVariableProvider.GetRequiredContextVariable(Prefix + prop.Name);
                 if (!contextVariableValue.TryParse(prop.PropertyType, out var propValue))
                     throw new Exception($"Context variable '{Prefix + prop.Name}' has invalid value '{contextVariableValue}' for Cosmos DB option '{prop.Name}'.");
 

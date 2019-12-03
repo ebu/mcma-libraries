@@ -162,7 +162,7 @@ namespace Mcma.Api.Routes.Defaults
 
                             // get all resources from the table, applying in-memory filtering using the query string (if any)
                             var resources =
-                                (await dbTableProvider.Table<TResource>(requestContext.Variables.TableName()).QueryAsync(filterExpr))
+                                (await dbTableProvider.Table<TResource>(requestContext.TableName()).QueryAsync(filterExpr))
                                     .ToList();
 
                             // invoke the completion handler with the results
@@ -200,7 +200,7 @@ namespace Mcma.Api.Routes.Defaults
                             resource.OnCreate(id);
 
                             // put the new object into the table
-                            await dbTableProvider.Table<TResource>(requestContext.Variables.TableName()).PutAsync(resource.Id, resource);
+                            await dbTableProvider.Table<TResource>(requestContext.TableName()).PutAsync(resource.Id, resource);
 
                             // invoke the completion handler (if any) with the newly-created resource
                             if (onCompleted != null)
@@ -226,7 +226,7 @@ namespace Mcma.Api.Routes.Defaults
 
                             // get the resource from the database
                             var resource =
-                                await dbTableProvider.Table<TResource>(requestContext.Variables.TableName()).GetAsync(id);
+                                await dbTableProvider.Table<TResource>(requestContext.TableName()).GetAsync(id);
 
                             // invoke the completion handler, if any
                             if (onCompleted != null)
@@ -265,7 +265,7 @@ namespace Mcma.Api.Routes.Defaults
                             resource.OnUpsert(id);
 
                             // upsert the resource
-                            await dbTableProvider.Table<TResource>(requestContext.Variables.TableName()).PutAsync(resource.Id, resource);
+                            await dbTableProvider.Table<TResource>(requestContext.TableName()).PutAsync(resource.Id, resource);
 
                             // invoke the completion handler, if any
                             if (onCompleted != null)
@@ -288,7 +288,7 @@ namespace Mcma.Api.Routes.Defaults
                                 await onStarted.Invoke(requestContext);
 
                             // get the table for the resource
-                            var table = dbTableProvider.Table<TResource>(requestContext.Variables.TableName());
+                            var table = dbTableProvider.Table<TResource>(requestContext.TableName());
 
                             // build id from the root public url and the path
                             var id = requestContext.CurrentRequestPublicUrl();

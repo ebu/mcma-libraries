@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.Client", "aws\Mcma
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.ApiGateway", "aws\Mcma.Aws.ApiGateway\Mcma.Aws.ApiGateway.csproj", "{293D6608-36B6-4BC5-AD1C-E65785D31410}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.Lambda", "aws\Mcma.Aws.Lambda\Mcma.Aws.Lambda.csproj", "{D1C3F5DE-F47C-4238-92EB-860C59ACBA8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.CloudWatch", "aws\Mcma.Aws.CloudWatch\Mcma.Aws.CloudWatch.csproj", "{D1C3F5DE-F47C-4238-92EB-860C59ACBA8C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.LambdaWorkerInvoker", "aws\Mcma.Aws.LambdaWorkerInvoker\Mcma.Aws.LambdaWorkerInvoker.csproj", "{B245C709-124E-4290-9492-784AB2C243A0}"
 EndProject
@@ -42,6 +42,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Azure.BlobStorage", "azure\Mcma.Azure.BlobStorage\Mcma.Azure.BlobStorage.csproj", "{531147C0-B0EC-4E10-B885-468302120AFF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Azure.Functions.Configuration", "azure\Mcma.Azure.Functions.Configuration\Mcma.Azure.Functions.Configuration.csproj", "{D00F0D65-17C1-4988-A3C2-4C36DAD7DD76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.Lambda", "aws\Mcma.Aws.Lambda\Mcma.Aws.Lambda.csproj", "{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -260,6 +262,18 @@ Global
 		{D00F0D65-17C1-4988-A3C2-4C36DAD7DD76}.Release|x64.Build.0 = Release|Any CPU
 		{D00F0D65-17C1-4988-A3C2-4C36DAD7DD76}.Release|x86.ActiveCfg = Release|Any CPU
 		{D00F0D65-17C1-4988-A3C2-4C36DAD7DD76}.Release|x86.Build.0 = Release|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Debug|x64.Build.0 = Debug|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Debug|x86.Build.0 = Debug|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Release|x64.ActiveCfg = Release|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Release|x64.Build.0 = Release|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Release|x86.ActiveCfg = Release|Any CPU
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{06704473-C3D8-4828-A43B-2B5A8107CFFF} = {6C63836C-5CA4-4ADD-A16F-2881FD161E00}
@@ -276,5 +290,6 @@ Global
 		{DD314B7D-2FC4-4CC5-80D4-5E587EE6B505} = {F5980A90-70CE-4FF9-8244-72C3FBD8805E}
 		{531147C0-B0EC-4E10-B885-468302120AFF} = {F5980A90-70CE-4FF9-8244-72C3FBD8805E}
 		{D00F0D65-17C1-4988-A3C2-4C36DAD7DD76} = {F5980A90-70CE-4FF9-8244-72C3FBD8805E}
+		{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03} = {37C583C4-C959-4CC1-BEB2-DC0904254931}
 	EndGlobalSection
 EndGlobal

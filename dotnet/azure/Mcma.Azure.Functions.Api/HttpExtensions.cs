@@ -15,10 +15,10 @@ namespace Mcma.Azure.Functions.Api
     {
         public static async Task<McmaApiRequestContext> ToMcmaApiRequestContextAsync(
             this HttpRequest request,
-            IContextVariables contextVariables = null)
+            IContextVariableProvider contextVariableProvider = null)
             => new McmaApiRequestContext(
                 await request.ToMcmaApiRequestAsync(),
-                (contextVariables ?? new EnvironmentVariables()).GetAll().ToDictionary());
+                (contextVariableProvider ?? new EnvironmentVariableProvider()).GetAllContextVariables().ToDictionary());
 
         public static async Task<McmaApiRequest> ToMcmaApiRequestAsync(this HttpRequest request)
             => new McmaApiRequest

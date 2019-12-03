@@ -45,7 +45,7 @@ namespace Mcma.Core.Serialization
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"Failed to set property {clrProp.Name} on type {objectType.Name} with JSON value {jsonProp.Value.ToString()}: {ex}");
+                    Logger.System.Error($"Failed to set property {clrProp.Name} on type {objectType.Name} with JSON value {jsonProp.Value.ToString()}: {ex}");
                 }
             }
 

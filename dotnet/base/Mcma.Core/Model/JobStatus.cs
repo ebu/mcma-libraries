@@ -14,6 +14,8 @@ namespace Mcma.Core
 
         public static readonly JobStatus Failed = new JobStatus(nameof(Failed));
 
+        public static readonly JobStatus Canceled = new JobStatus(nameof(Canceled));
+
         public JobStatus(string status)
         {
             Status = status.ToUpper();

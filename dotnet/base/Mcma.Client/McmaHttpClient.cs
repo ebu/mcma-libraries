@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using Mcma.Core;
+using Mcma.Core.Serialization;
 using Mcma.Core.Utility;
 
 namespace Mcma.Client
 {
-
     public class McmaHttpClient
     {
         public McmaHttpClient(IAuthenticator authenticator = null, string baseUrl = null)
@@ -22,27 +24,30 @@ namespace Mcma.Client
 
         private string BaseUrl { get; }
 
-        public Task<HttpResponseMessage> GetAsync(string url, IDictionary<string, string> queryParams = null, IDictionary<string, string> headers = null)
-            => SendAsync(WithQueryParams(url, queryParams), HttpMethod.Get, headers, null);
+        public Task<HttpResponseMessage> GetAsync(string url,
+                                                  IDictionary<string, string> queryParams = null,
+                                                  IDictionary<string, string> headers = null,
+                                                  McmaTracker tracker = null)
+            => SendAsync(WithQueryParams(url, queryParams), HttpMethod.Get, headers, tracker, null);
 
-        public Task<HttpResponseMessage> PostAsync(string url, HttpContent body, IDictionary<string, string> headers = null)
-            => SendAsync(url, HttpMethod.Post, headers, body);
+        public Task<HttpResponseMessage> PostAsync(string url, HttpContent body, IDictionary<string, string> headers = null, McmaTracker tracker = null)
+            => SendAsync(url, HttpMethod.Post, headers, tracker, body);
 
-        public Task<HttpResponseMessage> PutAsync(string url, HttpContent body, IDictionary<string, string> headers = null)
-            => SendAsync(url, HttpMethod.Put, headers, body);
+        public Task<HttpResponseMessage> PutAsync(string url, HttpContent body, IDictionary<string, string> headers = null, McmaTracker tracker = null)
+            => SendAsync(url, HttpMethod.Put, headers, tracker, body);
 
-        public Task<HttpResponseMessage> PatchAsync(string url, HttpContent body, IDictionary<string, string> headers = null)
-            => SendAsync(url, new HttpMethod("PATCH"), headers, body);
+        public Task<HttpResponseMessage> PatchAsync(string url, HttpContent body, IDictionary<string, string> headers = null, McmaTracker tracker = null)
+            => SendAsync(url, new HttpMethod("PATCH"), headers, tracker, body);
 
-        public Task<HttpResponseMessage> DeleteAsync(string url, IDictionary<string, string> headers = null)
-            => SendAsync(url, HttpMethod.Delete, headers, null);
+        public Task<HttpResponseMessage> DeleteAsync(string url, IDictionary<string, string> headers = null, McmaTracker tracker = null)
+            => SendAsync(url, HttpMethod.Delete, headers, tracker, null);
 
         private string WithQueryParams(string url, IDictionary<string, string> queryParams)
             => queryParams != null && queryParams.Any()
                 ? (url ?? string.Empty) + "?" + string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={kvp.Value}"))
                 : url;
 
-        private async Task<HttpResponseMessage> SendAsync(string url, HttpMethod method, IDictionary<string, string> headers, HttpContent body)
+        private async Task<HttpResponseMessage> SendAsync(string url, HttpMethod method, IDictionary<string, string> headers, McmaTracker tracker, HttpContent body)
         {
             url = url ?? string.Empty;
 
@@ -60,6 +65,13 @@ namespace Mcma.Client
                 throw new Exception("HttpClient: Missing url in request");
 
             var request = new HttpRequestMessage(method, url);
+
+            if (tracker != null)
+            {
+                if (request.Headers.Any(h => h.Key == McmaHeaders.Tracker))
+                    request.Headers.Remove(McmaHeaders.Tracker);
+                request.Headers.Add(McmaHeaders.Tracker, Convert.ToBase64String(Encoding.UTF8.GetBytes(tracker.ToMcmaJson().ToString())));
+            }
             
             if (headers != null)
                 foreach (var header in headers)

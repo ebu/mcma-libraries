@@ -4,47 +4,37 @@ using System.Linq;
 using System.Threading.Tasks;
 using Mcma.Client;
 using Mcma.Core;
-using Mcma.Core.Context;
 using Mcma.Core.Logging;
 using Mcma.Data;
 
 namespace Mcma.Worker
 {
-    public class WorkerJobHelper<T> : IContext where T : Job
+    public class ProcessJobAssignmentHelper<T> where T : Job
     {
-        public WorkerJobHelper(
+        public ProcessJobAssignmentHelper(
             IDbTable<JobAssignment, Type> table,
             ResourceManager resourceManager,
-            WorkerRequest request,
+            ILogger logger,
+            WorkerRequest workerRequest,
             string jobAssignmentId)
         {
             Table = table;
             ResourceManager = resourceManager;
-            Request = request;
-            
+            Logger = logger;
+            Request = workerRequest;
             JobAssignmentId = jobAssignmentId;
         }
 
+        public IDbTable<JobAssignment, Type> Table { get; }
+        public ResourceManager ResourceManager { get; }
+        public ILogger Logger { get; }
         public WorkerRequest Request { get; }
 
-        public ResourceManager ResourceManager { get; }
-
-        public IDbTable<JobAssignment, Type> Table { get; }
-
         public string JobAssignmentId { get; }
-
         public JobAssignment JobAssignment { get; private set; }
-
         public T Job { get; private set; }
-
         public JobProfile Profile { get; private set; }
-
-        public ILogger Logger => Request.Logger;
-
-        public IContextVariables Variables => Request.Variables;
-
         public JobParameterBag JobInput => Job.JobInput;
-
         public JobParameterBag JobOutput => Job.JobOutput;
 
         public async Task InitializeAsync()

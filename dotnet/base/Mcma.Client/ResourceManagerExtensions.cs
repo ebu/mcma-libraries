@@ -11,7 +11,7 @@ namespace Mcma.Client
             if (string.IsNullOrWhiteSpace(url))
                 throw new Exception($"Url must be provided when resolving a resource from a full url.");
 
-            return resourceManager.ResolveAsync<T>(url);
+            return resourceManager.GetAsync<T>(url);
         }
     }
 }

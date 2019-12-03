@@ -5,6 +5,7 @@
     <ProjectReference Include="..\..\base\Mcma.Api\Mcma.Api.csproj" />
     <ProjectReference Include="..\Mcma.Azure.Client\Mcma.Azure.Client.csproj" />
     <ProjectReference Include="..\Mcma.Azure.Functions.Configuration\Mcma.Azure.Functions.Configuration.csproj" />
+    <ProjectReference Include="..\Mcma.Azure.Functions.Logging\Mcma.Azure.Functions.Logging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

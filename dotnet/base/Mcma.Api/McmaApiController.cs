@@ -149,7 +149,7 @@ namespace Mcma.Api
             }
             catch (Exception ex)
             {
-                requestContext.Logger.Error(ex.ToString());
+                Logger.System.Error(ex.ToString());
 
                 response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 response.Headers = GetDefaultResponseHeaders();

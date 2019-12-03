@@ -57,8 +57,6 @@ namespace Mcma.Client
 
                 var servicesEndpoint = serviceRegistry.GetResourceEndpointClient<Service>();
 
-                Logger.Debug($"Retrieving services from {Options.ServicesUrl}...");
-
                 var response = await servicesEndpoint.GetCollectionAsync<Service>(throwIfAnyFailToDeserialize: false);
 
                 Services.AddRange(response.Select(svc => new ServiceClient(svc, AuthProvider)));
@@ -69,7 +67,7 @@ namespace Mcma.Client
             }
         }
 
-        public async Task<IEnumerable<T>> GetAsync<T>(params (string, string)[] filter)
+        public async Task<IEnumerable<T>> QueryAsync<T>(params (string, string)[] filter)
         {
             if (!Services.Any())
                 await InitAsync();
@@ -91,15 +89,14 @@ namespace Mcma.Client
                 }
                 catch (Exception error)
                 {
-                    Logger.Error("Failed to retrieve '" + typeof(T).Name + "' from endpoint '" + resourceEndpoint.HttpEndpoint + "'");
-                    Logger.Exception(error);
+                    Logger.System.Error("Failed to retrieve '" + typeof(T).Name + "' from endpoint '" + resourceEndpoint.HttpEndpoint + "'", error);
                 }
             }
 
             return new ReadOnlyCollection<T>(results);
         }
 
-        public async Task<IEnumerable<McmaResource>> GetAsync(Type resourceType, params (string, string)[] filter)
+        public async Task<IEnumerable<McmaResource>> QueryAsync(Type resourceType, params (string, string)[] filter)
         {
             if (!Services.Any())
                 await InitAsync();
@@ -121,8 +118,7 @@ namespace Mcma.Client
                 }
                 catch (Exception error)
                 {
-                    Logger.Error("Failed to retrieve '" + resourceType.Name + "' from endpoint '" + resourceEndpoint.HttpEndpoint + "'");
-                    Logger.Exception(error);
+                    Logger.System.Error("Failed to retrieve '" + resourceType.Name + "' from endpoint '" + resourceEndpoint.HttpEndpoint + "'", error);
                 }
             }
 
@@ -243,7 +239,7 @@ namespace Mcma.Client
                 .FirstOrDefault(re => url.StartsWith(re.HttpEndpoint, StringComparison.OrdinalIgnoreCase));
         }
 
-        public async Task<T> ResolveAsync<T>(string url) where T : McmaResource
+        public async Task<T> GetAsync<T>(string url) where T : McmaResource
         {
             var resourceEndpoint = await GetResourceEndpointAsync(url);
 
@@ -252,7 +248,7 @@ namespace Mcma.Client
                 : await HttpClient.GetAndReadAsObjectFromJsonAsync<T>(url);
         }
 
-        public async Task<McmaResource> ResolveAsync(Type resourceType, string url)
+        public async Task<McmaResource> GetAsync(Type resourceType, string url)
         {
             var resourceEndpoint = await GetResourceEndpointAsync(url);
 

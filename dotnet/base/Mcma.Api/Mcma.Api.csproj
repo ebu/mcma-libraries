@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mcma.Core\Mcma.Core.csproj" />
+    <ProjectReference Include="..\Mcma.Client\Mcma.Client.csproj" />
     <ProjectReference Include="..\Mcma.Data\Mcma.Data.csproj" />
   </ItemGroup>
 

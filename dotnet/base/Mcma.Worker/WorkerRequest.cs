@@ -1,22 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using Mcma.Core;
 using Mcma.Core.Context;
 using Mcma.Core.Serialization;
 using Newtonsoft.Json.Linq;
 
 namespace Mcma.Worker
 {
-    public class WorkerRequest : Context
+    public class WorkerRequest : ContextVariableProvider
     {
-        public WorkerRequest(string operationName, IDictionary<string, string> contextVariables)
-            : base(new EnvironmentVariables().Merge(contextVariables).ToDictionary())
+        public WorkerRequest(string operationName, IDictionary<string, string> contextVariables, McmaTracker tracker = null)
+            : base(new EnvironmentVariableProvider().Merge(contextVariables).ToDictionary())
         {
             OperationName = operationName;
+            Tracker = tracker;
         }
 
         public string OperationName { get; }
 
         public JObject Input { get; set; }
+
+        public McmaTracker Tracker { get; set; }
 
         public object GetInput(Type type)
         {

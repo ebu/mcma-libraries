@@ -68,7 +68,7 @@ namespace Mcma.Api.Routes.Defaults
                         rb.OnCompleted(
                             (requestContext, jobAssignment) =>
                                 workerInvoker.InvokeAsync(
-                                    requestContext.Variables.WorkerFunctionId(),
+                                    requestContext.WorkerFunctionId(),
                                     "ProcessJobAssignment",
                                     contextVariables?.Invoke(requestContext),
                                     new { jobAssignmentId = jobAssignment.Id }
@@ -88,7 +88,7 @@ namespace Mcma.Api.Routes.Defaults
                             (requestContext, jobAssignment) =>
                                 createWorkerInvoker(requestContext, jobAssignment)
                                     .InvokeAsync(
-                                        requestContext.Variables.WorkerFunctionId(),
+                                        requestContext.WorkerFunctionId(),
                                         "ProcessJobAssignment",
                                         contextVariables?.Invoke(requestContext),
                                         new { jobAssignmentId = jobAssignment.Id }

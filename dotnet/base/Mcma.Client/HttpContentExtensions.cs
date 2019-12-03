@@ -50,7 +50,7 @@ namespace Mcma.Client
                     if (throwIfAnyFailToDeserialize) 
                         throw;
 
-                    Logger.Warn($"Failed to instantiate json {item.ToString()} as a {typeof(T).Name} due to error {ex}");
+                    Logger.System.Warn($"Failed to instantiate json {item.ToString()} as a {typeof(T).Name} due to error {ex}");
                 }
             }
 
@@ -73,7 +73,7 @@ namespace Mcma.Client
                     if (throwIfAnyFailToDeserialize) 
                         throw;
 
-                    Logger.Warn($"Failed to instantiate json {item.ToString()} as a {objectType.Name} due to error {ex}");
+                    Logger.System.Warn($"Failed to instantiate json {item.ToString()} as a {objectType.Name} due to error {ex}");
                 }
             }
 
