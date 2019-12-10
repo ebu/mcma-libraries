@@ -3,7 +3,7 @@ import { AuthProvider, ResourceManager, ResourceManagerProvider } from "@mcma/cl
 import { DbTable, DbTableProvider } from "@mcma/data";
 
 export class ProviderCollection {
-    constructor(dbTableProvider, environmentVariableProvider, loggerProvider, resourceManagerProvider);
+    constructor(providers: object);
 
     authProvider: AuthProvider;
     dbTableProvider: DbTableProvider<JobAssignment>;

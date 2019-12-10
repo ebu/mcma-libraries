@@ -233,17 +233,17 @@ export class TechnicalMetadata extends Resource {
 }
 
 export class Exception extends Error {
-    constructor(message: string, cause: string, context: any);
+    constructor(message: string, cause?: string, context?: any);
 }
 
 export enum JobStatus {
-    NEW = "NEW",
-    QUEUED = "QUEUED",
-    SCHEDULED = "SCHEDULED",
-    RUNNING = "RUNNING",
-    COMPLETED = "COMPLETED",
-    FAILED = "FAILED",
-    CANCELED = "CANCELED",
+    New = "New",
+    Queued = "Queued",
+    Scheduled = "Scheduled",
+    Running = "Running",
+    Completed = "Completed",
+    Failed = "Failed",
+    Canceled = "Canceled",
 }
 
 export interface ILogger {

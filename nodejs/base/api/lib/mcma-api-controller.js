@@ -41,7 +41,7 @@ class McmaApiController {
                 try {
                     request.body = JSON.parse(request.body);
                 } catch (error) {
-                    response.statusCode = HttpStatusCode.BAD_REQUEST;
+                    response.statusCode = HttpStatusCode.BadRequest;
                     response.body = new McmaApiError(response.statusCode, error.message, request.path);
                     requestBodyOK = false;
                 }
@@ -71,7 +71,7 @@ class McmaApiController {
                 }
 
                 if (!pathMatched) {
-                    response.statusCode = HttpStatusCode.NOT_FOUND;
+                    response.statusCode = HttpStatusCode.NotFound;
                     response.headers = getDefaultResponseHeaders();
                     response.body = new McmaApiError(response.statusCode, "Resource not found on path '" + request.path + "'.", request.path);
                 } else if (!methodMatched) {
@@ -111,7 +111,7 @@ class McmaApiController {
                             response.headers["Allow"] = methodsAllowed;
                         }
                     } else {
-                        response.statusCode = HttpStatusCode.METHOD_NOT_ALLOWED;
+                        response.statusCode = HttpStatusCode.MethodNotAllowed;
                         response.headers = getDefaultResponseHeaders();
                         response.headers["Allow"] = methodsAllowed;
                         response.body = new McmaApiError(response.statusCode, "Method '" + request.httpMethod + "' not allowed on path '" + request.path + "'.", request.path);
@@ -126,7 +126,7 @@ class McmaApiController {
         } catch (error) {
             console.error(error);
 
-            response.statusCode = HttpStatusCode.INTERNAL_SERVER_ERROR;
+            response.statusCode = HttpStatusCode.InternalServerError;
             response.headers = getDefaultResponseHeaders();
             response.body = new McmaApiError(response.statusCode, error.message, request.path);
         }

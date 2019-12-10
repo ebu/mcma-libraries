@@ -46,6 +46,6 @@ export class AwsV4PresignedUrlGenerator {
 
 declare module "@mcma/client" {
     interface AuthProvider {
-        addAwsV4Auth(awsConfig?: Aws | AwsConfig | AwsAuthContext): AuthProvider;
+        addAwsV4Auth(awsConfig?: any | Aws | AwsConfig | AwsAuthContext): AuthProvider;
     }
 }

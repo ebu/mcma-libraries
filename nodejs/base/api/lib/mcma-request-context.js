@@ -48,17 +48,17 @@ class McmaApiRequestContext extends ContextVariableProvider {
     }
 
     setResponseBadRequestDueToMissingBody() {
-        this.setResponseStatusCode(HttpStatusCode.BAD_REQUEST, "Missing request body.");
+        this.setResponseStatusCode(HttpStatusCode.BadRequest, "Missing request body.");
     }
 
     setResponseResourceCreated(resource) {
         this.response.headers["Location"] = resource.id;
-        this.setResponseStatusCode(HttpStatusCode.CREATED);
+        this.setResponseStatusCode(HttpStatusCode.Created);
         this.setResponseBody(resource);
     }
 
     setResponseResourceNotFound() {
-        this.setResponseStatusCode(HttpStatusCode.NOT_FOUND, "No resource found on path '" + this.request.path + "'.");
+        this.setResponseStatusCode(HttpStatusCode.NotFound, "No resource found on path '" + this.request.path + "'.");
     }
 
     getTracker() {

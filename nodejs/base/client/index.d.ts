@@ -46,8 +46,8 @@ export class ServiceClient {
     constructor(service: Service, authProvider?: AuthProvider);
 
     hasResourceEndpoint<T extends Resource>(resourceType: ResourceType<T>): boolean;
-    getResourceEndpoint<T extends Resource>(resourceType: ResourceType<T>): ResourceEndpointClient;
-    getAllResourceEndpoints(): ResourceEndpointClient[];
+    getResourceEndpointClient<T extends Resource>(resourceType: ResourceType<T>): ResourceEndpointClient;
+    getAllResourceEndpointClients(): ResourceEndpointClient[];
 }
 
 export class ResourceEndpointClient implements Http {
@@ -80,7 +80,7 @@ export class ResourceManager {
     update<T extends Resource>(resource: T): Promise<T>;
     delete<T extends Resource>(resource: T | string): Promise<void>;
 
-    getResourceEndpoint(url: string): Promise<ResourceEndpointClient | undefined>;
+    getResourceEndpointClient(url: string): Promise<ResourceEndpointClient | undefined>;
     sendNotification(resource: JobBase): Promise<void>;
 }
 
