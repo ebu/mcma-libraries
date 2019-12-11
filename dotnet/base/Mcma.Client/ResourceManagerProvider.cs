@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 
 namespace Mcma.Client
 {
@@ -14,13 +15,13 @@ namespace Mcma.Client
 
         private ResourceManagerConfig DefaultConfig { get; }
 
+        public ResourceManager Get(HttpClient httpClient, ResourceManagerConfig config = null)
+            => new ResourceManager(httpClient, ConfigOrDefault(config), AuthProvider);
+
         public ResourceManager Get(ResourceManagerConfig config = null)
-        {
-            config = config ?? DefaultConfig;
-            if (config == null)
-                throw new Exception("Config for resource manager not provided, and there is no default config available");
-            
-            return new ResourceManager(config, AuthProvider);
-        }
+            => new ResourceManager(ConfigOrDefault(config), AuthProvider);
+
+        private ResourceManagerConfig ConfigOrDefault(ResourceManagerConfig config)
+            => (config ?? DefaultConfig) ?? throw new Exception("Config for resource manager not provided, and there is no default config available");
     }
 } 
