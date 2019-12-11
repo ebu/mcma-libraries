@@ -2,8 +2,8 @@
 {
     public class AwsS3FileLocator : AwsS3Locator
     {
-        public string Key { get; set; }
+        public string AwsS3Key { get; set; }
 
-        protected override string UrlPath => Key;
+        protected override string UrlPath => AwsS3Key;
     }
 }
