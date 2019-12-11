@@ -15,3 +15,6 @@ dotnet nuget push azure/Mcma.Azure.Functions.Api/bin/packages/Mcma.Azure.Functio
 
 dotnet pack azure/Mcma.Azure.Functions.Worker -p:PackageVersion=%1
 dotnet nuget push azure/Mcma.Azure.Functions.Worker/bin/packages/Mcma.Azure.Functions.Worker.%1.nupkg -k=%NUGET_API_KEY% -s https://api.nuget.org/v3/index.json
+
+dotnet pack azure/Mcma.Azure.Functions.Configuration -p:PackageVersion=%1
+dotnet nuget push azure/Mcma.Azure.Functions.Configuration/bin/packages/Mcma.Azure.Functions.Configuration.%1.nupkg -k=%NUGET_API_KEY% -s https://api.nuget.org/v3/index.json

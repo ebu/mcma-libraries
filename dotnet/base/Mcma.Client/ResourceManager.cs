@@ -6,17 +6,28 @@ using System.Threading.Tasks;
 using Mcma.Core;
 using Mcma.Core.Serialization;
 using Mcma.Core.Logging;
+using System.Net.Http;
 
 namespace Mcma.Client
 {
     public class ResourceManager
     {
         public ResourceManager(ResourceManagerConfig options, IAuthProvider authProvider = null)
+            : this(new HttpClient(), options, authProvider)
         {
+
+        }
+
+        public ResourceManager(HttpClient httpClient, ResourceManagerConfig options, IAuthProvider authProvider = null)
+        {
+            if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
+            HttpClient = httpClient;
             Options = options;
             AuthProvider = authProvider;
+
+            McmaHttpClient = new McmaHttpClient(HttpClient);
         }
 
         private ResourceManagerConfig Options { get; }
@@ -25,10 +36,13 @@ namespace Mcma.Client
 
         private List<ServiceClient> Services { get; } = new List<ServiceClient>();
 
-        private McmaHttpClient HttpClient { get; } = new McmaHttpClient();
+        private HttpClient HttpClient { get; }
+
+        private McmaHttpClient McmaHttpClient { get; }
 
         private ServiceClient GetDefaultServiceRegistryServiceClient() =>
             new ServiceClient(
+                HttpClient,
                 new Service
                 {
                     Name = "Service Registry",
@@ -59,7 +73,7 @@ namespace Mcma.Client
 
                 var response = await servicesEndpoint.GetCollectionAsync<Service>(throwIfAnyFailToDeserialize: false);
 
-                Services.AddRange(response.Select(svc => new ServiceClient(svc, AuthProvider)));
+                Services.AddRange(response.Select(svc => new ServiceClient(HttpClient, svc, AuthProvider)));
             }
             catch (Exception error)
             {
@@ -140,7 +154,7 @@ namespace Mcma.Client
             if (string.IsNullOrWhiteSpace(resource.Id))
                 throw new Exception($"There is no endpoint available for creating resources of type '{typeof(T).Name}', and the provided resource does not specify an endpoint in its 'id' property.");
 
-            var resp = await HttpClient.PostAsJsonAsync(resource.Id, resource);
+            var resp = await McmaHttpClient.PostAsJsonAsync(resource.Id, resource);
             await resp.ThrowIfFailedAsync();
             return await resp.Content.ReadAsObjectFromJsonAsync<T>();
         }
@@ -163,7 +177,7 @@ namespace Mcma.Client
             if (string.IsNullOrWhiteSpace(resource.Id))
                 throw new Exception($"There is no endpoint available for creating resources of type '{resourceType.Name}', and the provided resource does not specify an endpoint in its 'id' property.");
 
-            var resp = await HttpClient.PostAsJsonAsync(resource.Id, resource);
+            var resp = await McmaHttpClient.PostAsJsonAsync(resource.Id, resource);
             await resp.ThrowIfFailedAsync();
             return (McmaResource) await resp.Content.ReadAsObjectFromJsonAsync(resourceType);
         }
@@ -180,7 +194,7 @@ namespace Mcma.Client
             if (resourceEndpoint != null)
                 return await resourceEndpoint.PutAsync<T>(resource);
 
-            var resp = await HttpClient.PutAsJsonAsync(resource.Id, resource);
+            var resp = await McmaHttpClient.PutAsJsonAsync(resource.Id, resource);
             await resp.ThrowIfFailedAsync();
             return await resp.Content.ReadAsObjectFromJsonAsync<T>();
         }
@@ -200,7 +214,7 @@ namespace Mcma.Client
             if (resourceEndpoint != null)
                 return await resourceEndpoint.PutAsync(resourceType, resource);
 
-            var resp = await HttpClient.PutAsJsonAsync(resource.Id, resource);
+            var resp = await McmaHttpClient.PutAsJsonAsync(resource.Id, resource);
             await resp.ThrowIfFailedAsync();
             return (McmaResource) await resp.Content.ReadAsObjectFromJsonAsync(resourceType);
         }
@@ -222,7 +236,7 @@ namespace Mcma.Client
             var resp =
                 resourceEndpoint != null
                     ? await resourceEndpoint.DeleteAsync(resourceId)
-                    : await HttpClient.DeleteAsync(resourceId);
+                    : await McmaHttpClient.DeleteAsync(resourceId);
 
             await resp.ThrowIfFailedAsync();
         }
@@ -245,7 +259,7 @@ namespace Mcma.Client
 
             return resourceEndpoint != null
                 ? await resourceEndpoint.GetAsync<T>(url)
-                : await HttpClient.GetAndReadAsObjectFromJsonAsync<T>(url);
+                : await McmaHttpClient.GetAndReadAsObjectFromJsonAsync<T>(url);
         }
 
         public async Task<McmaResource> GetAsync(Type resourceType, string url)
@@ -254,7 +268,7 @@ namespace Mcma.Client
 
             return resourceEndpoint != null
                 ? await resourceEndpoint.GetAsync(resourceType, url)
-                : (McmaResource) await HttpClient.GetAndReadAsObjectFromJsonAsync(resourceType, url);
+                : (McmaResource) await McmaHttpClient.GetAndReadAsObjectFromJsonAsync(resourceType, url);
         }
 
         public async Task SendNotificationAsync<T>(T resource, NotificationEndpoint notificationEndpoint) where T : McmaResource
@@ -272,7 +286,7 @@ namespace Mcma.Client
             var response =
                 resourceEndpoint != null
                     ? await resourceEndpoint.PostAsync((object)notification, notificationEndpoint.HttpEndpoint)
-                    : await HttpClient.PostAsJsonAsync(notificationEndpoint.HttpEndpoint, notification);
+                    : await McmaHttpClient.PostAsJsonAsync(notificationEndpoint.HttpEndpoint, notification);
 
             // ensure that the notification was sent successfully
             await response.ThrowIfFailedAsync();

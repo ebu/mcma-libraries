@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>7.1</LangVersion>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageOutputPath>bin/packages</PackageOutputPath>

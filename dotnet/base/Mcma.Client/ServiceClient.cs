@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Mcma.Core;
 
 namespace Mcma.Client
 {
     public class ServiceClient
     {
-        public ServiceClient(Service service, IAuthProvider authProvider = null)
+        internal ServiceClient(HttpClient httpClient, Service service, IAuthProvider authProvider = null)
         {
             Data = service;
 
             ResourcesByType =
                 service.Resources != null
-                    ? service.Resources.ToDictionary(r => r.ResourceType, r => new ResourceEndpointClient(r, authProvider, service.AuthType, service.AuthContext))
+                    ? service.Resources.ToDictionary(r => r.ResourceType, r => new ResourceEndpointClient(httpClient, authProvider, r, service.AuthType, service.AuthContext))
                     : new Dictionary<string, ResourceEndpointClient>();
         }
 

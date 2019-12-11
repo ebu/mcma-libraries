@@ -1,6 +1,6 @@
 namespace Mcma.Core
 {
-    public abstract class Locator : McmaResource
+    public abstract class Locator : McmaObject
     {
     }
 }

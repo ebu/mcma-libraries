@@ -9,28 +9,41 @@ namespace Mcma.Client
 {
     public class ResourceEndpointClient
     {
-        internal ResourceEndpointClient(ResourceEndpoint resourceEndpoint,
+        internal ResourceEndpointClient(HttpClient httpClient,
                                         IAuthProvider authProvider,
+                                        ResourceEndpoint resourceEndpoint,
                                         string serviceAuthType,
                                         string serviceAuthContext)
         {
+            HttpClient = httpClient;
+            AuthProvider = authProvider;
+
             HttpEndpoint = resourceEndpoint?.HttpEndpoint ?? throw new ArgumentNullException(nameof(resourceEndpoint));
 
-            var authType = !string.IsNullOrWhiteSpace(resourceEndpoint.AuthType) ? resourceEndpoint.AuthType : serviceAuthType;
-            var authContext = !string.IsNullOrWhiteSpace(resourceEndpoint.AuthContext) ? resourceEndpoint.AuthContext : serviceAuthContext;
+            AuthType = !string.IsNullOrWhiteSpace(resourceEndpoint.AuthType) ? resourceEndpoint.AuthType : serviceAuthType;
+            AuthContext = !string.IsNullOrWhiteSpace(resourceEndpoint.AuthContext) ? resourceEndpoint.AuthContext : serviceAuthContext;
 
-            HttpClientTask =
-                new Lazy<Task<McmaHttpClient>>(async () =>
-                {
-                    var authenticator = authProvider != null ? await authProvider.GetAsync(authType, authContext) : null;
-
-                    return new McmaHttpClient(authenticator, HttpEndpoint);
-                });
+            HttpClientTask = new Lazy<Task<McmaHttpClient>>(CreateHttpClient);
         }
+
+        private HttpClient HttpClient { get; }
+
+        private IAuthProvider AuthProvider { get; }
+
+        private string AuthType { get; }
+
+        private string AuthContext { get; }
 
         public string HttpEndpoint { get; }
 
         private Lazy<Task<McmaHttpClient>> HttpClientTask { get; }
+
+        private async Task<McmaHttpClient> CreateHttpClient()
+        {
+            var authenticator = AuthProvider != null ? await AuthProvider.GetAsync(AuthType, AuthContext) : null;
+
+            return new McmaHttpClient(HttpClient, authenticator, HttpEndpoint);
+        }
 
         private async Task<HttpResponseMessage> ExecuteAsync(Func<McmaHttpClient, Task<HttpResponseMessage>> execute)
             => await execute(await HttpClientTask.Value);
