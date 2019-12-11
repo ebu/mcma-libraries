@@ -86,11 +86,11 @@ class ProcessJobAssignmentOperation {
             logger.info("Handler for job profile '" + jobAssignmentHelper.getProfile().name + "' completed")
         } catch (e) {
             logger.error(e.message);
-            logger.error(e);
+            logger.error(e.toString());
             try {
                 await jobAssignmentHelper.fail(e.message);
             } catch (inner) {
-                logger.error(inner);
+                logger.error(inner.toString());
             }
         }
     }

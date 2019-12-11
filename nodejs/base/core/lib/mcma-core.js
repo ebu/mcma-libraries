@@ -332,13 +332,13 @@ class Exception extends Error {
 }
 
 const JobStatus = Object.freeze({
-    NEW: "NEW",
-    QUEUED: "QUEUED",
-    SCHEDULED: "SCHEDULED",
-    RUNNING: "RUNNING",
-    COMPLETED: "COMPLETED",
-    FAILED: "FAILED",
-    CANCELED: "CANCELED",
+    New: "New",
+    Queued: "Queued",
+    Scheduled: "Scheduled",
+    Running: "Running",
+    Completed: "Completed",
+    Failed: "Failed",
+    Canceled: "Canceled",
 });
 
 module.exports = {

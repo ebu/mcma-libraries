@@ -1,190 +1,190 @@
 const HttpStatusCode = Object.freeze({
-    CONTINUE: 100,
-    SWITCHING_PROTOCOLS: 101,
-    PROCESSING: 102,
-    CHECKPOINT: 103,
+    Continue: 100,
+    SwitchingProtocols: 101,
+    Processing: 102,
+    Checkpoint: 103,
     OK: 200,
-    CREATED: 201,
-    ACCEPTED: 202,
-    NON_AUTHORITATIVE_INFORMATION: 203,
-    NO_CONTENT: 204,
-    RESET_CONTENT: 205,
-    PARTIAL_CONTENT: 206,
-    MULTI_STATUS: 207,
-    ALREADY_REPORTED: 208,
-    IM_USED: 226,
-    MULTIPLE_CHOICES: 300,
-    MOVED_PERMANENTLY: 301,
-    FOUND: 302,
-    SEE_OTHER: 303,
-    NOT_MODIFIED: 304,
-    TEMPORARY_REDIRECT: 307,
-    PERMANENT_REDIRECT: 308,
-    BAD_REQUEST: 400,
-    UNAUTHORIZED: 401,
-    PAYMENT_REQUIRED: 402,
-    FORBIDDEN: 403,
-    NOT_FOUND: 404,
-    METHOD_NOT_ALLOWED: 405,
-    NOT_ACCEPTABLE: 406,
-    PROXY_AUTHENTICATION_REQUIRED: 407,
-    REQUEST_TIMEOUT: 408,
-    CONFLICT: 409,
-    GONE: 410,
-    LENGTH_REQUIRED: 411,
-    PRECONDITION_FAILED: 412,
-    PAYLOAD_TOO_LARGE: 413,
-    URI_TOO_LONG: 414,
-    UNSUPPORTED_MEDIA_TYPE: 415,
-    REQUESTED_RANGE_NOT_SATISFIABLE: 416,
-    EXPECTATION_FAILED: 417,
-    I_AM_A_TEAPOT: 418,
-    UNPROCESSABLE_ENTITY: 422,
-    LOCKED: 423,
-    FAILED_DEPENDENCY: 424,
-    TOO_EARLY: 425,
-    UPGRADE_REQUIRED: 426,
-    PRECONDITION_REQUIRED: 428,
-    TOO_MANY_REQUESTS: 429,
-    REQUEST_HEADER_FIELDS_TOO_LARGE: 431,
-    UNAVAILABLE_FOR_LEGAL_REASONS: 451,
-    INTERNAL_SERVER_ERROR: 500,
-    NOT_IMPLEMENTED: 501,
-    BAD_GATEWAY: 502,
-    SERVICE_UNAVAILABLE: 503,
-    GATEWAY_TIMEOUT: 504,
-    HTTP_VERSION_NOT_SUPPORTED: 505,
-    VARIANT_ALSO_NEGOTIATES: 506,
-    INSUFFICIENT_STORAGE: 507,
-    LOOP_DETECTED: 508,
-    BANDWIDTH_LIMIT_EXCEEDED: 509,
-    NOT_EXTENDED: 510,
-    NETWORK_AUTHENTICATION_REQUIRED: 511,
+    Created: 201,
+    Accepted: 202,
+    NonAuthoritativeInformation: 203,
+    NoConsent: 204,
+    ResetContent: 205,
+    PartialContent: 206,
+    MultiStatus: 207,
+    AlreadyReported: 208,
+    ImUsed: 226,
+    MultipleChoices: 300,
+    MovedPermanently: 301,
+    Found: 302,
+    SeeOther: 303,
+    NotModified: 304,
+    TemporaryRedirect: 307,
+    PermanentRedirect: 308,
+    BadRequest: 400,
+    Unauthorized: 401,
+    PaymentRequired: 402,
+    Forbidden: 403,
+    NotFound: 404,
+    MethodNotAllowed: 405,
+    NotAcceptable: 406,
+    ProxyAuthenticationRequired: 407,
+    RequestTimeout: 408,
+    Conflict: 409,
+    Gone: 410,
+    LengthRequired: 411,
+    PreconditionFailed: 412,
+    PayloadTooLarge: 413,
+    UriTooLong: 414,
+    UnsupportedMediaType: 415,
+    RequiredRangeNotSatisfiable: 416,
+    ExpectationFailed: 417,
+    IAmATeapot: 418,
+    UnprocessableEntity: 422,
+    Locked: 423,
+    FailedDependency: 424,
+    TooEarly: 425,
+    UpgradeRequired: 426,
+    PreconditionRequired: 428,
+    TooManyRequests: 429,
+    RequestHeaderFieldsTooLarge: 431,
+    UnavailableForLegalReasons: 451,
+    InternalServerError: 500,
+    NotImplemented: 501,
+    BadGateway: 502,
+    ServiceUnavailable: 503,
+    GatewayTimeout: 504,
+    HttpVersionNotSupported: 505,
+    VariantAlsoNegotiates: 506,
+    InsufficientStorage: 507,
+    LoopDetected: 508,
+    BandwidthLimitExceeded: 509,
+    NotExtended: 510,
+    NetworkAuthenticationRequired: 511,
 });
 
 const getStatusError = (statusCode) => {
     switch (statusCode) {
-        case HttpStatusCode.CONTINUE:
+        case HttpStatusCode.Continue:
             return "Continue";
-        case HttpStatusCode.SWITCHING_PROTOCOLS:
+        case HttpStatusCode.SwitchingProtocols:
             return "Switching Protocols";
-        case HttpStatusCode.PROCESSING:
+        case HttpStatusCode.Processing:
             return "Processing";
-        case HttpStatusCode.CHECKPOINT:
+        case HttpStatusCode.Checkpoint:
             return "Checkpoint";
         case HttpStatusCode.OK:
             return "OK";
-        case HttpStatusCode.CREATED:
+        case HttpStatusCode.Created:
             return "Created";
-        case HttpStatusCode.ACCEPTED:
+        case HttpStatusCode.Accepted:
             return "Accepted";
-        case HttpStatusCode.NON_AUTHORITATIVE_INFORMATION:
+        case HttpStatusCode.NonAuthoritativeInformation:
             return "Non-Authoritative Information";
-        case HttpStatusCode.NO_CONTENT:
+        case HttpStatusCode.NoConsent:
             return "No Content";
-        case HttpStatusCode.RESET_CONTENT:
+        case HttpStatusCode.ResetContent:
             return "Reset Content";
-        case HttpStatusCode.PARTIAL_CONTENT:
+        case HttpStatusCode.PartialContent:
             return "Partial Content";
-        case HttpStatusCode.MULTI_STATUS:
+        case HttpStatusCode.MultiStatus:
             return "Multi-Status";
-        case HttpStatusCode.ALREADY_REPORTED:
+        case HttpStatusCode.AlreadyReported:
             return "Already Reported";
-        case HttpStatusCode.IM_USED:
+        case HttpStatusCode.ImUsed:
             return "IM Used";
-        case HttpStatusCode.MULTIPLE_CHOICES:
+        case HttpStatusCode.MultipleChoices:
             return "Multiple Choices";
-        case HttpStatusCode.MOVED_PERMANENTLY:
+        case HttpStatusCode.MovedPermanently:
             return "Moved Permanently";
-        case HttpStatusCode.FOUND:
+        case HttpStatusCode.Found:
             return "Found";
-        case HttpStatusCode.SEE_OTHER:
+        case HttpStatusCode.SeeOther:
             return "See Other";
-        case HttpStatusCode.NOT_MODIFIED:
+        case HttpStatusCode.NotModified:
             return "Not Modified";
-        case HttpStatusCode.TEMPORARY_REDIRECT:
+        case HttpStatusCode.TemporaryRedirect:
             return "Temporary Redirect";
-        case HttpStatusCode.PERMANENT_REDIRECT:
+        case HttpStatusCode.PermanentRedirect:
             return "Permanent Redirect";
-        case HttpStatusCode.BAD_REQUEST:
+        case HttpStatusCode.BadRequest:
             return "Bad Request";
-        case HttpStatusCode.UNAUTHORIZED:
+        case HttpStatusCode.Unauthorized:
             return "Unauthorized";
-        case HttpStatusCode.PAYMENT_REQUIRED:
+        case HttpStatusCode.PaymentRequired:
             return "Payment Required";
-        case HttpStatusCode.FORBIDDEN:
+        case HttpStatusCode.Forbidden:
             return "Forbidden";
-        case HttpStatusCode.NOT_FOUND:
+        case HttpStatusCode.NotFound:
             return "Not Found";
-        case HttpStatusCode.METHOD_NOT_ALLOWED:
+        case HttpStatusCode.MethodNotAllowed:
             return "Method Not Allowed";
-        case HttpStatusCode.NOT_ACCEPTABLE:
+        case HttpStatusCode.NotAcceptable:
             return "Not Acceptable";
-        case HttpStatusCode.PROXY_AUTHENTICATION_REQUIRED:
+        case HttpStatusCode.ProxyAuthenticationRequired:
             return "Proxy Authentication Required ";
-        case HttpStatusCode.REQUEST_TIMEOUT:
+        case HttpStatusCode.RequestTimeout:
             return "Request Timeout";
-        case HttpStatusCode.CONFLICT:
+        case HttpStatusCode.Conflict:
             return "Conflict";
-        case HttpStatusCode.GONE:
+        case HttpStatusCode.Gone:
             return "Gone";
-        case HttpStatusCode.LENGTH_REQUIRED:
+        case HttpStatusCode.LengthRequired:
             return "Length Required";
-        case HttpStatusCode.PRECONDITION_FAILED:
+        case HttpStatusCode.PreconditionFailed:
             return "Precondition Failed";
-        case HttpStatusCode.PAYLOAD_TOO_LARGE:
+        case HttpStatusCode.PayloadTooLarge:
             return "Payload Too Large";
-        case HttpStatusCode.URI_TOO_LONG:
+        case HttpStatusCode.UriTooLong:
             return "URI Too Long";
-        case HttpStatusCode.UNSUPPORTED_MEDIA_TYPE:
+        case HttpStatusCode.UnsupportedMediaType:
             return "Unsupported Media Type";
-        case HttpStatusCode.REQUESTED_RANGE_NOT_SATISFIABLE:
+        case HttpStatusCode.RequiredRangeNotSatisfiable:
             return "Requested Range Not Satisfiable";
-        case HttpStatusCode.EXPECTATION_FAILED:
+        case HttpStatusCode.ExpectationFailed:
             return "Expectation Failed";
-        case HttpStatusCode.I_AM_A_TEAPOT:
+        case HttpStatusCode.IAmATeapot:
             return "I'm a teapot";
-        case HttpStatusCode.UNPROCESSABLE_ENTITY:
+        case HttpStatusCode.UnprocessableEntity:
             return "Unprocessable Entity";
-        case HttpStatusCode.LOCKED:
+        case HttpStatusCode.Locked:
             return "Locked";
-        case HttpStatusCode.FAILED_DEPENDENCY:
+        case HttpStatusCode.FailedDependency:
             return "Failed Dependency";
-        case HttpStatusCode.TOO_EARLY:
+        case HttpStatusCode.TooEarly:
             return "Too Early";
-        case HttpStatusCode.UPGRADE_REQUIRED:
+        case HttpStatusCode.UpgradeRequired:
             return "Upgrade Required";
-        case HttpStatusCode.PRECONDITION_REQUIRED:
+        case HttpStatusCode.PreconditionRequired:
             return "Precondition Required";
-        case HttpStatusCode.TOO_MANY_REQUESTS:
+        case HttpStatusCode.TooManyRequests:
             return "Too Many Requests";
-        case HttpStatusCode.REQUEST_HEADER_FIELDS_TOO_LARGE:
+        case HttpStatusCode.RequestHeaderFieldsTooLarge:
             return "Request Header Fields Too Large";
-        case HttpStatusCode.UNAVAILABLE_FOR_LEGAL_REASONS:
+        case HttpStatusCode.UnavailableForLegalReasons:
             return "Unavailable For Legal Reasons";
-        case HttpStatusCode.INTERNAL_SERVER_ERROR:
+        case HttpStatusCode.InternalServerError:
             return "Internal Server Error";
-        case HttpStatusCode.NOT_IMPLEMENTED:
+        case HttpStatusCode.NotImplemented:
             return "Not Implemented";
-        case HttpStatusCode.BAD_GATEWAY:
+        case HttpStatusCode.BadGateway:
             return "Bad Gateway";
-        case HttpStatusCode.SERVICE_UNAVAILABLE:
+        case HttpStatusCode.ServiceUnavailable:
             return "Service Unavailable";
-        case HttpStatusCode.GATEWAY_TIMEOUT:
+        case HttpStatusCode.GatewayTimeout:
             return "Gateway Timeout";
-        case HttpStatusCode.HTTP_VERSION_NOT_SUPPORTED:
+        case HttpStatusCode.HttpVersionNotSupported:
             return "HTTP Version Not Supported";
-        case HttpStatusCode.VARIANT_ALSO_NEGOTIATES:
+        case HttpStatusCode.VariantAlsoNegotiates:
             return "Variant Also Negotiates";
-        case HttpStatusCode.INSUFFICIENT_STORAGE:
+        case HttpStatusCode.InsufficientStorage:
             return "Insufficient Storage";
-        case HttpStatusCode.LOOP_DETECTED:
+        case HttpStatusCode.LoopDetected:
             return "Loop Detected";
-        case HttpStatusCode.BANDWIDTH_LIMIT_EXCEEDED:
+        case HttpStatusCode.BandwidthLimitExceeded:
             return "Bandwidth Limit Exceeded";
-        case HttpStatusCode.NOT_EXTENDED:
+        case HttpStatusCode.NotExtended:
             return "Not Extended";
-        case HttpStatusCode.NETWORK_AUTHENTICATION_REQUIRED:
+        case HttpStatusCode.NetworkAuthenticationRequired:
             return "Network Authentication Required";
 
     }

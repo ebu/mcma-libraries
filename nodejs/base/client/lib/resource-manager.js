@@ -138,21 +138,12 @@ class ResourceManager {
                 await this.init();
             }
 
-            let resourceType = resource["@type"];
-
-            for (const service of serviceClients) {
-                let resourceEndpoint = service.getResourceEndpointClient(resourceType);
-                if (resourceEndpoint === undefined) {
-                    continue;
-                }
-
-                if (resource.id.startsWith(resourceEndpoint.httpEndpoint)) {
-                    let response = await resourceEndpoint.put(resource);
-                    return response.data;
-                }
+            let http = await this.getResourceEndpointClient(resource.id);
+            if (http === undefined) {
+                http = httpClient;
             }
 
-            let response = await httpClient.put(resource.id, resource);
+            let response = await http.put(resource.id, resource);
             return response.data;
         };
 
@@ -161,21 +152,12 @@ class ResourceManager {
                 await this.init();
             }
 
-            let resourceType = resource["@type"];
-
-            for (const service of serviceClients) {
-                let resourceEndpoint = service.getResourceEndpointClient(resourceType);
-                if (resourceEndpoint === undefined) {
-                    continue;
-                }
-
-                if (resource.id.startsWith(resourceEndpoint.httpEndpoint)) {
-                    let response = await resourceEndpoint.delete(resource.id);
-                    return response.data;
-                }
+            let http = await this.getResourceEndpointClient(resource.id);
+            if (http === undefined) {
+                http = httpClient;
             }
 
-            let response = await httpClient.delete(resource.id);
+            let response = await http.delete(resource.id);
             return response.data;
         };
 
