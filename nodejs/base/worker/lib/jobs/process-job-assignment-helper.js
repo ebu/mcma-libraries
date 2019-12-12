@@ -45,23 +45,34 @@ class ProcessJobAssignmentHelper {
             }
         };
 
-        this.complete = async () => {
-            await this.updateJobAssignmentOutput();
-            return await this.updateJobAssignmentStatus(JobStatus.Completed);
+        this.complete = async (message) => {
+            return await this.updateJobAssignment(
+                ja => {
+                    ja.status = JobStatus.Completed;
+                    ja.statusMessage = message;
+                    ja.jobOutput = job.jobOutput;
+                },
+                true);
         };
 
-        this.fail = async (error) => {
-            if (!!error && typeof error !== "string") {
-                error = JSON.stringify(error);
-            }
-            return await this.updateJobAssignmentStatus(JobStatus.Failed, error);
+        this.fail = async (message) => {
+            return await this.updateJobAssignment(
+                ja => {
+                    ja.status = JobStatus.Failed;
+                    ja.statusMessage = message;
+                    ja.jobOutput = job.jobOutput;
+                },
+                true);
         };
 
         this.cancel = async (message) => {
-            if (!!message && typeof message !== "string") {
-                message = JSON.stringify(message);
-            }
-            return await this.updateJobAssignmentStatus(JobStatus.Canceled, message);
+            return await this.updateJobAssignment(
+                ja => {
+                    ja.status = JobStatus.Canceled;
+                    ja.statusMessage = message;
+                    ja.jobOutput = job.jobOutput;
+                },
+                true);
         };
 
         this.updateJobAssignmentOutput = async () => {
