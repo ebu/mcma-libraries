@@ -39,8 +39,8 @@ namespace Mcma.Core
 
         public static bool operator !=(JobStatus status1, string status2) => !AreEqual(status1, status2);
 
-        private static bool AreEqual(string status1, string status2)
-            => (status1 == null && status2 == null) || (status1 != null && status1.Equals(status2));
+        private static bool AreEqual(JobStatus status1, JobStatus status2)
+            => (status1 is null && status2 is null) || (!(status1 is null) && status1.Equals(status2));
 
         public override bool Equals(object obj)
         {
