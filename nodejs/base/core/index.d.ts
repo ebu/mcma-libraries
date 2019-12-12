@@ -233,7 +233,7 @@ export class TechnicalMetadata extends Resource {
 }
 
 export class Exception extends Error {
-    constructor(message: string, cause?: string, context?: any);
+    constructor(message: string, cause?: any, context?: any);
 }
 
 export enum JobStatus {

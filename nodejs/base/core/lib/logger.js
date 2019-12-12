@@ -33,10 +33,10 @@ class Logger {
         };
         try {
             return JSON.stringify(logEvent, null, 2);
-        } catch {
+        } catch (ignored) {
             try {
                 logEvent.message = util.inspect(logEvent.message);
-            } catch {
+            } catch (ignored) {
                 logEvent.message = logEvent.message + "";
             }
         }
