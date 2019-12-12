@@ -61,9 +61,9 @@ export class ProcessJobAssignmentHelper<T extends Job> {
 
     initialize(): Promise<void>;
     validateJob(supportedProfiles: string[]): void;
-    complete(): Promise<JobAssignment>;
-    fail(error: Error | string | any): Promise<JobAssignment>;
-    cancel(message: string | any): Promise<JobAssignment>;
+    complete(message?: string): Promise<JobAssignment>;
+    fail(message: string): Promise<JobAssignment>;
+    cancel(message: string): Promise<JobAssignment>;
     updateJobAssignmentOutput(): Promise<JobAssignment>;
     updateJobAssignmentStatus(status: JobStatus, statusMessage?: string): Promise<JobAssignment>;
     updateJobAssignment(update: (jobAssignment: JobAssignment) => void, sendNotification?: boolean): Promise<JobAssignment>;

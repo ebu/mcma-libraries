@@ -296,11 +296,6 @@ class TechnicalMetadata extends Resource {
 
 class Exception extends Error {
     constructor(message, cause, context) {
-        if (typeof message === "object" && context === undefined) {
-            context = cause;
-            cause = message;
-            message = null;
-        }
         super(message);
         this.cause = cause;
         this.context = context;
@@ -314,7 +309,7 @@ class Exception extends Error {
             if (c.stack) {
                 ret += c.stack;
             } else {
-                ret += "Error: " + c.message;
+                ret += "Error: " + (c.message) ? c.message : c;
             }
 
             if (c.context) {
