@@ -46,7 +46,7 @@ namespace Mcma.Core.Serialization
         
         private static void AddTypesFromAssembly(Assembly assembly)
         {
-            if (assembly.FullName.StartsWith("System") || assembly.FullName.StartsWith("Microsoft"))
+            if (assembly.FullName.StartsWith("System") || assembly.FullName.StartsWith("Microsoft") || assembly.IsDynamic)
                 return;
 
             try
@@ -56,7 +56,7 @@ namespace Mcma.Core.Serialization
             }
             catch (Exception ex)
             {
-                Logger.System.Error($"Failed to load types from assembly {assembly.FullName}.{Environment.NewLine}Exception:{Environment.NewLine}{ex}");
+                Logger.System.Warn($"Failed to load types from assembly {assembly.FullName}.{Environment.NewLine}Exception:{Environment.NewLine}{ex}");
             }
         }
         

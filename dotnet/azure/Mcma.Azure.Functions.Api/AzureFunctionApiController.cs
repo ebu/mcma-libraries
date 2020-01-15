@@ -13,7 +13,7 @@ namespace Mcma.Azure.Functions.Api
     {
         public AzureFunctionApiController(McmaApiRouteCollection routeCollection, MicrosoftLoggerProvider loggerProvider = null)
         {
-            McmaApiController = new McmaApiController(routeCollection);
+            McmaApiController = new McmaApiController(routeCollection, loggerProvider);
             LoggerProvider = loggerProvider;
         }
 
@@ -25,9 +25,13 @@ namespace Mcma.Azure.Functions.Api
         {
             var requestContext = await request.ToMcmaApiRequestContextAsync(contextVariableProvider ?? new EnvironmentVariableProvider());
 
-            LoggerProvider?.AddLogger(log, requestContext.GetTracker());
+            var logger = LoggerProvider?.AddLogger(log, requestContext.GetTracker());
+
+            logger.Debug($"Starting {request.Method} request to {request.Path}...");
 
             await McmaApiController.HandleRequestAsync(requestContext);
+
+            logger.Debug($"{request.Method} request to {request.Path} finished with status {requestContext.Response.StatusCode}");
 
             return requestContext.ToActionResult();
         }

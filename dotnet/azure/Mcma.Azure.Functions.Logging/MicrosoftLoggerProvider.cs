@@ -16,15 +16,8 @@ namespace Mcma.Azure.Functions.Logging
 
         private IDictionary<string, IMicrosoftLogger> Loggers { get; } = new Dictionary<string, IMicrosoftLogger>();
 
-        public MicrosoftLoggerWrapper AddLogger(IMicrosoftLogger microsoftLogger, McmaTracker tracker = null)
-        {
-            Loggers[GetLoggerKey(Source, tracker)] = microsoftLogger;
-            
-            return Get(Source, tracker);
-        }
-
         private string GetLoggerKey(string source, McmaTracker tracker)
-            => $"{source}-{tracker?.Id?.Trim() ?? string.Empty}-{tracker?.Label?.Trim()}";
+            => tracker != null ? $"{source}-{tracker.Id?.Trim()}-{tracker.Label?.Trim()}" : source;
 
         protected override MicrosoftLoggerWrapper Get(string source, McmaTracker tracker)
         {
@@ -33,6 +26,13 @@ namespace Mcma.Azure.Functions.Logging
                 throw new Exception($"Unable to create logger with key '{loggerKey}' as there is no associated Microsoft.Extensions.Logging.ILogger object to wrap.");
 
             return new MicrosoftLoggerWrapper(Loggers[loggerKey], source, tracker);
+        }
+
+        public MicrosoftLoggerWrapper AddLogger(IMicrosoftLogger microsoftLogger, McmaTracker tracker = null)
+        {
+            Loggers[GetLoggerKey(Source, tracker)] = microsoftLogger;
+            
+            return Get(Source, tracker);
         }
     }
 }

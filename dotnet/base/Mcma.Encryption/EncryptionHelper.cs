@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Security.Cryptography;
 using System.Text;
 using Mcma.Core.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Mcma.Azure.Client
+namespace Mcma.Encryption
 {
     public static class EncryptionHelper
     {
@@ -28,10 +28,10 @@ namespace Mcma.Azure.Client
                 rsa.ImportJson(publicKeyJson);
 
                 var encryptedBytes = 
-#if NET45
+#if NET452
                     rsa.EncryptValue(Encoding.UTF8.GetBytes(toEncrypt));
 #else
-                    rsa.Encrypt(Encoding.UTF8.GetBytes(toEncrypt), RSAEncryptionPadding.OaepSHA256);
+                    rsa.Encrypt(Encoding.UTF8.GetBytes(toEncrypt), RSAEncryptionPadding.Pkcs1);
 #endif
 
                 return Convert.ToBase64String(encryptedBytes);
@@ -45,10 +45,10 @@ namespace Mcma.Azure.Client
                 rsa.ImportJson(privateKeyJson);
 
                 var decryptedBytes = 
-#if NET45
-                    rsa.DecryptValue(Encoding.UTF8.GetBytes(toDecrypt));
+#if NET452
+                    rsa.DecryptValue(Convert.FromBase64String(toDecrypt));
 #else
-                    rsa.Decrypt(Convert.FromBase64String(toDecrypt), RSAEncryptionPadding.OaepSHA256);
+                    rsa.Decrypt(Convert.FromBase64String(toDecrypt), RSAEncryptionPadding.Pkcs1);
 #endif
 
                 return Encoding.UTF8.GetString(decryptedBytes);

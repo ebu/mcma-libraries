@@ -11,13 +11,15 @@ using Mcma.Api.Routes;
 
 namespace Mcma.Api
 {
-
     public class McmaApiController
     {
-        public McmaApiController(McmaApiRouteCollection routes = null)
+        public McmaApiController(McmaApiRouteCollection routes = null, ILoggerProvider loggerProvider = null)
         {
             Routes = routes ?? new McmaApiRouteCollection();
+            LoggerProvider = loggerProvider;
         }
+
+        private ILoggerProvider LoggerProvider { get; }
 
         private IDictionary<string, string> GetDefaultResponseHeaders()
             => new Dictionary<string, string>
@@ -31,6 +33,8 @@ namespace Mcma.Api
 
         public async Task<McmaApiResponse> HandleRequestAsync(McmaApiRequestContext requestContext)
         {
+            var logger = LoggerProvider?.Get(requestContext.GetTracker()) ?? Logger.System;
+
             var request = requestContext.Request;
             var response = requestContext.Response;
             
@@ -149,12 +153,13 @@ namespace Mcma.Api
             }
             catch (Exception ex)
             {
-                Logger.System.Error(ex.ToString());
-
                 response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 response.Headers = GetDefaultResponseHeaders();
                 response.JsonBody = new McmaApiError(response.StatusCode, ex.ToString(), request.Path).ToMcmaJson();
             }
+
+            if ((int)response.StatusCode >= 400)
+                logger.Error($"{request.HttpMethod} {request.Path} finished with error status of {response.StatusCode}", request.ToMcmaJson(), response.ToMcmaJson());
 
             return response;
         }

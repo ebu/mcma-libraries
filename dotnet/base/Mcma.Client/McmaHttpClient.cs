@@ -12,7 +12,7 @@ namespace Mcma.Client
 {
     public class McmaHttpClient
     {
-        public McmaHttpClient(HttpClient httpClient, IAuthenticator authenticator = null, string baseUrl = null)
+        public McmaHttpClient(HttpClient httpClient = null, IAuthenticator authenticator = null, string baseUrl = null)
         {
             HttpClient = httpClient ?? new HttpClient();
             Authenticator = authenticator;

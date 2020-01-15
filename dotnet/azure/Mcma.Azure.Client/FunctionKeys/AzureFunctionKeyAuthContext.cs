@@ -1,4 +1,4 @@
-namespace Mcma.Azure.Client
+namespace Mcma.Azure.Client.FunctionKeys
 {
     public class AzureFunctionKeyAuthContext
     {

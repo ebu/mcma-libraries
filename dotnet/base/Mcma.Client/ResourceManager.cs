@@ -60,6 +60,8 @@ namespace Mcma.Client
                 AuthProvider
             );
 
+        public ServiceClient GetServiceClient(Service service) => new ServiceClient(HttpClient, service, AuthProvider);
+
         public async Task InitAsync()
         {
             try
@@ -73,7 +75,7 @@ namespace Mcma.Client
 
                 var response = await servicesEndpoint.GetCollectionAsync<Service>(throwIfAnyFailToDeserialize: false);
 
-                Services.AddRange(response.Select(svc => new ServiceClient(HttpClient, svc, AuthProvider)));
+                Services.AddRange(response.Select(GetServiceClient));
             }
             catch (Exception error)
             {

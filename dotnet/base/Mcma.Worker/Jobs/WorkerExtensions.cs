@@ -13,6 +13,8 @@ namespace Mcma.Worker
             if (operation.Profiles.Count == 0)
                 throw new Exception($"No profiles registered for job type {typeof(TJob).Name}.");
 
+            worker.AddOperation(operation);
+
             return worker;
         }
     }

@@ -1,20 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
     <PackageVersion>0.8.6-beta1</PackageVersion>
     <LangVersion>latest</LangVersion>
+    <Description>Encryption algorithms used in the EBU MCMA framework</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageOutputPath>bin/packages</PackageOutputPath>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\..\base\Mcma.Core\Mcma.Core.csproj" />
+    <ProjectReference Include="..\Mcma.Core\Mcma.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.CloudWatchLogs" Version="3.3.101.54" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net45'" />
   </ItemGroup>
 
 </Project>

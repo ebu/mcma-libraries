@@ -1,5 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageVersion>0.8.6-beta1</PackageVersion>
+    <LangVersion>latest</LangVersion>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageOutputPath>bin/packages</PackageOutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\base\Mcma.Core\Mcma.Core.csproj" />
   </ItemGroup>
@@ -8,12 +16,5 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Core" Version="3.0.11" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>7.1</LangVersion>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageOutputPath>bin/packages</PackageOutputPath>
-  </PropertyGroup>
 
 </Project>

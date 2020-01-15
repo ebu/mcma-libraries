@@ -2,8 +2,9 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Mcma.Client;
+using Mcma.Encryption;
 
-namespace Mcma.Azure.Client
+namespace Mcma.Azure.Client.FunctionKeys
 {
     public class AzureFunctionKeyAuthenticator : IAuthenticator
     {
@@ -20,7 +21,7 @@ namespace Mcma.Azure.Client
         public Task SignAsync(HttpRequestMessage request)
         {
             request.Headers.Add(AzureConstants.FunctionKeyHeader, FunctionKey.Value);
-#if NET45
+#if NET452
             return Task.FromResult(true);
 #else
             return Task.CompletedTask;

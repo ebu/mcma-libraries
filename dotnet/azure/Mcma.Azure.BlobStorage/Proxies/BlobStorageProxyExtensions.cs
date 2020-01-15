@@ -22,7 +22,7 @@ namespace Mcma.Azure.BlobStorage.Proxies
         private static CloudBlobClient GetBlobClient(IContextVariableProvider contextVariableProvider, string storageAccountName)
         {
             var accountNameSetting =
-                contextVariableProvider.GetAllContextVariables()
+                contextVariableProvider.GetAllContextVariables()                        
                                        .Where(kvp => !kvp.Key.StartsWith("APPSETTING_"))
                                        .FirstOrDefault(kvp => kvp.Key.EndsWith(StorageAccountNameKeySuffix, StringComparison.OrdinalIgnoreCase)
                                                               && kvp.Value.Equals(storageAccountName, StringComparison.OrdinalIgnoreCase));

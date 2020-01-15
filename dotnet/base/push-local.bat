@@ -1,6 +1,9 @@
 dotnet pack base/Mcma.Core -p:PackageVersion=%1
 dotnet nuget push base/Mcma.Core/bin/packages/Mcma.Core.%1.nupkg -s=Local
 
+dotnet pack base/Mcma.Encryption -p:PackageVersion=%1
+dotnet nuget push base/Mcma.Encryption/bin/packages/Mcma.Encryption.%1.nupkg -s=Local
+
 dotnet pack base/Mcma.Client -p:PackageVersion=%1
 dotnet nuget push base/Mcma.Client/bin/packages/Mcma.Client.%1.nupkg -s=Local
 
