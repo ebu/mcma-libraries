@@ -1,7 +1,7 @@
 {
-    "name": "@mcma/worker",
+    "name": "@mcma/azure-client",
     "version": "0.8.6-beta1",
-    "description": "Node module for building worker services based on the EBU MCMA framework",
+    "description": "Node module providing functionality for communicating with MCMA services hosted on Azure",
     "engines": {
         "node": "~10.16.3"
     },
@@ -15,23 +15,29 @@
     },
     "keywords": [
         "ebu",
-        "mcma"
+        "mcma",
+        "azure"
     ],
     "author": "Evan Verney-Fink <evan@triskel-inc.com>",
     "license": "Apache-2.0",
     "bugs": {
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
-    "homepage": "https://github.com/ebu/mcma-libraries/nodes/mcma-worker#readme",
+    "homepage": "https://github.com/ebu/mcma-libraries/nodejs/azure/client#readme",
+    "dependencies": {
+        "@azure/identity": "^1.0.2",
+        "@azure/msal": "^1.2.0",
+        "@mcma/encryption": "^0.8.4",
+        "jsbn": "^1.1.0"
+    },
     "peerDependencies": {
         "@mcma/client": "0.8.6-beta1",
-        "@mcma/core": "0.8.6-beta1",
-        "@mcma/data": "0.8.6-beta1"
+        "@mcma/core": "0.8.6-beta1"
     },
     "devDependencies": {
         "@mcma/client": "0.8.6-beta1",
         "@mcma/core": "0.8.6-beta1",
-        "@mcma/data": "0.8.6-beta1",
+        "@types/jsbn": "^1.2.29",
         "jasmine": "^3.2.0"
     }
 }

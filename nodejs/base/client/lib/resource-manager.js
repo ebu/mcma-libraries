@@ -76,7 +76,7 @@ class ResourceManager {
 
                     usedHttpEndpoints[resourceEndpoint.httpEndpoint] = true;
                 } catch (error) {
-                    console.error("Failed to retrieve '" + resourceType + "' from endpoint '" + resourceEndpoint.httpEndpoint + "'");
+                    console.error("Failed to retrieve '" + resourceType + "' from endpoint '" + resourceEndpoint.httpEndpoint + "'", error);
                 }
             }
 

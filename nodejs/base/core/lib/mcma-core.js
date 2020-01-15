@@ -100,6 +100,18 @@ class Service extends Resource {
         this.checkProperty("jobType", "string", false);
         this.checkProperty("jobProfiles", "Array", false);
 
+        if (properties.authContext) {
+            if (typeof properties.authContext === "string") {
+                try {
+                    this.authContext = JSON.parse(properties.authContext);
+                } catch {
+                    this.authContext = properties.authContext;
+                }
+            } else {
+                this.authContext = properties.authContext;
+            }
+        }
+
         for (let i = 0; i < this.resources.length; i++) {
             this.resources[i] = new ResourceEndpoint(this.resources[i]);
         }
@@ -168,6 +180,7 @@ class JobBase extends Resource {
         this.checkProperty("status", "string", false);
         this.checkProperty("statusMessage", "string", false);
         this.checkProperty("jobOutput", "resource", false);
+        this.checkProperty("progress", "number", false);
 
         if (typeof this.tracker === "object") {
             this.tracker = new McmaTracker(this.tracker);

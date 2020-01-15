@@ -8,7 +8,7 @@ export interface HttpRequestConfig extends AxiosRequestConfig {
 }
 
 export interface Authenticator {
-    sign(config: HttpRequestConfig): void;
+    sign(config: HttpRequestConfig): void | Promise<void>;
 }
 
 export type AuthenticatorFactory = (authContext?: any) => Authenticator;
@@ -18,6 +18,8 @@ export class AuthProvider {
 
     add(authType: string, authenticatorFactory: AuthenticatorFactory): void;
     get(authType: string, authContext?: any): Authenticator;
+
+    addAccessTokenAuth<T>(tokenProvider: AccessTokenProvider<T>, authType?: string): AuthProvider;
 }
 
 export interface Http {
@@ -99,4 +101,19 @@ export class ResourceManagerProvider {
 export namespace McmaHeaders {
     export const prefix: string;
     export const tracker: string;
+}
+
+export interface AccessToken {
+    accessToken: string;
+    expiresOn: Date | number;
+}
+
+export interface AccessTokenProvider<T> {
+    getAccessToken(authContext: T): Promise<AccessToken>;
+}
+
+export class AccessTokenAuthenticator<T> implements Authenticator {
+    constructor(tokenProvider: AccessTokenProvider<T>, authContext: T);
+
+    sign(config: HttpRequestConfig): void | Promise<void>;
 }

@@ -33,7 +33,7 @@ async function request(config, authenticator) {
             throw new Exception("HttpClient: Provided authenticator does not define the required sign() function.");
         }
 
-        authenticator.sign(config);
+        await authenticator.sign(config);
     }
 
     // add tracker header, if a tracker is present

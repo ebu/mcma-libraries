@@ -4,6 +4,7 @@ const { ServiceClient } = require("./lib/service-client");
 const { ResourceManager, ResourceManagerProvider } = require("./lib/resource-manager");
 const { AuthProvider } = require("./lib/auth-provider");
 const { McmaHeaders } = require("./lib/headers");
+const { AccessTokenAuthenticator } = require("./lib/access-token-authenticator");
 require("./lib/context-variable-provider-ext");
 
 module.exports = {
@@ -13,5 +14,6 @@ module.exports = {
     ResourceManager,
     ResourceManagerProvider,
     AuthProvider,
-    McmaHeaders
+    McmaHeaders,
+    AccessTokenAuthenticator
 };

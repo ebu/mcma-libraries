@@ -139,6 +139,7 @@ export interface JobBaseProperties {
     status?: string;
     statusMessage?: string;
     jobOutput?: JobParameterBag;
+    progress?: number;
 }
 
 export abstract class JobBase extends Resource implements JobBaseProperties {
@@ -149,6 +150,7 @@ export abstract class JobBase extends Resource implements JobBaseProperties {
     status?: string;
     statusMessage?: string;
     jobOutput?: JobParameterBag;
+    progress?: number;
 }
 
 export interface JobProcessProperties extends JobBaseProperties {
