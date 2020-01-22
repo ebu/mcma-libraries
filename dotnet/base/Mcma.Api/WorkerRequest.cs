@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Mcma.Core;
 
 namespace Mcma.Api
 {
@@ -9,5 +10,7 @@ namespace Mcma.Api
         public IDictionary<string, string> ContextVariables { get; set; }
 
         public object Input { get; set; }
+
+        public McmaTracker Tracker { get; set; }
     }
 }

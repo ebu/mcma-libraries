@@ -22,11 +22,12 @@ class AzureAdPublicClientAccessTokenProvider {
         }
 
         const userAgentApplication = new UserAgentApplication(options);
+        const scopePromises = {};
 
         const resolveAccount = () => {
             userAccount = userAccount || userAgentApplication.getAccount();
             return userAccount ? Promise.resolve(userAccount) : userAgentApplication.loginPopup({ scopes: [scope] }).then(authResp => authResp.account);
-        }
+        };
         
         this.getAccessToken = (authContext) => {
             // ensure scope was provided
@@ -35,42 +36,38 @@ class AzureAdPublicClientAccessTokenProvider {
                 throw new Exception("Azure AD auth context specify must a scope.");
             }
 
-            return new Promise((resolve, reject) => {
-                // handle redirects
-                userAgentApplication.handleRedirectCallback(
-                    authResp => resolve({
-                        accessToken: authResp.accessToken,
-                        expiresOn: authResp.expiresOn.getTime()
-                    }),
-                    errorResp => reject(errorResp)
-                );
-
-                resolveAccount()
-                    .then(account =>
-                        userAgentApplication.acquireTokenSilent({ scopes: [scope], account })
-                            .then(authResp => resolve({
-                                accessToken: authResp.accessToken,
-                                expiresOn: authResp.expiresOn.getTime()
-                            }))
-                            .catch(error => {
-                                if (requiresInteraction(error)) {
-                                    userAgentApplication.acquireTokenPopup({ scopes: [scope], account })
-                                        .then(authResp => {
-                                            userAccount = authResp.account;
-                                            
-                                            resolve({
-                                                accessToken: authResp.accessToken,
-                                                expiresOn: authResp.expiresOn.getTime()
-                                            });
-                                        })
-                                        .catch(innerError => reject(innerError));
-                                } else {
-                                    reject(error);
-                                }
-                            })
+            if (!scopePromises[scope]) {
+                scopePromises[scope] = new Promise((resolve, reject) =>
+                    resolveAccount()
+                        .then(account =>
+                            userAgentApplication.acquireTokenSilent({ scopes: [scope], account })
+                                .then(authResp => resolve({
+                                    accessToken: authResp.accessToken,
+                                    expiresOn: authResp.expiresOn.getTime()
+                                }))
+                                .catch(error => {
+                                    if (requiresInteraction(error.errorCode)) {
+                                        userAgentApplication.acquireTokenPopup({ scopes: [scope], account })
+                                            .then(authResp => {
+                                                userAccount = authResp.account;
+                                                
+                                                resolve({
+                                                    accessToken: authResp.accessToken,
+                                                    expiresOn: authResp.expiresOn.getTime()
+                                                });
+                                            })
+                                            .catch(innerError => reject(innerError));
+                                    } else {
+                                        reject(error);
+                                    }
+                                })
+                        )
+                        .catch(err => reject(err))
                     )
-                    .catch(err => reject(err));
-            });
+                    .finally(() => delete scopePromises[scope]);
+            }
+
+            return scopePromises[scope];
         }
     }
 }

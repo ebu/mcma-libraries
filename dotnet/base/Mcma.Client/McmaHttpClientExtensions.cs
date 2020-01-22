@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Mcma.Core;
 using Mcma.Core.Serialization;
 
 namespace Mcma.Client
@@ -25,40 +26,44 @@ namespace Mcma.Client
         public static async Task<object[]> ReadAsArrayFromJsonAsync(this Task<HttpResponseMessage> responseTask, Type objectType)
             => await (await responseTask.WithErrorHandling()).Content.ReadAsArrayFromJsonAsync(objectType);
 
-        public static async Task<HttpResponseMessage> PostAsJsonAsync(this McmaHttpClient client, string url, object body)
-            => await client.PostAsync(url, new StringContent(body.ToMcmaJson().ToString(), Encoding.UTF8, "application/json"));
+        public static async Task<HttpResponseMessage> PostAsJsonAsync(this McmaHttpClient client, string url, object body, IDictionary<string, string> headers = null, McmaTracker tracker = null)
+            => await client.PostAsync(url, new StringContent(body.ToMcmaJson().ToString(), Encoding.UTF8, "application/json"), headers, tracker);
 
-        public static async Task<HttpResponseMessage> PutAsJsonAsync(this McmaHttpClient client, string url, object body)
-            => await client.PutAsync(url, new StringContent(body.ToMcmaJson().ToString(), Encoding.UTF8, "application/json"));
+        public static async Task<HttpResponseMessage> PutAsJsonAsync(this McmaHttpClient client, string url, object body, IDictionary<string, string> headers = null, McmaTracker tracker = null)
+            => await client.PutAsync(url, new StringContent(body.ToMcmaJson().ToString(), Encoding.UTF8, "application/json"), headers, tracker);
 
-        public static async Task<HttpResponseMessage> PatchAsJsonAsync(this McmaHttpClient client, string url, object body)
-            => await client.PatchAsync(url, new StringContent(body.ToMcmaJson().ToString(), Encoding.UTF8, "application/json"));
+        public static async Task<HttpResponseMessage> PatchAsJsonAsync(this McmaHttpClient client, string url, object body, IDictionary<string, string> headers = null, McmaTracker tracker = null)
+            => await client.PatchAsync(url, new StringContent(body.ToMcmaJson().ToString(), Encoding.UTF8, "application/json"), headers, tracker);
 
         public static async Task<T> GetAndReadAsObjectFromJsonAsync<T>(this McmaHttpClient client,
                                                                        string url,
                                                                        IDictionary<string, string> queryParams = null,
-                                                                       IDictionary<string, string> headers = null)
+                                                                       IDictionary<string, string> headers = null,
+                                                                       McmaTracker tracker = null)
             where T : class
-            => await client.GetAsync(url, queryParams, headers).ReadAsObjectFromJsonAsync<T>();
+            => await client.GetAsync(url, queryParams, headers, tracker).ReadAsObjectFromJsonAsync<T>();
 
         public static async Task<object> GetAndReadAsObjectFromJsonAsync(this McmaHttpClient client,
                                                                          Type objectType,
                                                                          string url,
                                                                          IDictionary<string, string> queryParams = null,
-                                                                         IDictionary<string, string> headers = null)
-            => await client.GetAsync(url, queryParams, headers).ReadAsObjectFromJsonAsync(objectType);
+                                                                         IDictionary<string, string> headers = null,
+                                                                         McmaTracker tracker = null)
+            => await client.GetAsync(url, queryParams, headers, tracker).ReadAsObjectFromJsonAsync(objectType);
 
         public static async Task<T[]> GetAndReadAsArrayFromJsonAsync<T>(this McmaHttpClient client,
                                                                         string url,
                                                                         IDictionary<string, string> queryParams = null,
-                                                                        IDictionary<string, string> headers = null)
-            => await client.GetAsync(url, queryParams, headers).ReadAsArrayFromJsonAsync<T>();
+                                                                        IDictionary<string, string> headers = null,
+                                                                        McmaTracker tracker = null)
+            => await client.GetAsync(url, queryParams, headers, tracker).ReadAsArrayFromJsonAsync<T>();
 
         public static async Task<object[]> GetAndReadAsArrayFromJsonAsync(this McmaHttpClient client,
                                                                           Type objectType,
                                                                           string url,
                                                                           IDictionary<string, string> queryParams = null,
-                                                                          IDictionary<string, string> headers = null)
-            => await client.GetAsync(url, queryParams, headers).ReadAsArrayFromJsonAsync(objectType);
+                                                                          IDictionary<string, string> headers = null,
+                                                                          McmaTracker tracker = null)
+            => await client.GetAsync(url, queryParams, headers, tracker).ReadAsArrayFromJsonAsync(objectType);
     }
 }

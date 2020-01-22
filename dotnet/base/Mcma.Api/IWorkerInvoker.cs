@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Mcma.Core;
 
 namespace Mcma.Api
 {
@@ -7,6 +8,11 @@ namespace Mcma.Api
 
     public interface IWorkerInvoker
     {
-        Task InvokeAsync(string workerFunctionId, string operationName, IDictionary<string, string> contextVariables = null, object input = null);
+        Task InvokeAsync(
+            string workerFunctionId,
+            string operationName,
+            IDictionary<string, string> contextVariables = null,
+            object input = null,
+            McmaTracker tracker = null);
     }
 }

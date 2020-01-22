@@ -79,50 +79,115 @@ namespace Mcma.Client
             return (await response.Content.ReadAsArrayFromJsonAsync(resourceType, throwIfAnyFailToDeserialize)).OfType<McmaResource>().ToArray();
         }
 
-        public async Task<HttpResponseMessage> GetAsync(string url = null)
-            => await ExecuteAsync(async httpClient => await httpClient.GetAsync(url));
+        public async Task<HttpResponseMessage> GetAsync(string url = null,
+                                                        IDictionary<string, string> queryParams = null,
+                                                        IDictionary<string, string> headers = null,
+                                                        McmaTracker tracker = null)
+            => await ExecuteAsync(async httpClient => await httpClient.GetAsync(url, queryParams, headers, tracker));
 
-        public async Task<McmaResource> GetAsync(Type resourceType, string url = null)
-            => await ExecuteObjectAsync(resourceType, async httpClient => await httpClient.GetAsync(url));
+        public async Task<McmaResource> GetAsync(Type resourceType,
+                                                 string url = null,
+                                                 IDictionary<string, string> queryParams = null,
+                                                 IDictionary<string, string> headers = null,
+                                                 McmaTracker tracker = null)
+            => await ExecuteObjectAsync(resourceType, async httpClient => await httpClient.GetAsync(url, queryParams, headers, tracker));
 
-        public async Task<T> GetAsync<T>(string url = null) where T : McmaResource
-            => await ExecuteObjectAsync<T>(async httpClient => await httpClient.GetAsync(url));
+        public async Task<T> GetAsync<T>(string url = null,
+                                         IDictionary<string, string> queryParams = null,
+                                         IDictionary<string, string> headers = null,
+                                         McmaTracker tracker = null)
+            where T : McmaResource
+            => await ExecuteObjectAsync<T>(async httpClient => await httpClient.GetAsync(url, queryParams, headers, tracker));
 
-        public async Task<IEnumerable<T>> GetCollectionAsync<T>(string url = null, IDictionary<string, string> filter = null, bool throwIfAnyFailToDeserialize = true)
-            => await ExecuteCollectionAsync<T>(async httpClient => await httpClient.GetAsync(url, filter), throwIfAnyFailToDeserialize);
+        public async Task<IEnumerable<T>> GetCollectionAsync<T>(string url = null,
+                                                                IDictionary<string, string> filter = null,
+                                                                IDictionary<string, string> headers = null,
+                                                                McmaTracker tracker = null,
+                                                                bool throwIfAnyFailToDeserialize = true)
+            => await ExecuteCollectionAsync<T>(async httpClient => await httpClient.GetAsync(url, filter, headers, tracker), throwIfAnyFailToDeserialize);
 
-        public async Task<IEnumerable<McmaResource>> GetCollectionAsync(Type resourceType, string url = null, IDictionary<string, string> filter = null, bool throwIfAnyFailToDeserialize = true)
-            => await ExecuteCollectionAsync(resourceType, async httpClient => await httpClient.GetAsync(url, filter), throwIfAnyFailToDeserialize);
+        public async Task<IEnumerable<McmaResource>> GetCollectionAsync(Type resourceType,
+                                                                        string url = null,
+                                                                        IDictionary<string, string> filter = null,
+                                                                        IDictionary<string, string> headers = null,
+                                                                        McmaTracker tracker = null,
+                                                                        bool throwIfAnyFailToDeserialize = true)
+            => await ExecuteCollectionAsync(resourceType, async httpClient => await httpClient.GetAsync(url, filter, headers, tracker), throwIfAnyFailToDeserialize);
 
-        public async Task<HttpResponseMessage> PostAsync(object body, string url = null)
-            => await ExecuteAsync(async httpClient => await httpClient.PostAsJsonAsync(url, body));
+        public async Task<HttpResponseMessage> PostAsync(object body,
+                                                         string url = null,
+                                                         IDictionary<string, string> queryParams = null,
+                                                         IDictionary<string, string> headers = null,
+                                                         McmaTracker tracker = null)
+            => await ExecuteAsync(async httpClient => await httpClient.PostAsJsonAsync(url, body, headers, tracker));
 
-        public async Task<McmaResource> PostAsync(Type resourceType, McmaResource body, string url = null)
-            => await ExecuteObjectAsync(resourceType, async httpClient => await httpClient.PostAsJsonAsync(url, body));
+        public async Task<McmaResource> PostAsync(Type resourceType,
+                                                  McmaResource body,
+                                                  string url = null,
+                                                  IDictionary<string, string> queryParams = null,
+                                                  IDictionary<string, string> headers = null,
+                                                  McmaTracker tracker = null)
+            => await ExecuteObjectAsync(resourceType, async httpClient => await httpClient.PostAsJsonAsync(url, body, headers, tracker));
 
-        public async Task<T> PostAsync<T>(T body, string url = null) where T : McmaResource
-            => await ExecuteObjectAsync<T>(async httpClient => await httpClient.PostAsJsonAsync(url, body));
+        public async Task<T> PostAsync<T>(T body,
+                                          string url = null,
+                                          IDictionary<string, string> queryParams = null,
+                                          IDictionary<string, string> headers = null,
+                                          McmaTracker tracker = null)
+            where T : McmaResource
+            => await ExecuteObjectAsync<T>(async httpClient => await httpClient.PostAsJsonAsync(url, body, headers, tracker));
 
-        public async Task<HttpResponseMessage> PutAsync(object body, string url = null)
-            => await ExecuteAsync(async httpClient => await httpClient.PutAsJsonAsync(GetUrl(url, body), body));
+        public async Task<HttpResponseMessage> PutAsync(object body,
+                                                        string url = null,
+                                                        IDictionary<string, string> queryParams = null,
+                                                        IDictionary<string, string> headers = null,
+                                                        McmaTracker tracker = null)
+            => await ExecuteAsync(async httpClient => await httpClient.PutAsJsonAsync(GetUrl(url, body), body, headers, tracker));
 
-        public async Task<McmaResource> PutAsync(Type resourceType, McmaResource body, string url = null)
-            => await ExecuteObjectAsync(resourceType, async httpClient => await httpClient.PutAsJsonAsync(GetUrl(url, body), body));
+        public async Task<McmaResource> PutAsync(Type resourceType,
+                                                 McmaResource body,
+                                                 string url = null,
+                                                 IDictionary<string, string> queryParams = null,
+                                                 IDictionary<string, string> headers = null,
+                                                 McmaTracker tracker = null)
+            => await ExecuteObjectAsync(resourceType, async httpClient => await httpClient.PutAsJsonAsync(GetUrl(url, body), body, headers, tracker));
 
-        public async Task<T> PutAsync<T>(T body, string url = null) where T : McmaResource
-            => await ExecuteObjectAsync<T>(async httpClient => await httpClient.PutAsJsonAsync(GetUrl(url, body), body));
+        public async Task<T> PutAsync<T>(T body,
+                                         string url = null,
+                                         IDictionary<string, string> queryParams = null,
+                                         IDictionary<string, string> headers = null,
+                                         McmaTracker tracker = null)
+            where T : McmaResource
+            => await ExecuteObjectAsync<T>(async httpClient => await httpClient.PutAsJsonAsync(GetUrl(url, body), body, headers, tracker));
 
-        public async Task<HttpResponseMessage> PatchAsync(object body, string url = null)
-            => await ExecuteAsync(async httpClient => await httpClient.PatchAsJsonAsync(GetUrl(url, body), body));
+        public async Task<HttpResponseMessage> PatchAsync(object body,
+                                                          string url = null,
+                                                          IDictionary<string, string> queryParams = null,
+                                                          IDictionary<string, string> headers = null,
+                                                          McmaTracker tracker = null)
+            => await ExecuteAsync(async httpClient => await httpClient.PatchAsJsonAsync(GetUrl(url, body), body, headers, tracker));
 
-        public async Task<McmaResource> PatchAsync(Type resourceType, McmaResource body, string url = null)
-            => await ExecuteObjectAsync(resourceType, async httpClient => await httpClient.PatchAsJsonAsync(GetUrl(url, body), body));
+        public async Task<McmaResource> PatchAsync(Type resourceType,
+                                                   McmaResource body,
+                                                   string url = null,
+                                                   IDictionary<string, string> queryParams = null,
+                                                   IDictionary<string, string> headers = null,
+                                                   McmaTracker tracker = null)
+            => await ExecuteObjectAsync(resourceType, async httpClient => await httpClient.PatchAsJsonAsync(GetUrl(url, body), body, headers, tracker));
 
-        public async Task<T> PatchAsync<T>(T body, string url = null) where T : McmaResource
-            => await ExecuteObjectAsync<T>(async httpClient => await httpClient.PatchAsJsonAsync(GetUrl(url, body), body));
+        public async Task<T> PatchAsync<T>(T body,
+                                           string url = null,
+                                           IDictionary<string, string> queryParams = null,
+                                           IDictionary<string, string> headers = null,
+                                           McmaTracker tracker = null)
+            where T : McmaResource
+            => await ExecuteObjectAsync<T>(async httpClient => await httpClient.PatchAsJsonAsync(GetUrl(url, body), body, headers, tracker));
 
-        public async Task<HttpResponseMessage> DeleteAsync(string url = null)
-            => await ExecuteAsync(async httpClient => await httpClient.DeleteAsync(url));
+        public async Task<HttpResponseMessage> DeleteAsync(string url = null,
+                                                           IDictionary<string, string> queryParams = null,
+                                                           IDictionary<string, string> headers = null,
+                                                           McmaTracker tracker = null)
+            => await ExecuteAsync(async httpClient => await httpClient.DeleteAsync(url, headers, tracker));
 
         private static string GetUrl(string url, object body)
             => body is McmaResource mcmaResource && !string.IsNullOrWhiteSpace(mcmaResource.Id) && string.IsNullOrWhiteSpace(url)

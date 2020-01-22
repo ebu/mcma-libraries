@@ -45,22 +45,7 @@ namespace Mcma.Api
 
             try
             {
-                var requestBodyOk = true;
-
-                if (requestContext.MethodSupportsRequestBody() && !string.IsNullOrWhiteSpace(request.Body))
-                {
-                    try
-                    {
-                        request.JsonBody = JToken.Parse(request.Body);
-                    }
-                    catch (Exception ex)
-                    {
-                        response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        response.JsonBody = new McmaApiError(response.StatusCode, ex.ToString(), request.Path).ToMcmaJson();
-                        requestBodyOk = false;
-                    }
-                }
-
+                var requestBodyOk = requestContext.ValidateRequestBodyJson();
                 if (requestBodyOk)
                 {
                     var methodsAllowed = string.Empty;

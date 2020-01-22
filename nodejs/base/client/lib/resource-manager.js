@@ -148,16 +148,25 @@ class ResourceManager {
         };
 
         this.delete = async (resource) => {
+            let resourceId;
+            if (typeof resource === "string") {
+                resourceId = resource;
+            } else if (typeof resource === "object" && resource.id) {
+                resourceId = resource.id;
+            } else {
+                throw new Error("Unexpected input of type '" + typeof resource + "' for ResourceManager.delete");
+            }
+
             if (serviceClients.length === 0) {
                 await this.init();
             }
 
-            let http = await this.getResourceEndpointClient(resource.id);
+            let http = await this.getResourceEndpointClient(resourceId);
             if (http === undefined) {
                 http = httpClient;
             }
 
-            let response = await http.delete(resource.id);
+            let response = await http.delete(resourceId);
             return response.data;
         };
 

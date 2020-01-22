@@ -82,8 +82,10 @@ namespace Mcma.Client
                 throw new Exception("ResourceManager: Failed to initialize", error);
             }
         }
+        
+        public Task<IEnumerable<T>> QueryAsync<T>(params (string, string)[] filter) => QueryAsync<T>(null, filter);
 
-        public async Task<IEnumerable<T>> QueryAsync<T>(params (string, string)[] filter)
+        public async Task<IEnumerable<T>> QueryAsync<T>(McmaTracker tracker, params (string, string)[] filter)
         {
             if (!Services.Any())
                 await InitAsync();
@@ -97,7 +99,7 @@ namespace Mcma.Client
                 {
                     if (!usedHttpEndpoints.ContainsKey(resourceEndpoint.HttpEndpoint))
                     {
-                        var response = await resourceEndpoint.GetCollectionAsync<T>(filter: filter.ToDictionary(x => x.Item1, x => x.Item2));
+                        var response = await resourceEndpoint.GetCollectionAsync<T>(filter: filter.ToDictionary(x => x.Item1, x => x.Item2), tracker: tracker);
                         results.AddRange(response);
                     }
 
@@ -112,7 +114,9 @@ namespace Mcma.Client
             return new ReadOnlyCollection<T>(results);
         }
 
-        public async Task<IEnumerable<McmaResource>> QueryAsync(Type resourceType, params (string, string)[] filter)
+        public Task<IEnumerable<McmaResource>> QueryAsync(Type resourceType, params (string, string)[] filter) => QueryAsync(resourceType, null, filter);
+
+        public async Task<IEnumerable<McmaResource>> QueryAsync(Type resourceType, McmaTracker tracker, params (string, string)[] filter)
         {
             if (!Services.Any())
                 await InitAsync();
@@ -126,7 +130,7 @@ namespace Mcma.Client
                 {
                     if (!usedHttpEndpoints.ContainsKey(resourceEndpoint.HttpEndpoint))
                     {
-                        var response = await resourceEndpoint.GetCollectionAsync(resourceType, filter: filter.ToDictionary(x => x.Item1, x => x.Item2));
+                        var response = await resourceEndpoint.GetCollectionAsync(resourceType, filter: filter.ToDictionary(x => x.Item1, x => x.Item2), tracker: tracker);
                         results.AddRange(response);
                     }
 
@@ -141,7 +145,7 @@ namespace Mcma.Client
             return new ReadOnlyCollection<McmaResource>(results);
         }
 
-        public async Task<T> CreateAsync<T>(T resource) where T : McmaResource
+        public async Task<T> CreateAsync<T>(T resource, McmaTracker tracker = null) where T : McmaResource
         {
             if (!Services.Any())
                 await InitAsync();
@@ -151,17 +155,17 @@ namespace Mcma.Client
                     .Select(s => s.GetResourceEndpointClient<T>())
                     .FirstOrDefault();
             if (resourceEndpoint != null)
-                return await resourceEndpoint.PostAsync<T>(resource);
+                return await resourceEndpoint.PostAsync<T>(resource, tracker: tracker);
 
             if (string.IsNullOrWhiteSpace(resource.Id))
                 throw new Exception($"There is no endpoint available for creating resources of type '{typeof(T).Name}', and the provided resource does not specify an endpoint in its 'id' property.");
 
-            var resp = await McmaHttpClient.PostAsJsonAsync(resource.Id, resource);
+            var resp = await McmaHttpClient.PostAsJsonAsync(resource.Id, resource, tracker: tracker);
             await resp.ThrowIfFailedAsync();
             return await resp.Content.ReadAsObjectFromJsonAsync<T>();
         }
 
-        public async Task<McmaResource> CreateAsync(Type resourceType, McmaResource resource)
+        public async Task<McmaResource> CreateAsync(Type resourceType, McmaResource resource, McmaTracker tracker = null)
         {
             if (!resourceType.IsInstanceOfType(resource))
                 throw new Exception($"Cannot update resource of type '{resourceType.Name}' with object of type '{resource?.GetType().Name ?? "(null)"}'.");
@@ -174,17 +178,17 @@ namespace Mcma.Client
                     .Select(s => s.GetResourceEndpointClient(resourceType))
                     .FirstOrDefault();
             if (resourceEndpoint != null)
-                return await resourceEndpoint.PostAsync(resourceType, resource);
+                return await resourceEndpoint.PostAsync(resourceType, resource, tracker: tracker);
 
             if (string.IsNullOrWhiteSpace(resource.Id))
                 throw new Exception($"There is no endpoint available for creating resources of type '{resourceType.Name}', and the provided resource does not specify an endpoint in its 'id' property.");
 
-            var resp = await McmaHttpClient.PostAsJsonAsync(resource.Id, resource);
+            var resp = await McmaHttpClient.PostAsJsonAsync(resource.Id, resource, tracker: tracker);
             await resp.ThrowIfFailedAsync();
             return (McmaResource) await resp.Content.ReadAsObjectFromJsonAsync(resourceType);
         }
 
-        public async Task<T> UpdateAsync<T>(T resource) where T : McmaResource
+        public async Task<T> UpdateAsync<T>(T resource, McmaTracker tracker = null) where T : McmaResource
         {
             if (!Services.Any())
                 await InitAsync();
@@ -194,14 +198,14 @@ namespace Mcma.Client
                     .Select(s => s.GetResourceEndpointClient<T>())
                     .FirstOrDefault(re => resource.Id.StartsWith(re.HttpEndpoint, StringComparison.OrdinalIgnoreCase));
             if (resourceEndpoint != null)
-                return await resourceEndpoint.PutAsync<T>(resource);
+                return await resourceEndpoint.PutAsync<T>(resource, tracker: tracker);
 
-            var resp = await McmaHttpClient.PutAsJsonAsync(resource.Id, resource);
+            var resp = await McmaHttpClient.PutAsJsonAsync(resource.Id, resource, tracker: tracker);
             await resp.ThrowIfFailedAsync();
             return await resp.Content.ReadAsObjectFromJsonAsync<T>();
         }
 
-        public async Task<McmaResource> UpdateAsync(Type resourceType, McmaResource resource)
+        public async Task<McmaResource> UpdateAsync(Type resourceType, McmaResource resource, McmaTracker tracker = null)
         {
             if (!resourceType.IsInstanceOfType(resource))
                 throw new Exception($"Cannot update resource of type '{resourceType.Name}' with object of type '{resource?.GetType().Name ?? "(null)"}'.");
@@ -214,18 +218,18 @@ namespace Mcma.Client
                     .Select(s => s.GetResourceEndpointClient(resourceType))
                     .FirstOrDefault(re => resource.Id.StartsWith(re.HttpEndpoint, StringComparison.OrdinalIgnoreCase));
             if (resourceEndpoint != null)
-                return await resourceEndpoint.PutAsync(resourceType, resource);
+                return await resourceEndpoint.PutAsync(resourceType, resource, tracker: tracker);
 
-            var resp = await McmaHttpClient.PutAsJsonAsync(resource.Id, resource);
+            var resp = await McmaHttpClient.PutAsJsonAsync(resource.Id, resource, tracker: tracker);
             await resp.ThrowIfFailedAsync();
             return (McmaResource) await resp.Content.ReadAsObjectFromJsonAsync(resourceType);
         }
 
-        public Task DeleteAsync(McmaResource resource) => DeleteAsync(resource.Type, resource.Id);
+        public Task DeleteAsync(McmaResource resource, McmaTracker tracker = null) => DeleteAsync(resource.Type, resource.Id, tracker: tracker);
 
-        public Task DeleteAsync<T>(string resourceId) => DeleteAsync(typeof(T).Name, resourceId);
+        public Task DeleteAsync<T>(string resourceId, McmaTracker tracker = null) => DeleteAsync(typeof(T).Name, resourceId, tracker: tracker);
 
-        private async Task DeleteAsync(string type, string resourceId)
+        private async Task DeleteAsync(string type, string resourceId, McmaTracker tracker)
         {
             if (!Services.Any())
                 await InitAsync();
@@ -237,8 +241,8 @@ namespace Mcma.Client
                     
             var resp =
                 resourceEndpoint != null
-                    ? await resourceEndpoint.DeleteAsync(resourceId)
-                    : await McmaHttpClient.DeleteAsync(resourceId);
+                    ? await resourceEndpoint.DeleteAsync(resourceId, tracker: tracker)
+                    : await McmaHttpClient.DeleteAsync(resourceId, tracker: tracker);
 
             await resp.ThrowIfFailedAsync();
         }
@@ -255,25 +259,25 @@ namespace Mcma.Client
                 .FirstOrDefault(re => url.StartsWith(re.HttpEndpoint, StringComparison.OrdinalIgnoreCase));
         }
 
-        public async Task<T> GetAsync<T>(string url) where T : McmaResource
+        public async Task<T> GetAsync<T>(string url, McmaTracker tracker = null) where T : McmaResource
         {
             var resourceEndpoint = await GetResourceEndpointAsync(url);
 
             return resourceEndpoint != null
-                ? await resourceEndpoint.GetAsync<T>(url)
-                : await McmaHttpClient.GetAndReadAsObjectFromJsonAsync<T>(url);
+                ? await resourceEndpoint.GetAsync<T>(url, tracker: tracker)
+                : await McmaHttpClient.GetAndReadAsObjectFromJsonAsync<T>(url, tracker: tracker);
         }
 
-        public async Task<McmaResource> GetAsync(Type resourceType, string url)
+        public async Task<McmaResource> GetAsync(Type resourceType, string url, McmaTracker tracker = null)
         {
             var resourceEndpoint = await GetResourceEndpointAsync(url);
 
             return resourceEndpoint != null
-                ? await resourceEndpoint.GetAsync(resourceType, url)
-                : (McmaResource) await McmaHttpClient.GetAndReadAsObjectFromJsonAsync(resourceType, url);
+                ? await resourceEndpoint.GetAsync(resourceType, url, tracker: tracker)
+                : (McmaResource) await McmaHttpClient.GetAndReadAsObjectFromJsonAsync(resourceType, url, tracker: tracker);
         }
 
-        public async Task SendNotificationAsync<T>(T resource, NotificationEndpoint notificationEndpoint) where T : McmaResource
+        public async Task SendNotificationAsync<T>(T resource, NotificationEndpoint notificationEndpoint, McmaTracker tracker = null) where T : McmaResource
         {
             if (string.IsNullOrWhiteSpace(notificationEndpoint?.HttpEndpoint))
                 return;
@@ -287,8 +291,8 @@ namespace Mcma.Client
             // send the notification via the ResourceEndpointClient, if found, or just via regular http otherwise
             var response =
                 resourceEndpoint != null
-                    ? await resourceEndpoint.PostAsync((object)notification, notificationEndpoint.HttpEndpoint)
-                    : await McmaHttpClient.PostAsJsonAsync(notificationEndpoint.HttpEndpoint, notification);
+                    ? await resourceEndpoint.PostAsync((object)notification, notificationEndpoint.HttpEndpoint, tracker: tracker)
+                    : await McmaHttpClient.PostAsJsonAsync(notificationEndpoint.HttpEndpoint, notification, tracker: tracker);
 
             // ensure that the notification was sent successfully
             await response.ThrowIfFailedAsync();

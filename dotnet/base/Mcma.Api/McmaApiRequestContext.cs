@@ -34,7 +34,25 @@ namespace Mcma.Api
 
         public string GetRequestHeader(string header) => Request?.Headers != null && Request.Headers.ContainsKey(header) ? Request.Headers[header] : null;
 
-        public JToken GetRequestBodyJson() => Request?.JsonBody;
+        public bool ValidateRequestBodyJson() => !MethodSupportsRequestBody() || string.IsNullOrWhiteSpace(Request?.Body) || GetRequestBodyJson() != null;
+
+        public JToken GetRequestBodyJson()
+        {
+            if (Request != null && Request.JsonBody == null && MethodSupportsRequestBody() && !string.IsNullOrWhiteSpace(Request.Body))
+            {
+                try
+                {
+                    Request.JsonBody = JToken.Parse(Request.Body);
+                }
+                catch (Exception ex)
+                {
+                    Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    Response.JsonBody = new McmaApiError(Response.StatusCode, ex.ToString(), Request.Path).ToMcmaJson();
+                }
+            }
+
+            return Request?.JsonBody;
+        }
 
         public T GetRequestBody<T>() where T : McmaObject => Request?.JsonBody?.ToMcmaObject<T>();
 
@@ -64,9 +82,14 @@ namespace Mcma.Api
             try
             {
                 // if we didn't find it in the header or query string, try the body
-                return GetRequestBodyJson() is JObject jsonBody
-                    ? jsonBody.GetValue(nameof(JobBase.Tracker), StringComparison.OrdinalIgnoreCase)?.ToMcmaObject<McmaTracker>()
-                    : null;
+                if (!(GetRequestBodyJson() is JObject jsonBody))
+                    return null;
+
+                var trackerProp = jsonBody.Properties().FirstOrDefault(j => j.Name.Equals(nameof(JobBase.Tracker), StringComparison.OrdinalIgnoreCase));
+                if (trackerProp == null)
+                    return null;
+
+                return trackerProp.Value?.ToMcmaObject<McmaTracker>();
             }
             catch (Exception e)
             {

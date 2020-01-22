@@ -1,6 +1,6 @@
 {
     "name": "@mcma/encryption",
-    "version": "0.8.6-beta1",
+    "version": "0.8.7",
     "description": "Encryption algorithms used in the EBU MCMA framework. Wraps the jsbn library from Tom Wu (http://www-cs-students.stanford.edu/~tjw/jsbn/).",
     "engines": {
         "node": "~10.16.3"

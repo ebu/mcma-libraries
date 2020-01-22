@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Mcma.Core;
 using Mcma.Core.Utility;
 using Mcma.Data;
@@ -60,20 +61,7 @@ namespace Mcma.Api.Routes.Defaults
             this DefaultRouteCollectionBuilder<JobAssignment> builder,
             IWorkerInvoker workerInvoker,
             Func<McmaApiRequestContext, IDictionary<string, string>> contextVariables = null)
-            =>
-            builder
-                .AddAll()
-                .Route(r => r.Create).Configure(
-                    rb =>
-                        rb.OnCompleted(
-                            (requestContext, jobAssignment) =>
-                                workerInvoker.InvokeAsync(
-                                    requestContext.WorkerFunctionId(),
-                                    "ProcessJobAssignment",
-                                    contextVariables?.Invoke(requestContext),
-                                    new { jobAssignmentId = jobAssignment.Id }
-                                ))
-                );
+            => builder.ForJobAssignments((_1, _2) => workerInvoker, contextVariables);
 
         public static DefaultRouteCollectionBuilder<JobAssignment> ForJobAssignments(
             this DefaultRouteCollectionBuilder<JobAssignment> builder,
@@ -83,16 +71,26 @@ namespace Mcma.Api.Routes.Defaults
             builder
                 .AddAll()
                 .Route(r => r.Create).Configure(
-                    rb =>
-                        rb.OnCompleted(
-                            (requestContext, jobAssignment) =>
+                    configure =>
+                        configure
+                            .OnStarted(requestContext =>
+                            {
+                                var jobAssignment = requestContext.GetRequestBody<JobAssignment>();
+                                if (jobAssignment.Tracker == null)
+                                    jobAssignment.Tracker = new McmaTracker { Id = Guid.NewGuid().ToString(), Label = jobAssignment.Type };
+
+                                return Task.CompletedTask;
+                            })
+                            .OnCompleted((requestContext, jobAssignment) =>
                                 createWorkerInvoker(requestContext, jobAssignment)
                                     .InvokeAsync(
                                         requestContext.WorkerFunctionId(),
                                         "ProcessJobAssignment",
                                         contextVariables?.Invoke(requestContext),
-                                        new { jobAssignmentId = jobAssignment.Id }
-                                    ))
+                                        new { jobAssignmentId = jobAssignment.Id },
+                                        jobAssignment.Tracker
+                                    )
+                            )
                 );
     }
 }
