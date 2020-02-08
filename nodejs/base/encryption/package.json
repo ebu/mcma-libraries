@@ -24,9 +24,10 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-encryption-nodejs#readme",
     "devDependencies": {
+        "@mcma/core": "0.8.7",
         "jasmine": "^3.4.0"
     },
-    "dependencies": {
-        "@mcma/core": "^0.8.5"
+    "peerDependencies": {
+        "@mcma/core": "0.8.7"
     }
 }

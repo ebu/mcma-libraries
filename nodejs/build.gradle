@@ -64,6 +64,11 @@ subprojects {
 
             object.version = VERSION
 
+            if (object.dependencies != null) {
+                object.dependencies.keySet().each {
+                    object.dependencies[it] = it.startsWith("@mcma/") ? VERSION : object.dependencies[it]
+                }
+            }
             if (object.peerDependencies != null) {
                 object.peerDependencies.keySet().each {
                     object.peerDependencies[it] = it.startsWith("@mcma/") ? VERSION : object.peerDependencies[it]
