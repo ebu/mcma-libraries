@@ -1,31 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Amazon.CloudWatchLogs;
-using Mcma.Core.Logging;
-
-using McmaLogger = Mcma.Core.Logging.Logger;
-using IMcmaLogger = Mcma.Core.Logging.ILogger;
 using Amazon.CloudWatchLogs.Model;
-using System.Linq;
 using Mcma.Core;
+using Mcma.Core.Logging;
 using Mcma.Core.Serialization;
 
 namespace Mcma.Aws.CloudWatch
 {
-    public class AwsCloudWatchLogger : McmaLogger
-    {
-        public AwsCloudWatchLogger(string source, McmaTracker tracker, Action<LogEvent> log)
-            : base(source, tracker)
-        {
-
-        }
-
-        protected override void Log(LogEvent logEvent)
-        {
-        }
-    }
-
     public class AwsCloudWatchLoggerProvider : LoggerProvider<AwsCloudWatchLogger>
     {
         public AwsCloudWatchLoggerProvider(string source, string logGroupName)

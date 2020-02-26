@@ -22,7 +22,7 @@ namespace Mcma.Core.Logging
                 TrackerId = Tracker?.Id ?? string.Empty,
                 TrackerLabel = Tracker?.Label ?? string.Empty,
                 Source = Source ?? string.Empty,
-                Timestamp = DateTimeOffset.Now,
+                Timestamp = DateTimeOffset.UtcNow,
                 Level = level,
                 Type = type,
                 Message = message,
