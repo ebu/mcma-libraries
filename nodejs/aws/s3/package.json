@@ -1,11 +1,12 @@
 {
     "name": "@mcma/aws-s3",
-    "version": "0.8.7",
+    "version": "0.9.0-beta6",
     "description": "Node module with code and type definitions for using S3 in an MCMA environment.",
     "engines": {
         "node": "~10.16.3"
     },
-    "main": "index.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "test": "jasmine"
     },
@@ -26,9 +27,10 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-data-dynamodb#readme",
     "peerDependencies": {
-        "@mcma/core": "0.8.7"
+        "@mcma/core": "0.9.0-beta6"
     },
     "devDependencies": {
-        "@mcma/core": "0.8.7"
+        "@mcma/core": "0.9.0-beta6",
+        "@types/node": "^13.7.6"
     }
 }

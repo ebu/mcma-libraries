@@ -1,6 +1,6 @@
 //"use strict";
 import { HttpStatusCode } from "./http-statuses";
-import { McmaApiRoute } from "../routing";
+import { McmaApiRoute, McmaApiRouteCollection } from "../routing";
 import { McmaApiRequestContext } from "./mcma-api-request-context";
 import { McmaApiError } from "./mcma-api-error";
 
@@ -13,8 +13,8 @@ const getDefaultResponseHeaders = () => {
 };
 
 export class McmaApiController {
-    constructor(private routes: McmaApiRoute[]) {
-        this.routes = this.routes || [];
+    constructor(private routes?: McmaApiRouteCollection) {
+        this.routes = this.routes || new McmaApiRouteCollection();
     }
 
     async handleRequest(requestContext: McmaApiRequestContext): Promise<void> {

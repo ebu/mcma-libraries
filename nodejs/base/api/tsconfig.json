@@ -10,6 +10,7 @@
             "es6",
             "es7"
         ],
-        "outDir": "dist"
+        "outDir": "dist",
+        "downlevelIteration": true
     }
 }

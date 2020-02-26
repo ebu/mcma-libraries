@@ -1,0 +1,50 @@
+{
+    "name": "@mcma/azure-api",
+    "version": "0.9.0-beta6",
+    "description": "Build MCMA APIs using Azure Function Apps",
+    "engines": {
+        "node": "~10.16.3"
+    },
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "test": "jasmine"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ebu/mcma-libraries.git"
+    },
+    "keywords": [
+        "ebu",
+        "mcma",
+        "azure"
+    ],
+    "author": "Evan Verney-Fink <evan@triskel-inc.com>",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/ebu/mcma-libraries/issues"
+    },
+    "homepage": "https://github.com/ebu/mcma-libraries/nodejs/azure/api#readme",
+    "dependencies": {
+        "@azure/identity": "^1.0.2",
+        "@azure/msal": "^1.2.0",
+        "@mcma/data": "^0.9.0-beta6",
+        "@mcma/encryption": "^0.8.4",
+        "jsbn": "^1.1.0"
+    },
+    "peerDependencies": {
+        "@mcma/api": "0.9.0-beta6",
+        "@mcma/client": "0.9.0-beta6",
+        "@mcma/core": "0.9.0-beta6",
+        "@mcma/data": "0.9.0-beta6"
+    },
+    "devDependencies": {
+        "@mcma/api": "0.9.0-beta6",
+        "@mcma/client": "0.9.0-beta6",
+        "@mcma/core": "0.9.0-beta6",
+        "@mcma/data": "0.9.0-beta6",
+        "@types/jsbn": "^1.2.29",
+        "@types/uri-templates": "^0.1.30",
+        "jasmine": "^3.2.0"
+    }
+}

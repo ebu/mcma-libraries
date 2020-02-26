@@ -1,7 +1,7 @@
 import { Utils, McmaResource, McmaResourceType } from "@mcma/core";
 
 export abstract class DbTable<T extends McmaResource> {
-    private type: string;
+    protected type: string;
 
     constructor(type: string | McmaResourceType<T>) {
         this.type = Utils.getTypeName(type);

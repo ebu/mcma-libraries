@@ -1,3 +1,3 @@
 import { Authenticator } from "./authenticator";
 
-export type AuthenticatorFactory = (authContext?: any) => Authenticator;
+export type AuthenticatorFactory<T> = (authContext?: T) => Authenticator;

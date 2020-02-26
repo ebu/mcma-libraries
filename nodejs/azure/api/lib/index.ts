@@ -1,0 +1,1 @@
+export * from "./azure-function-api-controller";

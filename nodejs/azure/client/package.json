@@ -1,11 +1,12 @@
 {
     "name": "@mcma/azure-client",
-    "version": "0.8.7",
+    "version": "0.9.0-beta6",
     "description": "Node module providing functionality for communicating with MCMA services hosted on Azure",
     "engines": {
         "node": "~10.16.3"
     },
-    "main": "index.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "test": "jasmine"
     },
@@ -27,17 +28,19 @@
     "dependencies": {
         "@azure/identity": "^1.0.2",
         "@azure/msal": "^1.2.0",
-        "@mcma/encryption": "^0.8.4",
         "jsbn": "^1.1.0"
     },
     "peerDependencies": {
-        "@mcma/client": "0.8.7",
-        "@mcma/core": "0.8.7"
+        "@mcma/client": "0.9.0-beta6",
+        "@mcma/core": "0.9.0-beta6",
+        "@mcma/encryption": "0.9.0-beta6"
     },
     "devDependencies": {
-        "@mcma/client": "0.8.7",
-        "@mcma/core": "0.8.7",
+        "@mcma/client": "0.9.0-beta6",
+        "@mcma/core": "0.9.0-beta6",
+        "@mcma/encryption": "^0.9.0-beta6",
         "@types/jsbn": "^1.2.29",
+        "@types/node": "^13.7.6",
         "jasmine": "^3.2.0"
     }
 }
