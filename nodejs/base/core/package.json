@@ -1,11 +1,12 @@
 {
     "name": "@mcma/core",
-    "version": "0.8.7",
+    "version": "0.9.0-beta1",
     "description": "Node module with type definitions and helper utils for the EBU MCMA framework",
     "engines": {
         "node": "~10.16.3"
     },
-    "main": "index.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "test": "jasmine"
     },
@@ -24,6 +25,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs#readme",
     "devDependencies": {
+        "@types/node": "^13.7.1",
         "jasmine": "^3.4.0"
     }
 }

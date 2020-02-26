@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "types": [
+            "node"
+        ],
+        "declaration": true,
+        "lib": [
+            "DOM",
+            "es6",
+            "es7"
+        ],
+        "outDir": "dist"
+    }
+}
