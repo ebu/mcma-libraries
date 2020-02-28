@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "types": [
+            "node"
+        ],
+        "declaration": true,
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "es6",
+            "es7"
+        ],
+        "outDir": "dist",
+        "downlevelIteration": true
+    }
+}

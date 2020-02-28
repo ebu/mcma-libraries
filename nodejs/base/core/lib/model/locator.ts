@@ -1,11 +1,7 @@
-import { McmaResourceProperties, McmaResource } from "./mcma-resource";
+import { McmaObject } from "./mcma-object";
 
-export interface LocatorProperties extends McmaResourceProperties {
-
-}
-
-export abstract class Locator<T extends LocatorProperties> extends McmaResource implements LocatorProperties {
-    constructor(type: string, properties: T) {
+export abstract class Locator extends McmaObject {
+    constructor(type: string, properties?: { [key: string]: any }) {
         super(type, properties);
     }
 }

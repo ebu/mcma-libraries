@@ -2,14 +2,22 @@ export function inMemoryTextValues<T>(filterValues: { [key: string]: string }): 
     if (!filterValues) {
         return null;
     }
-
-    return item => {
-        for (const propKey of Object.keys(filterValues)) {
-            if (item[propKey] !== undefined &&
-                (item[propKey] && item[propKey].toString()) !== (filterValues[propKey] && filterValues[propKey].toString())) {
-                return false;
-            }
-        }
-        return true;
-    };
+	
+	const functionTextPrefix = "item => ";
+	
+	let functionText = functionTextPrefix;
+	
+	for (const propKey of Object.keys(filterValues)) {
+        
+        const isString = typeof filterValues[propKey] === "string";
+        
+		functionText += functionText.length > functionTextPrefix.length ? " && "  : "";
+		functionText += "(item." + propKey + " === ";
+		functionText += isString ? "'" : "";
+        functionText += filterValues[propKey] ? filterValues[propKey].toString() : "null";
+		functionText += isString ? "'" : "";
+		functionText += ")";
+    }
+    
+    return eval(functionText);
 }

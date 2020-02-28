@@ -8,7 +8,7 @@ export class ApiGatewayApiController {
         this.mcmaApiController = new McmaApiController(routes);
     }
 
-    handleRequest = async (event: APIGatewayEvent, context: Context) => {
+    async handleRequest(event: APIGatewayEvent, context: Context) {
         const requestContext = new McmaApiRequestContext(
             new McmaApiRequest({
                 path: event.path,
@@ -28,5 +28,5 @@ export class ApiGatewayApiController {
             headers: requestContext.response.headers,
             body: requestContext.response.body
         };
-    };
+    }
 }
