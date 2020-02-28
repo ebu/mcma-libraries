@@ -1,5 +1,5 @@
 import { BlobServiceClient } from "@azure/storage-blob";
-import { ContextVariableProvider, Exception } from "@mcma/core";
+import { ContextVariableProvider, McmaException } from "@mcma/core";
 import { BlobStorageFileProxy } from "./blob-storage-file-proxy";
 import { BlobStorageFileLocator } from "../blob-storage-file-locator";
 import { BlobStorageFolderProxy } from "./blob-storage-folder-proxy";
@@ -26,7 +26,7 @@ export function getBlobClient(connectionStringOrContextVariableProvider: Context
                 allContextVariables[key].toLowerCase() === storageAccountName.toLowerCase());
 
     if (!accountNameSettingKey)
-        throw new Exception(`Storage account '${storageAccountName}' is not configured.`);
+        throw new McmaException(`Storage account '${storageAccountName}' is not configured.`);
     
     return getBlobClient(
         contextVariableProvider.getRequiredContextVariable(

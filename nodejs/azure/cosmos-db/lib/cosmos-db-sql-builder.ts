@@ -1,4 +1,4 @@
-import { McmaResource, McmaResourceType, Utils, Exception } from "@mcma/core";
+import { McmaResource, McmaResourceType, Utils, McmaException } from "@mcma/core";
 import { SqlQuerySpec, SqlParameter } from "@azure/cosmos";
 
 export class SqlBuilder<T extends McmaResource> {
@@ -17,7 +17,7 @@ export class SqlBuilder<T extends McmaResource> {
         const filterText = filter.toString();
         const filterStart = filterText.indexOf("=>");
         if (filterStart < 0) {
-            throw new Exception(`Invalid query ${filterText}. Filters must be arrow functions.`);
+            throw new McmaException(`Invalid query ${filterText}. Filters must be arrow functions.`);
         }
 
         const itemParameterName = filterText.substr(0, filterStart).trim();

@@ -1,4 +1,4 @@
-import { Exception } from "@mcma/core";
+import { McmaException } from "@mcma/core";
 import { AccessTokenProvider, AccessToken } from "@mcma/client";
 import { UserAgentApplication, Account } from "@azure/msal";
 
@@ -11,7 +11,7 @@ export class AzureAdPublicClientAccessTokenProvider implements AccessTokenProvid
 
     constructor(options: ConfigurationWithTenant, private userAccount?: Account) {
         if (!options.auth) {
-            throw new Exception("Azure AD public client options must specify an 'auth' object");
+            throw new McmaException("Azure AD public client options must specify an 'auth' object");
         }
         if (options.tenant && !options.auth.authority) {
             options.auth.authority = "https://login.microsoftonline.com/" + options.tenant;
@@ -44,7 +44,7 @@ export class AzureAdPublicClientAccessTokenProvider implements AccessTokenProvid
         // ensure scope was provided
         const scope = authContext && authContext.scope;
         if (!scope || scope.length === 0) {
-            throw new Exception("Azure AD auth context specify must a scope.");
+            throw new McmaException("Azure AD auth context specify must a scope.");
         }
 
         if (!this.scopePromises[scope]) {

@@ -1,10 +1,10 @@
-import { McmaResource, getTableName } from "@mcma/core";
+import { McmaResource, getTableName, McmaResourceType } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
 import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
 
-export function defaultGetBuilder<T extends McmaResource>(dbTableProvider: DbTableProvider, root: string): DefaultRouteBuilder<T> {
+export function defaultGetBuilder<T extends McmaResource>(type: McmaResourceType<T>, dbTableProvider: DbTableProvider, root: string): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "GET",
         root + "/{id}",
@@ -16,7 +16,7 @@ export function defaultGetBuilder<T extends McmaResource>(dbTableProvider: DbTab
                         return;
                     }
                 }
-                const resource = await dbTableProvider.get<T>(getTableName(requestContext)).get(getPublicUrl(requestContext) + requestContext.request.path);
+                const resource = await dbTableProvider.get<T>(getTableName(requestContext), type).get(getPublicUrl(requestContext) + requestContext.request.path);
                 if (onCompleted) {
                     await onCompleted(requestContext, resource);
                 }

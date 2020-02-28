@@ -1,4 +1,4 @@
-import { Exception, McmaResource, ContextVariableProvider, LoggerProvider } from "@mcma/core";
+import { McmaException, McmaResource, ContextVariableProvider, LoggerProvider } from "@mcma/core";
 import { AuthProvider, ResourceManagerProvider } from "@mcma/client";
 import { DbTableProvider } from "@mcma/data";
 
@@ -18,44 +18,44 @@ export class ProviderCollection implements Providers {
     private _resourceManagerProvider: ResourceManagerProvider;
 
     constructor(providers: Providers) {
-        this._authProvider = providers && providers.authProvider;
-        this._dbTableProvider = providers && providers.dbTableProvider;
-        this._contextVariableProvider = providers && providers.contextVariableProvider;
-        this._loggerProvider = providers && providers.loggerProvider;
-        this._resourceManagerProvider = providers && providers.resourceManagerProvider;
+        this._authProvider = providers?.authProvider;
+        this._dbTableProvider = providers?.dbTableProvider;
+        this._contextVariableProvider = providers?.contextVariableProvider;
+        this._loggerProvider = providers?.loggerProvider;
+        this._resourceManagerProvider = providers?.resourceManagerProvider;
     }
 
     get authProvider() {
         if (!this._authProvider) {
-            throw new Exception("AuthProvider not available");
+            throw new McmaException("AuthProvider not available");
         }
         return this._authProvider;
     }
 
     get dbTableProvider() {
         if (!this._dbTableProvider) {
-            throw new Exception("DbTableProvider not available");
+            throw new McmaException("DbTableProvider not available");
         }
         return this._dbTableProvider;
     }
 
     get environmentVariableProvider() {
         if (!this._contextVariableProvider) {
-            throw new Exception("EnvironmentVariableProvider not available");
+            throw new McmaException("EnvironmentVariableProvider not available");
         }
         return this._contextVariableProvider;
     }
 
     get loggerProvider() {
         if (!this._loggerProvider) {
-            throw new Exception("LoggerProvider not available");
+            throw new McmaException("LoggerProvider not available");
         }
         return this._loggerProvider;
     }
 
     get resourceManagerProvider() {
         if (!this._resourceManagerProvider) {
-            throw new Exception("ResourceManagerProvider not available");
+            throw new McmaException("ResourceManagerProvider not available");
         }
         return this._resourceManagerProvider;
     }

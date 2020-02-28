@@ -1,4 +1,4 @@
-import { JobAssignment, JobStatus, JobParameterBag, Exception, Logger, Job, JobProfile } from "@mcma/core";
+import { JobAssignment, JobStatus, JobParameterBag, McmaException, Logger, Job, JobProfile } from "@mcma/core";
 import { DbTable } from "@mcma/data";
 import { ResourceManager } from "@mcma/client";
 
@@ -43,7 +43,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
                 }
             }
             if (missingInputParams.length > 0) {
-                throw new Exception("One or more required input parameters are missing from the job: " + missingInputParams.join(", "));
+                throw new McmaException("One or more required input parameters are missing from the job: " + missingInputParams.join(", "));
             }
         }
     }
@@ -94,11 +94,11 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     async updateJobAssignment(update: (jobAssigment: JobAssignment) => void, sendNotification = false): Promise<JobAssignment> {
         let jobAssignment = this.jobAssignment;
         if (typeof update !== "function") {
-            throw new Exception("update must be a function that modifies the JobAssignment.");
+            throw new McmaException("update must be a function that modifies the JobAssignment.");
         }
         jobAssignment = await this.dbTable.get(this.jobAssignmentId);
         if (!jobAssignment) {
-            throw new Exception("JobAssignment with id '" + this.jobAssignmentId + "' not found.");
+            throw new McmaException("JobAssignment with id '" + this.jobAssignmentId + "' not found.");
         }
 
         update(jobAssignment);

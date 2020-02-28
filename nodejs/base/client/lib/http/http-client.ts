@@ -1,5 +1,5 @@
 //"use strict";
-import { Exception, Utils } from "@mcma/core";
+import { McmaException, Utils } from "@mcma/core";
 import axios, { AxiosResponse } from "axios";
 
 import { Authenticator } from "../auth";
@@ -11,7 +11,7 @@ export class HttpClient implements Http {
     constructor(private authenticator?: Authenticator) {
         if (authenticator) {
             if (typeof authenticator.sign !== "function") {
-                throw new Exception("HttpClient: Provided authenticator does not define the required sign() function.");
+                throw new McmaException("HttpClient: Provided authenticator does not define the required sign() function.");
             }
         }
     }
@@ -58,7 +58,7 @@ export class HttpClient implements Http {
 
     private async request<T extends any>(config: HttpRequestConfig): Promise<AxiosResponse<T>> {
         if (!config) {
-            throw new Exception("HttpClient: Missing configuration for making HTTP request");
+            throw new McmaException("HttpClient: Missing configuration for making HTTP request");
         }
     
         if (config.method === undefined) {
@@ -71,12 +71,12 @@ export class HttpClient implements Http {
             } else if (config.url.indexOf("http://") !== 0 && config.url.indexOf("https://") !== 0) {
                 config.url = config.baseURL + config.url;
             } else if (!config.url.startsWith(config.baseURL)) {
-                throw new Exception("HttpClient: Making " + config.method + " request to URL '" + config.url + "' which does not match baseURL '" + config.baseURL + "'");
+                throw new McmaException("HttpClient: Making " + config.method + " request to URL '" + config.url + "' which does not match baseURL '" + config.baseURL + "'");
             }
         }
     
         if (!config.url) {
-            throw new Exception("HttpClient: Missing url in request config");
+            throw new McmaException("HttpClient: Missing url in request config");
         }
     
         if (this.authenticator) {
@@ -93,7 +93,7 @@ export class HttpClient implements Http {
         try {
             return await axios(config);
         } catch (error) {
-            throw new Exception("HttpClient: " + config.method + " request to " + config.url + " failed!", error, {
+            throw new McmaException("HttpClient: " + config.method + " request to " + config.url + " failed!", error, {
                 config,
                 response: error.response.data
             });

@@ -16,5 +16,6 @@ export * from "./notification";
 export * from "./resource-endpoint";
 export * from "./service";
 export * from "./technical-metadata";
-export * from "./jobs";
 export * from "./job-status";
+
+export * from "./jobs";

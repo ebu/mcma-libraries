@@ -1,6 +1,6 @@
 import uuid from "uuid/v4";
 import { CloudWatchLogs } from "aws-sdk";
-import { Exception, Logger, LoggerProvider, McmaTrackerProperties, LogEvent } from "@mcma/core";
+import { McmaException, Logger, LoggerProvider, McmaTrackerProperties, LogEvent } from "@mcma/core";
 import { AwsCloudWatchLogger } from "./cloud-watch-logger";
 
 export class AwsCloudWatchLoggerProvider implements LoggerProvider {
@@ -16,7 +16,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
     
     constructor(private source: string, private logGroupName: string) {
         if (typeof source !== "string" || typeof logGroupName !== "string") {
-            throw new Exception("Failed to initialize AwsCloudWatchLoggerProvider with params source: '" + source + "' and logGroupName: '" + logGroupName + "'");
+            throw new McmaException("Failed to initialize AwsCloudWatchLoggerProvider with params source: '" + source + "' and logGroupName: '" + logGroupName + "'");
         }
         this.logStreamName = source + "-" + uuid();
     }

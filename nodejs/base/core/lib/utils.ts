@@ -1,4 +1,4 @@
-import { Exception } from "./exception";
+import { McmaException } from "./mcma-exception";
 
 const validUrl = new RegExp(
     "^(https?:\\/\\/)?" +                                   // protocol
@@ -19,7 +19,7 @@ function getTypeName(type: string | object | Function): string {
     } else if (typeof type === "object") {
         type = type.constructor.name;
     } else if (typeof type !== "string") {
-        throw new Exception("Invalid type");
+        throw new McmaException("Invalid type");
     }
     return type;
 }
@@ -36,7 +36,7 @@ function toBase64(text: string): string {
     }
 
     // not sure what platform we're on - throw an error to indicate this is not supported
-    throw new Exception("Unable to convert from plain text to base64 string. Neither the function 'btoa' nor the class 'Buffer' are defined on this platform.");
+    throw new McmaException("Unable to convert from plain text to base64 string. Neither the function 'btoa' nor the class 'Buffer' are defined on this platform.");
 }
 
 function fromBase64(base64Text: string): string {
@@ -51,7 +51,7 @@ function fromBase64(base64Text: string): string {
     }
 
     // not sure what platform we're on - throw an error to indicate this is not supported
-    throw new Exception("Unable to convert to plain text from base64 string. Neither the function 'atob' nor the class 'Buffer' are defined on this platform.");
+    throw new McmaException("Unable to convert to plain text from base64 string. Neither the function 'atob' nor the class 'Buffer' are defined on this platform.");
 }
 
 export const Utils = {

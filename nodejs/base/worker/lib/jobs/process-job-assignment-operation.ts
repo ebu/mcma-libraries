@@ -1,4 +1,4 @@
-import { Exception, Utils, McmaResourceType, Job, getTableName, JobAssignment } from "@mcma/core";
+import { McmaException, Utils, McmaResourceType, Job, getTableName, JobAssignment } from "@mcma/core";
 import { ProcessJobAssignmentHelper } from "./process-job-assignment-helper";
 import { ProviderCollection } from "../provider-collection";
 import { WorkerRequest } from "../worker-request";
@@ -12,7 +12,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
     constructor(jobType: McmaResourceType<T>) {
         jobType = Utils.getTypeName(jobType);
         if (!jobType) {
-            throw new Exception("Worker job helper requires a valid job type to be specified.");
+            throw new McmaException("Worker job helper requires a valid job type to be specified.");
         }
         this.jobType = jobType;
     }
@@ -28,7 +28,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
         }
 
         if (typeof profile !== "object" || typeof profile.name !== "string" || typeof profile.execute !== "function") {
-            throw new Exception("Invalid profile supplied");
+            throw new McmaException("Invalid profile supplied");
         }
 
         this.profiles.push(profile);
@@ -42,16 +42,16 @@ export class ProcessJobAssignmentOperation<T extends Job> {
 
     async execute(providerCollection: ProviderCollection, workerRequest: WorkerRequest, ctx: any) {
         if (!workerRequest) {
-            throw new Exception("request must be provided");
+            throw new McmaException("request must be provided");
         }
         if (!workerRequest.input) {
-            throw new Exception("request.input is required.");
+            throw new McmaException("request.input is required.");
         }
         if (!workerRequest.input.jobAssignmentId) {
-            throw new Exception("request.input does not specify a jobAssignmentId");
+            throw new McmaException("request.input does not specify a jobAssignmentId");
         }
 
-        const dbTable = providerCollection.dbTableProvider.get<JobAssignment>(getTableName(workerRequest));
+        const dbTable = providerCollection.dbTableProvider.get<JobAssignment>(getTableName(workerRequest), this.jobType);
         const logger = providerCollection.loggerProvider.get(workerRequest.tracker);
         const resourceManager = providerCollection.resourceManagerProvider.get(workerRequest);
 
@@ -65,12 +65,12 @@ export class ProcessJobAssignmentOperation<T extends Job> {
             logger.info("Validating job...");
 
             if (jobAssignmentHelper.job["@type"] !== this.jobType) {
-                throw new Exception("Job has type '" + jobAssignmentHelper.job["@type"] + "', which does not match expected job type '" + this.jobType + "'.");
+                throw new McmaException("Job has type '" + jobAssignmentHelper.job["@type"] + "', which does not match expected job type '" + this.jobType + "'.");
             }
 
             const matchedProfile = this.profiles.find(p => jobAssignmentHelper.profile.name === p.name);
             if (!matchedProfile) {
-                throw new Exception("Job profile '" + jobAssignmentHelper.profile.name + "' is not supported.");
+                throw new McmaException("Job profile '" + jobAssignmentHelper.profile.name + "' is not supported.");
             }
 
             jobAssignmentHelper.validateJob();

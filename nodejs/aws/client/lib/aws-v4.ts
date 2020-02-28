@@ -1,8 +1,5 @@
 import * as CryptoJS from "crypto-js";
 import { HttpRequestConfig } from "@mcma/client";
-import * as nodeUrl from "url";
-
-//const URL = typeof window !== "undefined" ? window.URL : nodeUrl.URL;
 
 const AWS_SHA_256 = "AWS4-HMAC-SHA256";
 const AWS4_REQUEST = "aws4_request";
@@ -50,7 +47,7 @@ function buildCanonicalUri(uri) {
 }
 
 function buildCanonicalQueryString(queryParams) {
-    if (Object.keys(queryParams || {}).length < 1) {
+    if (Object.keys(queryParams ?? {}).length < 1) {
         return "";
     }
 
@@ -134,7 +131,7 @@ function generateSignature(request, credentials, datetime, credentialScope) {
     }
 
     // build full set of query params, both from the url and from the params property of the request, into a single object
-    const queryParams = Object.assign({}, requestQueryParams, request.params || {});
+    const queryParams = Object.assign({}, requestQueryParams, request.params ?? {});
 
     // build signature
     const canonicalRequest = buildCanonicalRequest(request.method, requestUrl.pathname, queryParams, request.headers, request.data);
@@ -154,8 +151,8 @@ type Credentials = ConformedCredentials & { accessKeyId?: string, secretAccessKe
 
 function conformCredentials(credentials: Credentials): ConformedCredentials {
     // check for alternate names for access key & secret key 
-    credentials.accessKey = credentials.accessKey || credentials.accessKeyId;
-    credentials.secretKey = credentials.secretKey || credentials.secretAccessKey;
+    credentials.accessKey = credentials.accessKey ?? credentials.accessKeyId;
+    credentials.secretKey = credentials.secretKey ?? credentials.secretAccessKey;
 
     // ensure access key and secret key is set
     if (!credentials.accessKey || !credentials.secretKey) {
@@ -163,7 +160,7 @@ function conformCredentials(credentials: Credentials): ConformedCredentials {
     }
 
     // if no service name was provided, we"ll assume this is an API Gateway request
-    credentials.serviceName = credentials.serviceName || "execute-api";
+    credentials.serviceName = credentials.serviceName ?? "execute-api";
 
     return credentials;
 }
@@ -179,7 +176,9 @@ export class AwsV4Authenticator {
         const requestUrlParsed = new URL(request.url);
 
         // create headers object in case missing
-        request.headers = request.headers || {};
+        request.headers = request.headers ?? {};
+
+        const test = request?.headers;
 
         // capture request datetime
         const datetime = getAwsDate();

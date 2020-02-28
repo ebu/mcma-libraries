@@ -6,6 +6,3 @@ export class EnvironmentVariableProvider extends ContextVariableProvider {
         super(process.env);
     }
 }
-
-var ctx = new ContextVariableProvider({});
-ctx

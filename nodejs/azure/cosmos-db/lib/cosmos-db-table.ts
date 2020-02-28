@@ -1,4 +1,4 @@
-import { McmaResource, McmaResourceType, Exception } from "@mcma/core";
+import { McmaResource, McmaResourceType, McmaException } from "@mcma/core";
 import { DbTable } from "@mcma/data";
 import { CosmosClient, Container, Database, extractPartitionKey, SqlQuerySpec } from "@azure/cosmos";
 import { SqlBuilder } from "./cosmos-db-sql-builder";

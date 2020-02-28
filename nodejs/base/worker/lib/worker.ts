@@ -1,4 +1,4 @@
-import { Exception, McmaResource } from "@mcma/core";
+import { McmaException, McmaResource } from "@mcma/core";
 import { WorkerRequest, WorkerRequestProperties } from "./worker-request";
 import { ProviderCollection } from "./provider-collection";
 import { OperationFilter } from "./operation-filter";
@@ -36,12 +36,12 @@ export class Worker {
                     execute: handler,
                 };
             } else {
-                throw new Exception("addOperation must specify a handler argument if the provided object is not a WorkerOperation.");
+                throw new McmaException("addOperation must specify a handler argument if the provided object is not a WorkerOperation.");
             }
         }
 
         if (typeof operation !== "object" || typeof operation.accepts !== "function" || typeof operation.execute !== "function") {
-            throw new Exception("Invalid operation supplied");
+            throw new McmaException("Invalid operation supplied");
         }
 
         this.operations.push(operation);
@@ -51,7 +51,7 @@ export class Worker {
 
     async doWork(request: WorkerRequest, ctx?: any): Promise<void> {
         if (!(request instanceof WorkerRequest)) {
-            throw new Exception("request must be an instance of class WorkerRequest");
+            throw new McmaException("request must be an instance of class WorkerRequest");
         }
 
         let operation: WorkerOperation;
@@ -64,7 +64,7 @@ export class Worker {
         }
 
         if (!operation) {
-            throw new Exception("No handler found for operation '" + request.operationName + "' that can handle this request.");
+            throw new McmaException("No handler found for operation '" + request.operationName + "' that can handle this request.");
         }
 
         const logger = this.providerCollection.loggerProvider.get(request.tracker);
@@ -75,7 +75,7 @@ export class Worker {
         } catch (e) {
             logger.error(e.message);
             logger.error(e.toString());
-            throw new Exception("Failed to process worker operation '" + request.operationName + "'", e);
+            throw new McmaException("Failed to process worker operation '" + request.operationName + "'", e);
         }
     }
 }

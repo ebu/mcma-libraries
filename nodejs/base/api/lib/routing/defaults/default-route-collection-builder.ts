@@ -26,11 +26,11 @@ export class DefaultRouteCollectionBuilder<T extends McmaResource> {
         }
 
         this.routes = new DefaultRouteCollection<T>({
-            query: routes.defaultQueryBuilder<T>(dbTableProvider, root),
-            create: routes.defaultCreateBuilder<T>(dbTableProvider, root),
-            get: routes.defaultGetBuilder<T>(dbTableProvider, root),
-            update: routes.defaultUpdateBuilder<T>(dbTableProvider, root),
-            delete: routes.defaultDeleteBuilder<T>(dbTableProvider, root)
+            query: routes.defaultQueryBuilder<T>(resourceType, dbTableProvider, root),
+            create: routes.defaultCreateBuilder<T>(resourceType, dbTableProvider, root),
+            get: routes.defaultGetBuilder<T>(resourceType, dbTableProvider, root),
+            update: routes.defaultUpdateBuilder<T>(resourceType, dbTableProvider, root),
+            delete: routes.defaultDeleteBuilder<T>(resourceType, dbTableProvider, root)
         });
     }
 

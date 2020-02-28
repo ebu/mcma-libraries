@@ -1,4 +1,4 @@
-import { Exception, Service, ResourceEndpoint, Notification, McmaResource, McmaResourceType, NotificationEndpointProperties, NotificationEndpoint } from "@mcma/core";
+import { McmaException, Service, ResourceEndpoint, Notification, McmaResource, McmaResourceType, NotificationEndpointProperties, NotificationEndpoint } from "@mcma/core";
 
 import { Http, HttpClient } from "../http";
 import { AuthProvider } from "../auth";
@@ -13,7 +13,7 @@ export class ResourceManager {
 
     constructor(private config: ResourceManagerConfig, private authProvider: AuthProvider) {
         if (!config.servicesUrl) {
-            throw new Exception("Missing property 'servicesUrl' in ResourceManager config");
+            throw new McmaException("Missing property 'servicesUrl' in ResourceManager config");
         }
     }
     
@@ -50,7 +50,7 @@ export class ResourceManager {
                 }
             }
         } catch (error) {
-            throw new Exception("ResourceManager: Failed to initialize", error);
+            throw new McmaException("ResourceManager: Failed to initialize", error);
         }
     };
 
@@ -81,14 +81,14 @@ export class ResourceManager {
 
                 usedHttpEndpoints.push(resourceEndpoint.httpEndpoint);
             } catch (error) {
-                const wrappingError = new Exception("Failed to retrieve '" + resourceType + "' from endpoint '" + resourceEndpoint.httpEndpoint + "'", error);
+                const wrappingError = new McmaException("Failed to retrieve '" + resourceType + "' from endpoint '" + resourceEndpoint.httpEndpoint + "'", error);
                 errors.push(wrappingError);
                 console.error(wrappingError);
             }
         }
 
         if (errors.length > 0) {
-            throw new Exception("Failed to query any available resource endpoints for resource type '" + resourceType + "'\n" +
+            throw new McmaException("Failed to query any available resource endpoints for resource type '" + resourceType + "'\n" +
                                 "Errors:\n" + errors.join("\n"));
         }
 
@@ -112,7 +112,7 @@ export class ResourceManager {
             return response.data;
         }
 
-        throw new Exception("ResourceManager: Failed to find service to create resource of type '" + resourceType + "'.");
+        throw new McmaException("ResourceManager: Failed to find service to create resource of type '" + resourceType + "'.");
     };
 
     async get<T extends McmaResource>(resource: T | string): Promise<T | null> {
@@ -124,7 +124,7 @@ export class ResourceManager {
                 let response = await http.get<T>(resource);
                 resolvedResource = response.data;
             } catch (error) {
-                throw new Exception("ResourceManager: Failed to get resource from URL '" + resource + "'", error);
+                throw new McmaException("ResourceManager: Failed to get resource from URL '" + resource + "'", error);
             }
         } else {
             resolvedResource = resource;
@@ -137,10 +137,10 @@ export class ResourceManager {
         let resolvedType = typeof resolvedResource;
         if (resolvedType === "object") {
             if (Array.isArray(resolvedResource)) {
-                throw new Exception("ResourceManager: Resource at '" + resource + "' has illegal type 'Array'");
+                throw new McmaException("ResourceManager: Resource at '" + resource + "' has illegal type 'Array'");
             }
         } else {
-            throw new Exception("ResourceManager: Resource has illegal type '" + resolvedType + "'");
+            throw new McmaException("ResourceManager: Resource has illegal type '" + resolvedType + "'");
         }
 
         return resolvedResource;
@@ -208,7 +208,7 @@ export class ResourceManager {
                 });
                 await http.post(notification, notificationEndpoint.httpEndpoint);
             } catch (error) {
-                throw new Exception("ResourceManager: Failed to send notification.", error);
+                throw new McmaException("ResourceManager: Failed to send notification.", error);
             }
         }
     };

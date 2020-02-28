@@ -1,4 +1,4 @@
-import { ContextVariableProvider, Exception, McmaTracker, Utils, McmaResource } from "@mcma/core";
+import { ContextVariableProvider, McmaException, McmaTracker, Utils, McmaResource } from "@mcma/core";
 import { McmaHeaders } from "@mcma/client";
 import { HttpStatusCode } from "./http-statuses";
 import { McmaApiRequest } from "./mcma-api-request";
@@ -55,7 +55,7 @@ export class McmaApiRequestContext extends ContextVariableProvider {
                 }
             } catch (e) {
                 //Logger.warn(`Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: ${e}`);
-                throw new Exception("Invalid MCMA tracker.", e, this.request);
+                throw new McmaException("Invalid MCMA tracker.", e, this.request);
             }
         }
 

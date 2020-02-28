@@ -1,11 +1,11 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { McmaResource, Exception, McmaResourceType } from "@mcma/core";
+import { McmaResource, McmaException, McmaResourceType } from "@mcma/core";
 import { DbTable } from "@mcma/data";
 
 export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
     private docClient = new DocumentClient();
 
-    constructor(type: McmaResourceType<T>, private tableName: string) {
+    constructor(private tableName: string, type: McmaResourceType<T>) {
         super(type);
     }
 
@@ -49,7 +49,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
             const data = await this.docClient.query(params).promise();
             if (data.Items) {
                 for (const item of data.Items) {
-                    if (!filter || filter(item.resource)) {
+                    if (!filter ?? filter(item.resource)) {
                         items.push(item.resource);
                     }
                 }
@@ -71,7 +71,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
         };
         try {
             const data = await this.docClient.get(params).promise();
-            if (data && data.Item && data.Item.resource) {
+            if (data?.Item?.resource) {
                 return data.Item.resource;
             }
         }
@@ -96,7 +96,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
             await this.docClient.put(params).promise();
         }
         catch (error) {
-            throw new Exception("Failed to put resource in DynamoDB table", error);
+            throw new McmaException("Failed to put resource in DynamoDB table", error);
         }
         return resource;
     }
@@ -113,7 +113,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
             await this.docClient.delete(params).promise();
         }
         catch (error) {
-            throw new Exception("Failed to delete resource in DynamoDB table", error);
+            throw new McmaException("Failed to delete resource in DynamoDB table", error);
         }
     }
 }

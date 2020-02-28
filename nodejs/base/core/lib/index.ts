@@ -1,5 +1,5 @@
 export * from "./utils";
-export * from "./exception";
+export * from "./mcma-exception";
 
 export * from "./model";
 export * from "./context-variables";

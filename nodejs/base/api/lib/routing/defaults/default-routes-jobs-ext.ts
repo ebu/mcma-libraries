@@ -1,11 +1,18 @@
 import * as uuid from "uuid/v4";
 
 import { McmaTracker, JobAssignment } from "@mcma/core";
+import { DbTableProvider } from "@mcma/data";
+
 import { DefaultRouteCollectionBuilder } from "./default-route-collection-builder";
 import { WorkerInvoker, InvokeWorker } from "../../worker-invoker";
 import { getWorkerFunctionId } from "../../context-variable-provider-ext";
 
-export function forJobAssignments(builder: DefaultRouteCollectionBuilder<JobAssignment>, invokeWorker: InvokeWorker) {
+export function defaultRoutesForJobs(
+    dbTableProvider: DbTableProvider,
+    invokeWorker: InvokeWorker,
+    root?: string
+): DefaultRouteCollectionBuilder<JobAssignment> { 
+    const builder = new DefaultRouteCollectionBuilder<JobAssignment>(dbTableProvider, JobAssignment, root);
     const workerInvoker = new WorkerInvoker(invokeWorker);
 
     return builder.addAll()
@@ -28,6 +35,5 @@ export function forJobAssignments(builder: DefaultRouteCollectionBuilder<JobAssi
                 );
                 return jobAssignment;
             })
-        )
-        .build();
+        );
 };

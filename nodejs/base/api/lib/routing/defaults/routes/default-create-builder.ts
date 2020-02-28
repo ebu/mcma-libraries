@@ -1,12 +1,12 @@
 import * as uuid from "uuid/v4";
-import { onResourceCreate, McmaResource, getTableName } from "@mcma/core";
+import { onResourceCreate, McmaResource, getTableName, McmaResourceType } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
 
 import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
 
-export function defaultCreateBuilder<T extends McmaResource>(dbTableProvider: DbTableProvider, root: string): DefaultRouteBuilder<T> {
+export function defaultCreateBuilder<T extends McmaResource>(type: McmaResourceType<T>, dbTableProvider: DbTableProvider, root: string): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "POST",
         root,
@@ -19,16 +19,21 @@ export function defaultCreateBuilder<T extends McmaResource>(dbTableProvider: Db
                             return;
                         }
                     }
+
                     const resource = requestContext.getRequestBody();
                     if (!resource) {
                         requestContext.setResponseBadRequestDueToMissingBody();
                         return;
                     }
+
                     onResourceCreate(resource, getPublicUrl(requestContext) + root + "/" + uuid());
-                    await dbTableProvider.get<T>(getTableName(requestContext)).put(resource.id, resource);
+                    
+                    await dbTableProvider.get<T>(getTableName(requestContext), type).put(resource.id, resource);
+                    
                     if (onCompleted) {
                         await onCompleted(requestContext, resource);
                     }
+                    
                     requestContext.setResponseResourceCreated(resource);
                 }
         )

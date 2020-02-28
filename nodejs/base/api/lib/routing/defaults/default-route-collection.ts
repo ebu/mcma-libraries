@@ -12,11 +12,11 @@ export class DefaultRouteCollection<T extends McmaResource> {
     delete: DefaultRouteBuilder<T>;
 
     constructor(initialRoutes: DefaultRoutes<T>) {
-        this.query = initialRoutes && initialRoutes.query;
-        this.create = initialRoutes && initialRoutes.create;
-        this.get = initialRoutes && initialRoutes.get;
-        this.update = initialRoutes && initialRoutes.update;
-        this.delete = initialRoutes && initialRoutes.delete;
+        this.query = initialRoutes?.query;
+        this.create = initialRoutes?.create;
+        this.get = initialRoutes?.get;
+        this.update = initialRoutes?.update;
+        this.delete = initialRoutes?.delete;
     }
     
     addAll(): this {

@@ -1,10 +1,10 @@
-import { onResourceUpsert, McmaResource, getTableName } from "@mcma/core";
+import { onResourceUpsert, McmaResource, getTableName, McmaResourceType } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
 import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
 
-export function defaultUpdateBuilder<T extends McmaResource>(dbTableProvider: DbTableProvider, root: string): DefaultRouteBuilder<T> {
+export function defaultUpdateBuilder<T extends McmaResource>(type: McmaResourceType<T>, dbTableProvider: DbTableProvider, root: string): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "PUT",
         root + "/{id}",
@@ -22,7 +22,7 @@ export function defaultUpdateBuilder<T extends McmaResource>(dbTableProvider: Db
                     return;
                 }
                 onResourceUpsert(resource, getPublicUrl(requestContext) + requestContext.request.path);
-                await dbTableProvider.get<T>(getTableName(requestContext)).put(resource.id, resource);
+                await dbTableProvider.get<T>(getTableName(requestContext), type).put(resource.id, resource);
                 if (onCompleted) {
                     await onCompleted(requestContext, resource);
                 }

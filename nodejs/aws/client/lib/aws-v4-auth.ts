@@ -33,7 +33,7 @@ const conformToAwsV4AuthContext = (awsConfig?: Aws | AwsConfig | AwsAuthContext)
 export const awsV4Auth = (awsConfig?: Aws | AwsConfig | AwsAuthContext): AuthTypeRegistration<AwsAuthContext> => ({
     authType: "AWS4",
     authenticatorFactory: authContext => {
-        authContext = authContext || conformToAwsV4AuthContext(awsConfig);
+        authContext = authContext ?? conformToAwsV4AuthContext(awsConfig);
         return new AwsV4Authenticator(authContext);
     }
 });

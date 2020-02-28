@@ -10,7 +10,7 @@ export class AppInsightsLoggerProvider implements LoggerProvider {
     private appInsightsClient: AppInsights.TelemetryClient;
 
     constructor(private source: string, appInsightsClient?: AppInsights.TelemetryClient) {
-        this.appInsightsClient = appInsightsClient || AppInsights.defaultClient;
+        this.appInsightsClient = appInsightsClient ?? AppInsights.defaultClient;
     }
 
     get(tracker?: McmaTrackerProperties): Logger {

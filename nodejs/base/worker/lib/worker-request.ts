@@ -1,4 +1,4 @@
-import { ContextVariableProvider, Exception, McmaTrackerProperties } from "@mcma/core";
+import { ContextVariableProvider, McmaException, McmaTrackerProperties } from "@mcma/core";
 
 export interface WorkerRequestProperties {
     operationName: string;
@@ -13,16 +13,16 @@ export class WorkerRequest extends ContextVariableProvider {
     private _tracker?: McmaTrackerProperties;
 
     constructor(request: WorkerRequestProperties) {
-        super(request && request.contextVariables);
-
-        const operationName = request && request.operationName;
+        const operationName = request?.operationName;
         if (!operationName || typeof operationName !== "string") {
-            throw new Exception("operationName must be a non-empty string.");
+            throw new McmaException("operationName must be a non-empty string.");
         }
 
+        super(request.contextVariables);
+
         this._operationName = operationName;
-        this._input = request && request.input;
-        this._tracker = request && request.tracker;
+        this._input = request.input;
+        this._tracker = request.tracker;
     }
 
     get operationName() { return this._operationName; }

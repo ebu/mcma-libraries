@@ -1,5 +1,5 @@
 import { AxiosResponse } from "axios";
-import { Exception, ResourceEndpointProperties } from "@mcma/core";
+import { McmaException, ResourceEndpointProperties } from "@mcma/core";
 import { Http, HttpClient, HttpRequestConfig } from "../http";
 import { AuthProvider } from "../auth";
 
@@ -17,7 +17,7 @@ export class ResourceEndpointClient implements Http {
         }
 
         if (!!authProvider && typeof authProvider.get !== "function") {
-            throw new Exception("ResourceEndpoint: Provided authProvider does not define the required get(authType, authContext) function.", null, resourceEndpoint);
+            throw new McmaException("ResourceEndpoint: Provided authProvider does not define the required get(authType, authContext) function.", null, resourceEndpoint);
         }
     }
 

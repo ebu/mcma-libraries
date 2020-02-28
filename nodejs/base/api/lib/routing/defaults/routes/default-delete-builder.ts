@@ -1,11 +1,11 @@
-import { McmaResource, getTableName } from "@mcma/core";
+import { McmaResource, getTableName, McmaResourceType } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
 
 import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
 
-export function defaultDeleteBuilder<T extends McmaResource>(dbTableProvider: DbTableProvider, root: string): DefaultRouteBuilder<T> {
+export function defaultDeleteBuilder<T extends McmaResource>(type: McmaResourceType<T>, dbTableProvider: DbTableProvider, root: string): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "DELETE",
         root + "/{id}",
@@ -17,7 +17,7 @@ export function defaultDeleteBuilder<T extends McmaResource>(dbTableProvider: Db
                         return;
                     }
                 }
-                const table = dbTableProvider.get<T>(getTableName(requestContext));
+                const table = dbTableProvider.get<T>(getTableName(requestContext), type);
                 const id = getPublicUrl(requestContext) + requestContext.request.path;
                 const resource = await table.get(id);
                 if (!resource) {

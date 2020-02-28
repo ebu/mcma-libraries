@@ -1,4 +1,4 @@
-import { Exception } from "@mcma/core";
+import { McmaException } from "@mcma/core";
 import { AccessTokenProvider } from "./access-token-provider";
 import { Authenticator } from "../authenticator";
 import { HttpRequestConfig } from "../../http/http-request-config";
@@ -11,10 +11,10 @@ export class AccessTokenAuthenticator<T> implements Authenticator {
     constructor(private tokenProvider: AccessTokenProvider<T>, private authContext: T) {
         // check that the token/provider is valid
         if (!tokenProvider) {
-            throw new Exception("Must provide an access token or access token provider.");
+            throw new McmaException("Must provide an access token or access token provider.");
         }
         if (!tokenProvider.getAccessToken) {
-            throw new Exception("Invalid access token or access token provider. Object must define 'accessToken' or 'getAccessToken'.");
+            throw new McmaException("Invalid access token or access token provider. Object must define 'accessToken' or 'getAccessToken'.");
         }
     }
 

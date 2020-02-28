@@ -1,4 +1,4 @@
-import { Exception } from "../exception";
+import { McmaException } from "../mcma-exception";
 import { Utils } from "../utils";
 
 export class McmaObject {
@@ -20,7 +20,7 @@ export class McmaObject {
     
         if (propertyValue === undefined || propertyValue === null) {
             if (required) {
-                throw new Exception("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to be defined", null, this);
+                throw new McmaException("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to be defined", null, this);
             }
             return;
         }
@@ -29,23 +29,23 @@ export class McmaObject {
             if ((propertyType !== "string" && propertyType !== "object") ||
                 (propertyType === "string" && !Utils.isValidUrl(propertyValue)) ||
                 (propertyType === "object" && Array.isArray(propertyValue))) {
-                throw new Exception("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have a valid URL or an object", null, this);
+                throw new McmaException("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have a valid URL or an object", null, this);
             }
         } else if (expectedType === "url") {
             if (propertyType !== "string" || !Utils.isValidUrl(propertyValue)) {
-                throw new Exception("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have a valid URL", null, this);
+                throw new McmaException("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have a valid URL", null, this);
             }
         } else if (expectedType === "Array") {
             if (!Array.isArray(propertyValue)) {
-                throw new Exception("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have type Array", null, this);
+                throw new McmaException("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have type Array", null, this);
             }
         } else if (expectedType === "object") {
             if (propertyType !== "object" || Array.isArray(propertyValue)) {
-                throw new Exception("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have type object", null, this);
+                throw new McmaException("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have type object", null, this);
             }
         } else {
             if (expectedType !== propertyType) {
-                throw new Exception("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have type " + expectedType, null, this);
+                throw new McmaException("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have type " + expectedType, null, this);
             }
         }
     }
