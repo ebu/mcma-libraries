@@ -8,6 +8,7 @@ export interface JobBaseProperties extends McmaResourceProperties {
     notificationEndpoint?: string | NotificationEndpointProperties;
     status?: string;
     statusMessage?: string;
+    jobInput?: JobParameterBag;
     jobOutput?: JobParameterBag;
     progress?: number;
 }
@@ -17,6 +18,7 @@ export abstract class JobBase<T extends JobBaseProperties> extends McmaResource 
     notificationEndpoint?: string | NotificationEndpointProperties;
     status?: string;
     statusMessage?: string;
+    jobInput?: JobParameterBag;
     jobOutput?: JobParameterBag;
     progress?: number;
 
@@ -27,8 +29,12 @@ export abstract class JobBase<T extends JobBaseProperties> extends McmaResource 
         this.checkProperty("notificationEndpoint", "resource", false);
         this.checkProperty("status", "string", false);
         this.checkProperty("statusMessage", "string", false);
+        this.checkProperty("jobInput", "resource", false);
         this.checkProperty("jobOutput", "resource", false);
         this.checkProperty("progress", "number", false);
+
+        this.jobInput = new JobParameterBag(properties.jobInput);
+        this.jobOutput = new JobParameterBag(properties.jobOutput);
 
         if (typeof this.tracker === "object") {
             this.tracker = new McmaTracker(this.tracker);

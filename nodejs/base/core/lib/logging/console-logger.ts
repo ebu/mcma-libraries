@@ -2,7 +2,6 @@ import { Logger } from "./logger";
 import { McmaTrackerProperties } from "../model/mcma-tracker";
 import { LogEvent } from "./log-event";
 
-
 export class ConsoleLogger extends Logger {
     constructor(source: string, tracker?: McmaTrackerProperties) {
         super(source, tracker);
@@ -20,3 +19,5 @@ export class ConsoleLogger extends Logger {
         }
     }
 }
+
+Logger.System = new ConsoleLogger("System");

@@ -1,4 +1,4 @@
-import * as uuid from "uuid/v4";
+import { uuid } from "uuidv4";
 import { onResourceCreate, McmaResource, getTableName, McmaResourceType } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
 

@@ -5,4 +5,4 @@ export * from "./worker-operation";
 export * from "./worker-request";
 export * from "./worker";
 
-export * from "./jobs";
+export * from "./jobs/index";

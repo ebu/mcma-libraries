@@ -2,6 +2,7 @@ import { McmaException } from "../mcma-exception";
 import { Utils } from "../utils";
 
 export class McmaObject {
+
     constructor(type: string, properties?: { [key: string]: any }) {
         this["@type"] = type;
 

@@ -1,4 +1,5 @@
-import uuid from "uuid/v4";
+import { uuid } from "uuidv4";
+import * as util from "util";
 import { CloudWatchLogs } from "aws-sdk";
 import { McmaException, Logger, LoggerProvider, McmaTrackerProperties, LogEvent } from "@mcma/core";
 import { AwsCloudWatchLogger } from "./cloud-watch-logger";
@@ -20,20 +21,25 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
         }
         this.logStreamName = source + "-" + uuid();
     }
+
     private async processBatch() {
         if (this.processing) {
             return;
         }
+
         try {
             this.processing = true;
+
             while (this.logEvents.length > 0) {
                 if (!this.logGroupVerified) {
+
                     let nextToken = undefined;
                     do {
                         const params = {
                             logGroupNamePrefix: this.logGroupName,
                             nextToken,
                         };
+
                         const data = await this.cloudWatchLogsClient.describeLogGroups(params).promise();
                         for (const logGroup of data.logGroups) {
                             if (logGroup.logGroupName === this.logGroupName) {
@@ -41,8 +47,10 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                                 break;
                             }
                         }
+                        
                         nextToken = data.nextToken;
                     } while (!this.logGroupVerified && nextToken);
+
                     if (!this.logGroupVerified) {
                         const params = {
                             logGroupName: this.logGroupName
@@ -51,6 +59,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                         this.logGroupVerified = true;
                     }
                 }
+
                 if (!this.logStreamCreated) {
                     const params = {
                         logGroupName: this.logGroupName,
@@ -59,15 +68,20 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                     await this.cloudWatchLogsClient.createLogStream(params).promise();
                     this.logStreamCreated = true;
                 }
+                
                 const params = {
-                    logEvents: this.logEvents.map(le => ({ message: JSON.stringify(le), timestamp: le.timestamp.getTime() })),
+                    logEvents: this.logEvents.map(le => ({ message: this.getMessage(le), timestamp: le.timestamp.getTime() })),
                     logGroupName: this.logGroupName,
                     logStreamName: this.logStreamName,
                     sequenceToken: this.sequenceToken
                 };
+
                 this.logEvents = [];
+
                 const data = await this.cloudWatchLogsClient.putLogEvents(params).promise();
+
                 this.sequenceToken = data.nextSequenceToken;
+
                 if (data.rejectedLogEventsInfo) {
                     console.error("AwsCloudWatchLogger: Some log events rejected");
                     console.error(data.rejectedLogEventsInfo);
@@ -82,16 +96,49 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
             this.processing = false;
         }
     }
+
+    private getMessage(logEvent: LogEvent): string {
+
+        let message: string | any[];
+        if (logEvent.args.length) {
+            if (!!logEvent.message) {
+                message = util.format(logEvent.message, ...logEvent.args);
+            } else {
+                message = [...logEvent.args];
+            }
+        } else {
+            message = logEvent.message;
+        }
+
+        const messageObj = Object.assign({}, logEvent, { message });
+        delete messageObj.args;
+
+        try {
+            return JSON.stringify(messageObj, null, 2);
+        } catch {
+            try {
+                messageObj.message = util.inspect(messageObj.message);
+            } catch {
+                messageObj.message = messageObj.message + "";
+            }
+        }
+
+        return JSON.stringify(messageObj, null, 2);
+    }
+
     private addLogEvent(logEvent: LogEvent): void {
         this.logEvents.push(logEvent);
         this.processBatch();
     }
+
     private async sleep(timeout: number): Promise<void> {
         return new Promise((resolve) => setTimeout(() => resolve(), timeout));
     }
+
     get(tracker?: McmaTrackerProperties): Logger {
-        return new AwsCloudWatchLogger(this.source, tracker, this.addLogEvent);
+        return new AwsCloudWatchLogger(this.source, tracker, x => this.addLogEvent(x));
     }
+
     async flush(): Promise<void> {
         while (this.processing) {
             await this.sleep(10);

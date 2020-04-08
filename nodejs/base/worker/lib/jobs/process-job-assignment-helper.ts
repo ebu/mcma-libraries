@@ -5,11 +5,11 @@ import { ResourceManager } from "@mcma/client";
 import { WorkerRequest } from "../worker-request";
 
 export class ProcessJobAssignmentHelper<T extends Job> {
-    private jobAssignmentId: string;
-    private jobAssignment: JobAssignment;
-    
+    private _jobAssignment: JobAssignment;
     private _job: T;
     private _profile: JobProfile;
+
+    public readonly jobAssignmentId: string;
 
     constructor(
         public readonly dbTable: DbTable<JobAssignment>,
@@ -20,17 +20,21 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         this.jobAssignmentId = workerRequest.input.jobAssignmentId;
     }
 
+    get jobAssignment() { return this._jobAssignment; }
     get job() { return this._job; }
-    get profile() { return this._profile; }
+    get profile() { return this._profile; };
+    get jobInput() { return this._job.jobInput; }
+    get jobOutput() { return this._job.jobOutput; }
 
     async initialize() {
-        this.jobAssignment = await this.updateJobAssignmentStatus(JobStatus.Running);
+        this._jobAssignment = await this.updateJobAssignmentStatus(JobStatus.Running);
 
-        this._job = await this.resourceManager.get<T>(typeof this.jobAssignment.job === "string" ? this.jobAssignment.job : this.jobAssignment.job.id);
+        this._job = await this.resourceManager.get<T>(typeof this._jobAssignment.job === "string" ? this._jobAssignment.job : this._jobAssignment.job.id);
 
         this._profile = await this.resourceManager.get<JobProfile>(typeof this._job.jobProfile === "string" ? this._job.jobProfile : this._job.jobProfile.id);
 
-        this._job.jobOutput = this.jobAssignment.jobOutput || new JobParameterBag();
+        this._job.jobInput = new JobParameterBag(this._job.jobInput);
+        this._job.jobOutput = new JobParameterBag(this._job.jobOutput);
     }
 
     validateJob(): void {
@@ -92,11 +96,11 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     }
 
     async updateJobAssignment(update: (jobAssigment: JobAssignment) => void, sendNotification = false): Promise<JobAssignment> {
-        let jobAssignment = this.jobAssignment;
         if (typeof update !== "function") {
             throw new McmaException("update must be a function that modifies the JobAssignment.");
         }
-        jobAssignment = await this.dbTable.get(this.jobAssignmentId);
+
+        let jobAssignment = await this.dbTable.get(this.jobAssignmentId);
         if (!jobAssignment) {
             throw new McmaException("JobAssignment with id '" + this.jobAssignmentId + "' not found.");
         }
@@ -105,6 +109,8 @@ export class ProcessJobAssignmentHelper<T extends Job> {
 
         jobAssignment.dateModified = new Date();
         await this.dbTable.put(jobAssignment.id, jobAssignment);
+        
+        this._jobAssignment = jobAssignment;
 
         if (sendNotification) {
             await this.sendNotification();
@@ -114,8 +120,8 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     }
 
     async sendNotification(): Promise<void> {
-        if (this.resourceManager && this.jobAssignment.notificationEndpoint) {
-            await this.resourceManager.sendNotification(this.jobAssignment);
+        if (this.resourceManager && this._jobAssignment.notificationEndpoint) {
+            await this.resourceManager.sendNotification(this._jobAssignment);
         }
     }
 }

@@ -51,7 +51,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
             throw new McmaException("request.input does not specify a jobAssignmentId");
         }
 
-        const dbTable = providerCollection.dbTableProvider.get<JobAssignment>(getTableName(workerRequest), this.jobType);
+        const dbTable = providerCollection.dbTableProvider.get(getTableName(workerRequest), JobAssignment);
         const logger = providerCollection.loggerProvider.get(workerRequest.tracker);
         const resourceManager = providerCollection.resourceManagerProvider.get(workerRequest);
 

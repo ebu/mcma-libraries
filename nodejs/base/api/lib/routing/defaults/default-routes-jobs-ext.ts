@@ -1,4 +1,4 @@
-import * as uuid from "uuid/v4";
+import { uuid } from "uuidv4";
 
 import { McmaTracker, JobAssignment } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";

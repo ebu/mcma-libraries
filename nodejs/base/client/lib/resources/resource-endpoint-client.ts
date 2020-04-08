@@ -36,12 +36,14 @@ export class ResourceEndpointClient implements Http {
 
     private prepareRequest(urlOrConfig: string | HttpRequestConfig, config?: HttpRequestConfig, body?: any) {
         let url: string;
-        if (typeof urlOrConfig === "object" && config === undefined) {
+        if (typeof urlOrConfig === "string") {
+            url = urlOrConfig;
+        } else if (!config) {
             config = urlOrConfig;
             url = "";
         }
 
-        if (!url && body.id) {
+        if (!url && body?.id) {
             url = body.id;
         }
 

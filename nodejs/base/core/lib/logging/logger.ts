@@ -1,6 +1,5 @@
 import { McmaTrackerProperties } from "../model/mcma-tracker";
 import { LogEvent } from "./log-event";
-import { ConsoleLogger } from "./console-logger";
 
 export interface Logger {
     debug(message: string, ...args: any[]): void;
@@ -37,7 +36,7 @@ export abstract class Logger implements Logger {
     protected get source(): string { return this._source; }
     protected get tracker(): McmaTrackerProperties { return this._tracker; }
 
-    static System: Logger = new ConsoleLogger("System");
+    static System: Logger;
 
     protected buildLogEvent(level: number, type: string, messageOrFirstArg: string | any, ...args: any[]): LogEvent {
         const timestamp = new Date();
@@ -56,7 +55,8 @@ export abstract class Logger implements Logger {
             timestamp,
             level,
             type,
-            message
+            message,
+            args
         };
     }
 

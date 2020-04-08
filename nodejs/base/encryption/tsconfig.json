@@ -1,14 +1,6 @@
 {
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "target": "ES5",
-        "types": [
-            "node"
-        ],
-        "declaration": true,
-        "lib": [
-            "DOM",
-            "es6"
-        ],
         "outDir": "dist"
     }
 }

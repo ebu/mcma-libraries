@@ -1,5 +1,5 @@
-import { McmaException, McmaResource } from "@mcma/core";
-import { WorkerRequest, WorkerRequestProperties } from "./worker-request";
+import { McmaException } from "@mcma/core";
+import { WorkerRequest } from "./worker-request";
 import { ProviderCollection } from "./provider-collection";
 import { OperationFilter } from "./operation-filter";
 import { OperationHandler } from "./operation-handler";
@@ -26,7 +26,9 @@ export class Worker {
             if (handler) {
                 let operationFilter: OperationFilter;
                 if (typeof operation === "string") { // case 1. we turn operation into OperationFilter by converting it to a function that checks for operationName equality
-                    operationFilter = async (_, workerRequest) => workerRequest.operationName === operation;
+                    // capture this now, as the value of operation is going to change to an object below, and the operation name check will fail
+                    const operationName = operation;
+                    operationFilter = async (_, workerRequest) => workerRequest.operationName === operationName;
                 } else if (operation ) {
                     operationFilter = operation;
                 }

@@ -134,12 +134,15 @@ subprojects {
 
     task tsc(type: Exec) {
         dependsOn verifyNodeJS
-        dependsOn verifyTsc
         enabled file("tsconfig.json").exists()
         enabled file("package.json").exists()
         inputs.file("tsconfig.json")
         inputs.file("package.json")
         commandLine tscExecutable
+        
+        doFirst {
+            delete "dist"
+        }
     }
 
     task npmPublish(type: Exec) {

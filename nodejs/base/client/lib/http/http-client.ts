@@ -38,12 +38,14 @@ export class HttpClient implements Http {
 
     private prepareRequest(method: string, urlOrConfig: string | HttpRequestConfig, config?: HttpRequestConfig, body?: any) {
         let url: string;
-        if (typeof urlOrConfig === "object" && config === undefined) {
+        if (typeof urlOrConfig === "string") {
+            url = urlOrConfig;
+        } else if (!config) {
             config = urlOrConfig;
             url = "";
         }
 
-        if (!url && body.id) {
+        if (!url && body?.id) {
             url = body.id;
         }
 
@@ -52,7 +54,8 @@ export class HttpClient implements Http {
         config = config || {};
         config.method = method;
         config.url = url;
-
+        config.data = body;
+        
         return config;
     }
 
@@ -93,9 +96,17 @@ export class HttpClient implements Http {
         try {
             return await axios(config);
         } catch (error) {
+            let response;
+            if (error?.response?.data) {
+                response = error.response.data;
+            } else if (error?.response) {
+                response = error.response;
+            } else {
+                response = "none";
+            }
             throw new McmaException("HttpClient: " + config.method + " request to " + config.url + " failed!", error, {
                 config,
-                response: error.response.data
+                response
             });
         }
     };

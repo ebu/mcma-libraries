@@ -1,4 +1,4 @@
-import { McmaException, Service, ResourceEndpoint, Notification, McmaResource, McmaResourceType, NotificationEndpointProperties, NotificationEndpoint } from "@mcma/core";
+import { McmaException, Service, ResourceEndpoint, Notification, McmaResource, McmaResourceType, NotificationEndpointProperties, NotificationEndpoint, ServiceProperties } from "@mcma/core";
 
 import { Http, HttpClient } from "../http";
 import { AuthProvider } from "../auth";
@@ -40,10 +40,13 @@ export class ResourceManager {
 
             let servicesEndpoint = serviceRegistryClient.getResourceEndpointClient("Service");
 
-            let response = await servicesEndpoint.get();
+            let response = await servicesEndpoint.get<ServiceProperties[]>();
 
             for (const service of response.data) {
                 try {
+                    if (service.name === serviceRegistry.name) {
+                        this.serviceClients.shift();
+                    }
                     this.serviceClients.push(new ServiceClient(new Service(service), this.authProvider));
                 } catch (error) {
                     console.warn("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
@@ -190,7 +193,7 @@ export class ResourceManager {
         return undefined;
     };
 
-    async sendNotification<T extends McmaResource>(resource: T & { notificationEndpoint?: NotificationEndpointProperties | string }): Promise<void> {
+    async sendNotification<T extends { id?: string, notificationEndpoint?: NotificationEndpointProperties | string }>(resource: T): Promise<void> {
         if (resource.notificationEndpoint) {
             try {
                 let notificationEndpoint: NotificationEndpointProperties;

@@ -1,6 +1,7 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { McmaResource, McmaException, McmaResourceType } from "@mcma/core";
 import { DbTable } from "@mcma/data";
+import { types } from "util";
 
 export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
     private docClient = new DocumentClient();
@@ -9,23 +10,26 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
         super(type);
     }
 
-    private removeEmptyStrings(object) {
+    private normalize(object: any) {
         if (object) {
             if (Array.isArray(object)) {
                 for (let i = object.length - 1; i >= 0; i--) {
                     if (object[i] === "") {
                         object.splice(i, 1);
                     } else if (typeof object[i] === "object") {
-                        this.removeEmptyStrings(object[i]);
+                        this.normalize(object[i]);
                     }
                 }
             } else if (typeof object === "object") {
                 for (const prop in object) {
                     if (object.hasOwnProperty(prop)) {
-                        if (object[prop] === "") {
+                        const propValue = object[prop];
+                        if (propValue === "") {
                             delete object[prop];
-                        } else if (typeof object[prop] === "object") {
-                            this.removeEmptyStrings(object[prop]);
+                        } else if (types.isDate(propValue)) {
+                            object[prop] = propValue.toISOString();
+                        } else if (typeof propValue === "object") {
+                            this.normalize(propValue);
                         }
                     }
                 }
@@ -49,7 +53,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
             const data = await this.docClient.query(params).promise();
             if (data.Items) {
                 for (const item of data.Items) {
-                    if (!filter ?? filter(item.resource)) {
+                    if (!filter || filter(item.resource)) {
                         items.push(item.resource);
                     }
                 }
@@ -82,7 +86,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
     }
 
     async put(id: string, resource: T): Promise<T> {
-        this.removeEmptyStrings(resource);
+        this.normalize(resource);
         const item = {
             "resource_type": this.type,
             "resource_id": id,

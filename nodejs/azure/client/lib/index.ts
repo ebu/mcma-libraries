@@ -1,2 +1,2 @@
-export * from "./azure-ad";
-export * from "./function-keys";
+export * from "./azure-ad/index";
+export * from "./function-keys/index";

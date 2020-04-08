@@ -1,5 +1,5 @@
-export * from "./routing";
-export * from "./http";
+export * from "./routing/index";
+export * from "./http/index";
 
 export * from "./context-variable-provider-ext";
 export * from "./filters";

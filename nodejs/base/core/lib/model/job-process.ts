@@ -1,15 +1,21 @@
 import { JobBaseProperties, JobBase } from "./job-base";
-import { JobProperties } from "./jobs/job";
-import { JobAssignmentProperties } from "./job-assignment";
 
 export interface JobProcessProperties extends JobBaseProperties {
-    job: string | JobProperties;
-    jobAssignment: string | JobAssignmentProperties;
+    job: string;
+    jobAssignment?: string;
+
+    actualStartDate?: Date;
+    actualEndDate?: Date;
+    actualDuration?: number;
 }
 
 export class JobProcess extends JobBase<JobProcessProperties> implements JobProcessProperties {
-    job: string | JobProperties;
-    jobAssignment: string | JobAssignmentProperties;
+    job: string;
+    jobAssignment?: string;
+    
+    actualStartDate?: Date;
+    actualEndDate?: Date;
+    actualDuration?: number;
 
     constructor(properties: JobProcessProperties) {
         super("JobProcess", properties);
