@@ -1,11 +1,16 @@
 {
     "name": "@mcma/aws-logger",
-    "version": "0.8.7",
+    "version": "0.9.0",
     "description": "Node module with code and type definitions for using AWS Cloudwatch LogGroup logging in a MCMA environment",
     "engines": {
         "node": "~10.16.3"
     },
-    "main": "index.js",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
     "scripts": {
         "test": "jasmine"
     },
@@ -27,12 +32,14 @@
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-data-dynamodb#readme",
     "dependencies": {
         "aws-sdk": "^2.530.0",
-        "uuid": "^3.3.3"
+        "uuidv4": "^6.0.6"
     },
     "peerDependencies": {
-        "@mcma/core": "0.8.7"
+        "@mcma/core": "0.9.0"
     },
     "devDependencies": {
-        "@mcma/core": "0.8.7"
+        "@mcma/core": "0.9.0",
+        "@types/node": "^13.7.6",
+        "@types/uuid": "^7.0.0"
     }
 }

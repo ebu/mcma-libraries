@@ -2,15 +2,18 @@ import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
 def requiredVersionNodeJS = "10.16.3"
+def requiredVersionTsc = "3.7.2"
 
 allprojects {
     ext {
         if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
             nodeExecutable = Arrays.asList("node")
             npmExecutable = Arrays.asList("cmd", "/c", "npm")
+            tscExecutable = Arrays.asList("cmd", "/c", "tsc")
         } else {
             nodeExecutable = Arrays.asList("node")
             npmExecutable = Arrays.asList("npm")
+            tscExecutable = Arrays.asList("tsc")
         }
     }
 }
@@ -31,6 +34,22 @@ def getVersionNodeJS = { ->
     return stdout.toString().trim().replace("v", "")
 }
 
+def getVersionTsc = { ->
+    def stdout = new ByteArrayOutputStream()
+    def stderr = new ByteArrayOutputStream()
+    try {
+        exec {
+            commandLine tscExecutable
+            args "-v"
+            standardOutput stdout
+            errorOutput stderr
+        }
+    } catch (Exception ignored) {
+    }
+
+    return stdout.toString().trim().replace("Version ", "")
+}
+
 task verifyNodeJS {
     inputs.property("VERSION_NODE_JS", requiredVersionNodeJS)
     outputs.upToDateWhen { getVersionNodeJS() == requiredVersionNodeJS }
@@ -38,6 +57,17 @@ task verifyNodeJS {
         def versionNodeJs = getVersionNodeJS()
         if (versionNodeJs != requiredVersionNodeJS) {
             throw new Exception("Required Node version " + requiredVersionNodeJS + " not installed. Detected version " + versionNodeJs)
+        }
+    }
+}
+
+task verifyTsc {
+    inputs.property("VERSION_TSC", requiredVersionTsc)
+    outputs.upToDateWhen { getVersionTsc() == requiredVersionTsc }
+    doLast {
+        def versionTsc = getVersionTsc()
+        if (versionTsc != requiredVersionTsc) {
+            throw new Exception("Required tsc version " + requiredVersionTsc + " not installed. Detected version " + versionTsc)
         }
     }
 }
@@ -107,8 +137,22 @@ subprojects {
         args "update"
     }
 
+    task tsc(type: Exec) {
+        dependsOn verifyNodeJS
+        enabled file("tsconfig.json").exists()
+        enabled file("package.json").exists()
+        inputs.file("tsconfig.json")
+        inputs.file("package.json")
+        commandLine tscExecutable
+        
+        doFirst {
+            delete "dist"
+        }
+    }
+
     task npmPublish(type: Exec) {
         dependsOn verifyNodeJS
+        dependsOn tsc
         enabled file("package.json").exists()
         inputs.file("package.json")
         commandLine npmExecutable
@@ -117,6 +161,7 @@ subprojects {
 
     task npmPublishLocal(type: Exec) {
         dependsOn verifyNodeJS
+        dependsOn tsc
         enabled file("package.json").exists()
         inputs.file("package.json")
         commandLine npmExecutable
