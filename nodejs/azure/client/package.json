@@ -27,16 +27,17 @@
     "dependencies": {
         "@azure/identity": "^1.0.2",
         "@azure/msal": "^1.2.0",
-        "@mcma/encryption": "^0.8.4",
         "jsbn": "^1.1.0"
     },
     "peerDependencies": {
         "@mcma/client": "0.8.7",
-        "@mcma/core": "0.8.7"
+        "@mcma/core": "0.8.7",
+        "@mcma/encryption": "0.8.7"
     },
     "devDependencies": {
         "@mcma/client": "0.8.7",
         "@mcma/core": "0.8.7",
+        "@mcma/encryption": "0.8.7",
         "@types/jsbn": "^1.2.29",
         "jasmine": "^3.2.0"
     }
