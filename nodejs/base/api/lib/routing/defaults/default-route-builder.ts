@@ -18,14 +18,14 @@ export class DefaultRouteBuilder<T> implements DefaultRouteBuilderType {
     onStarted(handleOnStarted: RouteStartedHandler): this {
         this.defaultRouteHandlerConfigurator.onStarted = handleOnStarted;
         return this;
-    };
+    }
 
     onCompleted(handleOnCompleted: RouteCompletedHandler<T>): this {
         this.defaultRouteHandlerConfigurator.onCompleted = handleOnCompleted;
         return this;
-    };
+    }
 
     build(): McmaApiRoute {
-        return new McmaApiRoute(this.httpMethod, this.path, this.handler || this.defaultRouteHandlerConfigurator.create());
+        return new McmaApiRoute(this.httpMethod, this.path, this.handler ?? this.defaultRouteHandlerConfigurator.create());
     }
 }

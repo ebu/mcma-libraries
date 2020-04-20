@@ -1,4 +1,4 @@
-import { Utils, McmaResourceType, McmaResource } from "@mcma/core";
+import { Utils, McmaResourceType, McmaResource, McmaException } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
 
 import { camelCaseToKebabCase, pluralizeKebabCase } from "../../strings";
@@ -46,7 +46,7 @@ export class DefaultRouteCollectionBuilder<T extends McmaResource> {
     route<TResult>(selectRoute: (defaultRoutes: DefaultRoutes<T>) => DefaultRouteBuilder<TResult>): DefaultRouteConfigurator<T, TResult> {
         const routeBuilder = selectRoute(this.routes);
         if (!routeBuilder) {
-            throw new Error("Invalid route selection expression");
+            throw new McmaException("Invalid route selection expression");
         }
         return new DefaultRouteConfigurator<T, TResult>(this, this.routes, routeBuilder);
     }

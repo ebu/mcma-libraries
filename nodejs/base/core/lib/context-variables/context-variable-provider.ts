@@ -1,3 +1,7 @@
+function isContextVariableProvider(x: any): x is ContextVariableProvider {
+    return !!x?.getAllContextVariables;
+}
+
 export class ContextVariableProvider {
     constructor(private contextVariables: { [key: string]: any } = {}) {}
 
@@ -16,7 +20,7 @@ export class ContextVariableProvider {
         }
 
         return this.contextVariables[matchedKey];
-    };
+    }
 
     getOptionalContextVariable<T>(key: string, defaultValue?: T): T {
         if (!key) {
@@ -29,5 +33,23 @@ export class ContextVariableProvider {
         }
 
         return this.contextVariables[matchedKey];
-    };
+    }
+
+    setContextVariable(key: string, value: any): void {
+        this.contextVariables[key] = value;
+    }
+
+    merge(contextVariables: ContextVariableProvider)
+    merge(contextVariables: { [key: string]: any })
+    merge(contextVariables: ContextVariableProvider | { [key: string]: any }) {
+        if (isContextVariableProvider(contextVariables)) {
+            contextVariables = contextVariables.getAllContextVariables();
+        }
+
+        for (var key of Object.keys(contextVariables)) {
+            this.contextVariables[key] = contextVariables[key];
+        }
+
+        return this;
+    }
 }

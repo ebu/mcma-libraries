@@ -6,7 +6,6 @@ import { AccessToken } from "./access-token";
 
 export class AccessTokenAuthenticator<T> implements Authenticator {
     private accessToken: AccessToken;
-    private expiresOn: Date | number;
 
     constructor(private tokenProvider: AccessTokenProvider<T>, private authContext: T) {
         // check that the token/provider is valid
@@ -20,8 +19,9 @@ export class AccessTokenAuthenticator<T> implements Authenticator {
 
     async sign(config: HttpRequestConfig): Promise<void> {
         // check if the access token is expired
-        if (this.accessToken && this.expiresOn &&
-            (typeof this.expiresOn === "number" && Date.now() >= this.expiresOn) || (this.expiresOn instanceof Date && Date.now() >= this.expiresOn.getTime())) {
+        if (this.accessToken && this.accessToken.expiresOn &&
+            (typeof this.accessToken.expiresOn === "number" && Date.now() >= this.accessToken.expiresOn) ||
+            (this.accessToken.expiresOn instanceof Date && Date.now() >= this.accessToken.expiresOn.getTime())) {
             this.accessToken = null;
         }
 

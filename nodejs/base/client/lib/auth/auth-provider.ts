@@ -1,6 +1,5 @@
 import { AuthenticatorFactory } from "./authenticator-factory";
 import { Authenticator } from "./authenticator";
-import { accessTokenAuth } from "./access-tokens";
 
 export interface AuthTypeRegistration<T> {
     authType: string;
