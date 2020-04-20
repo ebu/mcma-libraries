@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.Client", "aws\Mcma
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.ApiGateway", "aws\Mcma.Aws.ApiGateway\Mcma.Aws.ApiGateway.csproj", "{293D6608-36B6-4BC5-AD1C-E65785D31410}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.CloudWatch", "aws\Mcma.Aws.CloudWatch\Mcma.Aws.CloudWatch.csproj", "{D1C3F5DE-F47C-4238-92EB-860C59ACBA8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.Logger", "aws\Mcma.Aws.Logger\Mcma.Aws.Logger.csproj", "{D1C3F5DE-F47C-4238-92EB-860C59ACBA8C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.LambdaWorkerInvoker", "aws\Mcma.Aws.LambdaWorkerInvoker\Mcma.Aws.LambdaWorkerInvoker.csproj", "{B245C709-124E-4290-9492-784AB2C243A0}"
 EndProject
@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Azure.BlobStorage", "a
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Azure.Functions.Configuration", "azure\Mcma.Azure.Functions.Configuration\Mcma.Azure.Functions.Configuration.csproj", "{D00F0D65-17C1-4988-A3C2-4C36DAD7DD76}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.Lambda", "aws\Mcma.Aws.Lambda\Mcma.Aws.Lambda.csproj", "{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Aws.Serialization", "aws\Mcma.Aws.Serialization\Mcma.Aws.Serialization.csproj", "{3CC2FBB2-7E03-4AF4-8BE7-9C7C648BAD03}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mcma.Encryption", "base\Mcma.Encryption\Mcma.Encryption.csproj", "{C15BB846-0F68-4938-B424-D4809F4ABFC5}"
 EndProject

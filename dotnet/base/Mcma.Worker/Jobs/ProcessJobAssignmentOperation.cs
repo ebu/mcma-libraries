@@ -46,7 +46,7 @@ namespace Mcma.Worker
 
             var helper =
                 new ProcessJobAssignmentHelper<TJob>(
-                    ProviderCollection.DbTableProvider.Table<JobAssignment>(request.TableName()),
+                    ProviderCollection.DbTableProvider.Get<JobAssignment>(request.TableName()),
                     ProviderCollection.ResourceManagerProvider.Get(request),
                     logger,
                     request,

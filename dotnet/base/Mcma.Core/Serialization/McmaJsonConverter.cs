@@ -20,12 +20,12 @@ namespace Mcma.Core.Serialization
                 var typeString = typeProperty.Value.Value<string>();
 
                 objectType = McmaTypes.FindType(typeString);
-                if (objectType != null)
-                {
-                    typeProperty.Remove();
-                    
-                    return objectType;
-                }
+                if (objectType == null)
+                    return typeof(McmaObject);
+            
+                typeProperty.Remove();
+                
+                return objectType;
             }
 
             return objectType ?? throw new Exception($"Unrecognized @type specified in JSON: {typeProperty?.Value?.Value<string>() ?? "<null>"}");

@@ -1,6 +1,6 @@
 namespace Mcma.Client
 {
-    public static class McmaHeaders
+    public static class McmaHttpHeaders
     {
         public const string Prefix = "mcma-";
 

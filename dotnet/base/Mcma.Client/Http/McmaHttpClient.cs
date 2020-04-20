@@ -69,9 +69,9 @@ namespace Mcma.Client
 
             if (tracker != null)
             {
-                if (request.Headers.Any(h => h.Key == McmaHeaders.Tracker))
-                    request.Headers.Remove(McmaHeaders.Tracker);
-                request.Headers.Add(McmaHeaders.Tracker, Convert.ToBase64String(Encoding.UTF8.GetBytes(tracker.ToMcmaJson().ToString())));
+                if (request.Headers.Any(h => h.Key == McmaHttpHeaders.Tracker))
+                    request.Headers.Remove(McmaHttpHeaders.Tracker);
+                request.Headers.Add(McmaHttpHeaders.Tracker, Convert.ToBase64String(Encoding.UTF8.GetBytes(tracker.ToMcmaJson().ToString())));
             }
             
             if (headers != null)

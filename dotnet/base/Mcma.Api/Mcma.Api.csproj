@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageVersion>0.8.7</PackageVersion>
+    <PackageVersion>0.9.0</PackageVersion>
     <LangVersion>7.1</LangVersion>
     <Title>MCMA API (.NET)</Title>
     <Description>Library containing base classes and interfaces for MCMA API implementations</Description>

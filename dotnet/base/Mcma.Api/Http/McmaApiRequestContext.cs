@@ -62,8 +62,8 @@ namespace Mcma.Api
 
             // try to get the tracker from the headers or query string first
             var hasTracker =
-                (Request?.Headers?.TryGetValue(McmaHeaders.Tracker, out tracker) ?? false) ||
-                (Request?.QueryStringParameters?.TryGetValue(McmaHeaders.Tracker, out tracker) ?? false);
+                (Request?.Headers?.TryGetValue(McmaHttpHeaders.Tracker, out tracker) ?? false) ||
+                (Request?.QueryStringParameters?.TryGetValue(McmaHttpHeaders.Tracker, out tracker) ?? false);
             if (hasTracker && tracker != null)
             {
                 try

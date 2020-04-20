@@ -9,13 +9,8 @@ namespace Mcma.Client.AccessTokens
     {
         public AccessTokenAuthenticator(IAccessTokenProvider<T> accessTokenProvider, T authContext)
         {
-            AccessTokenProvider = accessTokenProvider;
+            AccessTokenProvider = accessTokenProvider ?? throw new ArgumentNullException(nameof(accessTokenProvider));
             AuthContext = authContext;
-        }
-
-        public AccessTokenAuthenticator(AccessToken accessToken)
-        {
-            AccessToken = accessToken;
         }
 
         private IAccessTokenProvider<T> AccessTokenProvider { get; }
@@ -26,10 +21,10 @@ namespace Mcma.Client.AccessTokens
 
         public async Task SignAsync(HttpRequestMessage request)
         {
-            if (AccessToken != null && AccessToken.ExpiresOn >= DateTime.UtcNow)
+            if (AccessToken != null && AccessToken.ExpiresOn.HasValue && AccessToken.ExpiresOn >= DateTime.UtcNow)
                 AccessToken = null;
 
-            if (AccessToken == null && AccessTokenProvider != null)
+            if (AccessToken == null)
                 AccessToken = await AccessTokenProvider.GetAccessTokenAsync(AuthContext);
 
             if (AccessToken != null)

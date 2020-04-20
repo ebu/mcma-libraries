@@ -32,38 +32,38 @@ namespace Mcma.Core.Logging
         protected abstract void Log(LogEvent logEvent);
         
         public void Fatal(string message, params object[] args)
-            => Log(BuildLogEvent(LogLevel.Fatal, nameof(Fatal).ToUpper(), message, args));
+            => Log(BuildLogEvent(LogLevel.Fatal, LogType.Fatal, message, args));
         public void Fatal(params object[] args)
-            => Log(BuildLogEvent(LogLevel.Fatal, nameof(Fatal).ToUpper(), null, args));
+            => Log(BuildLogEvent(LogLevel.Fatal, LogType.Fatal, null, args));
         
         public void Error(string message, params object[] args)
-            => Log(BuildLogEvent(LogLevel.Error, nameof(Error).ToUpper(), message, args));
+            => Log(BuildLogEvent(LogLevel.Error, LogType.Error, message, args));
         public void Error(params object[] args)
-            => Log(BuildLogEvent(LogLevel.Error, nameof(Error).ToUpper(), null, args));
+            => Log(BuildLogEvent(LogLevel.Error, LogType.Error, null, args));
         
         public void Warn(string message, params object[] args)
-            => Log(BuildLogEvent(LogLevel.Warn, nameof(Warn).ToUpper(), message, args));
+            => Log(BuildLogEvent(LogLevel.Warn, LogType.Warn, message, args));
         public void Warn(params object[] args)
-            => Log(BuildLogEvent(LogLevel.Warn, nameof(Warn).ToUpper(), null, args));
+            => Log(BuildLogEvent(LogLevel.Warn, LogType.Warn, null, args));
         
         public void Info(string message, params object[] args)
-            => Log(BuildLogEvent(LogLevel.Info, nameof(Info).ToUpper(), message, args));
+            => Log(BuildLogEvent(LogLevel.Info, LogType.Info, message, args));
         public void Info(params object[] args)
-            => Log(BuildLogEvent(LogLevel.Info, nameof(Error).ToUpper(), null, args));
+            => Log(BuildLogEvent(LogLevel.Info, LogType.Info, null, args));
 
         public void Debug(string message, params object[] args)
-            => Log(BuildLogEvent(LogLevel.Debug, nameof(Debug).ToUpper(), message, args));
+            => Log(BuildLogEvent(LogLevel.Debug, LogType.Debug, message, args));
         public void Debug(params object[] args)
-            => Log(BuildLogEvent(LogLevel.Debug, nameof(Debug).ToUpper(), null, args));
+            => Log(BuildLogEvent(LogLevel.Debug, LogType.Debug, null, args));
 
         public void FunctionStart(string message, params object[] args)
-            => Log(BuildLogEvent(LogLevel.StartEndEvent, nameof(FunctionStart).ToUpper(), message, args));
+            => Log(BuildLogEvent(LogLevel.StartEndEvent, LogType.FunctionStart, message, args));
         public void FunctionEnd(string message, params object[] args)
-            => Log(BuildLogEvent(LogLevel.StartEndEvent, nameof(FunctionEnd).ToUpper(), message, args));
+            => Log(BuildLogEvent(LogLevel.StartEndEvent, LogType.FunctionEnd, message, args));
 
         public void JobStart(string message, params object[] args)
-            => Log(BuildLogEvent(LogLevel.StartEndEvent, nameof(JobStart).ToUpper(), message, args));
+            => Log(BuildLogEvent(LogLevel.StartEndEvent, LogType.JobStart, message, args));
         public void JobEnd(string message, params object[] args)
-            => Log(BuildLogEvent(LogLevel.StartEndEvent, nameof(JobEnd).ToUpper(), message, args));
+            => Log(BuildLogEvent(LogLevel.StartEndEvent, LogType.JobEnd, message, args));
     }
 }

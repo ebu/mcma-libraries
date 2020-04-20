@@ -1,7 +1,7 @@
 using Pluralize.NET;
 using System.Linq;
 
-namespace Mcma.Api.Routes.Defaults
+namespace Mcma.Api.Routing.Defaults
 {
     public static class StringExtensions
     {

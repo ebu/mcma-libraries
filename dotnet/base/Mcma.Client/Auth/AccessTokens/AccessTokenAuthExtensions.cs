@@ -8,8 +8,8 @@ namespace Mcma.Client.AccessTokens
     {
         public static IAuthProvider AddAccessTokenAuth<T>(this IAuthProvider authProvider, string authType, IAccessTokenProvider<T> accessTokenProvider)
             =>
-            authProvider.Add(
+            authProvider.Add<T>(
                 authType,
-                authCtx => Task.FromResult<IAuthenticator>(new AccessTokenAuthenticator<T>(accessTokenProvider, JToken.Parse(authCtx).ToMcmaObject<T>())));
+                authCtx => Task.FromResult<IAuthenticator>(new AccessTokenAuthenticator<T>(accessTokenProvider, authCtx)));
     }
 }

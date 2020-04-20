@@ -1,5 +1,4 @@
 using System;
-using Mcma.Azure.CosmosDb.Json;
 using Mcma.Core;
 using Mcma.Core.Serialization;
 using Mcma.Data;
@@ -28,7 +27,7 @@ namespace Mcma.Azure.CosmosDb
 
         private CosmosClient CosmosClient { get; }
 
-        public IDbTable<TResource, TPartitionKey> Table<TResource, TPartitionKey>(string tableName) where TResource : McmaResource
+        public IDbTable<TResource, TPartitionKey> Get<TResource, TPartitionKey>(string tableName) where TResource : McmaResource
         {
             if (typeof(TPartitionKey) != typeof(Type) &&
                 typeof(TPartitionKey) != typeof(string) &&
