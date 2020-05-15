@@ -1,26 +1,26 @@
-import { McmaException, McmaResource, ContextVariableProvider, LoggerProvider } from "@mcma/core";
+import { ContextVariableProvider, LoggerProvider, McmaException } from "@mcma/core";
 import { AuthProvider, ResourceManagerProvider } from "@mcma/client";
 import { DbTableProvider } from "@mcma/data";
 
 export interface Providers {
     authProvider?: AuthProvider;
-    dbTableProvider?: DbTableProvider;
     contextVariableProvider?: ContextVariableProvider;
+    dbTableProvider?: DbTableProvider;
     loggerProvider?: LoggerProvider;
     resourceManagerProvider?: ResourceManagerProvider;
 }
 
 export class ProviderCollection implements Providers {
-    private _authProvider: AuthProvider;
-    private _dbTableProvider: DbTableProvider;
-    private _contextVariableProvider: ContextVariableProvider;
-    private _loggerProvider: LoggerProvider;
-    private _resourceManagerProvider: ResourceManagerProvider;
+    private readonly _authProvider: AuthProvider;
+    private readonly _contextVariableProvider: ContextVariableProvider;
+    private readonly _dbTableProvider: DbTableProvider;
+    private readonly _loggerProvider: LoggerProvider;
+    private readonly _resourceManagerProvider: ResourceManagerProvider;
 
     constructor(providers: Providers) {
         this._authProvider = providers?.authProvider;
-        this._dbTableProvider = providers?.dbTableProvider;
         this._contextVariableProvider = providers?.contextVariableProvider;
+        this._dbTableProvider = providers?.dbTableProvider;
         this._loggerProvider = providers?.loggerProvider;
         this._resourceManagerProvider = providers?.resourceManagerProvider;
     }
@@ -32,18 +32,18 @@ export class ProviderCollection implements Providers {
         return this._authProvider;
     }
 
+    get contextVariableProvider() {
+        if (!this._contextVariableProvider) {
+            throw new McmaException("ContextVariableProvider not available");
+        }
+        return this._contextVariableProvider;
+    }
+
     get dbTableProvider() {
         if (!this._dbTableProvider) {
             throw new McmaException("DbTableProvider not available");
         }
         return this._dbTableProvider;
-    }
-
-    get environmentVariableProvider() {
-        if (!this._contextVariableProvider) {
-            throw new McmaException("EnvironmentVariableProvider not available");
-        }
-        return this._contextVariableProvider;
     }
 
     get loggerProvider() {

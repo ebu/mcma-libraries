@@ -1,29 +1,28 @@
-import { uuid } from "uuidv4";
-import * as util from "util";
+import { v4 as uuidv4 } from "uuid";
 import { CloudWatchLogs } from "aws-sdk";
-import { McmaException, Logger, LoggerProvider, McmaTrackerProperties, LogEvent } from "@mcma/core";
+import { LogEvent, Logger, LoggerProvider, McmaException, McmaTrackerProperties } from "@mcma/core";
 import { AwsCloudWatchLogger } from "./cloud-watch-logger";
 
 export class AwsCloudWatchLoggerProvider implements LoggerProvider {
 
-    private logStreamName: string;
+    private readonly logStreamName: string;
     private logEvents: LogEvent[] = [];
     private logGroupVerified = false;
     private logStreamCreated = false;
     private processing = false;
     private sequenceToken = undefined;
-    
+
     private cloudWatchLogsClient = new CloudWatchLogs();
-    
+
     constructor(private source: string, private logGroupName: string) {
         if (typeof source !== "string" || typeof logGroupName !== "string") {
             throw new McmaException("Failed to initialize AwsCloudWatchLoggerProvider with params source: '" + source + "' and logGroupName: '" + logGroupName + "'");
         }
-        this.logStreamName = source + "-" + uuid();
+        this.logStreamName = source + "-" + uuidv4();
     }
 
     private async processBatch() {
-        if (this.processing) {
+        if (this.processing || this.logEvents.length === 0) {
             return;
         }
 
@@ -47,7 +46,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                                 break;
                             }
                         }
-                        
+
                         nextToken = data.nextToken;
                     } while (!this.logGroupVerified && nextToken);
 
@@ -68,9 +67,12 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                     await this.cloudWatchLogsClient.createLogStream(params).promise();
                     this.logStreamCreated = true;
                 }
-                
+
                 const params = {
-                    logEvents: this.logEvents.map(le => ({ message: this.getMessage(le), timestamp: le.timestamp.getTime() })),
+                    logEvents: this.logEvents.map(le => ({
+                        message: le.toString(),
+                        timestamp: le.timestamp.getTime()
+                    })),
                     logGroupName: this.logGroupName,
                     logStreamName: this.logStreamName,
                     sequenceToken: this.sequenceToken
@@ -87,60 +89,38 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                     console.error(data.rejectedLogEventsInfo);
                 }
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error("AwsCloudWatchLogger: Failed to log to CloudWatchLogs");
             console.error(error);
-        }
-        finally {
+        } finally {
             this.processing = false;
         }
     }
 
-    private getMessage(logEvent: LogEvent): string {
-
-        let message: string | any[];
-        if (logEvent.args.length) {
-            if (!!logEvent.message) {
-                message = util.format(logEvent.message, ...logEvent.args);
-            } else {
-                message = [...logEvent.args];
-            }
-        } else {
-            message = logEvent.message;
-        }
-
-        const messageObj = Object.assign({}, logEvent, { message });
-        delete messageObj.args;
-
-        try {
-            return JSON.stringify(messageObj, null, 2);
-        } catch {
-            try {
-                messageObj.message = util.inspect(messageObj.message);
-            } catch {
-                messageObj.message = messageObj.message + "";
-            }
-        }
-
-        return JSON.stringify(messageObj, null, 2);
-    }
-
     private addLogEvent(logEvent: LogEvent): void {
         this.logEvents.push(logEvent);
-        this.processBatch();
+        setTimeout(() => this.processBatch(), 1000);
     }
 
     private async sleep(timeout: number): Promise<void> {
         return new Promise((resolve) => setTimeout(() => resolve(), timeout));
     }
 
-    get(tracker?: McmaTrackerProperties): Logger {
-        return new AwsCloudWatchLogger(this.source, tracker, x => this.addLogEvent(x));
+    get(requestId?: string, tracker?: McmaTrackerProperties): Logger {
+        return new AwsCloudWatchLogger(le => this.addLogEvent(le), this.source, requestId, tracker);
     }
 
-    async flush(): Promise<void> {
-        while (this.processing) {
+    async flush(until?: Date | number): Promise<void> {
+        while (this.logEvents.length > 0 || this.processing) {
+            const now = Date.now();
+            if (typeof until === "number" && until < now || until instanceof Date && until.getTime() < now) {
+                console.warn("Not able to flush all log messages to CloudWatch Logs within deadline. " + this.logEvents.length + " Remaining messages:");
+                for (const logEvent of this.logEvents) {
+                    console.warn(logEvent.toString());
+                }
+                return;
+            }
+
             await this.sleep(10);
         }
     }

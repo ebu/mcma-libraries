@@ -1,4 +1,4 @@
-import { uuid } from "uuidv4";
+import { v4 as uuidv4 } from "uuid";
 
 import { McmaTracker, JobAssignment } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
@@ -20,7 +20,7 @@ export function defaultRoutesForJobs(
             rb.onStarted(async (requestContext) => {
                 let body = requestContext.getRequestBody();
                 if (!body.tracker) {
-                    body.tracker = new McmaTracker({ id: uuid(), label: body["@type"] });
+                    body.tracker = new McmaTracker({ id: uuidv4(), label: body["@type"] });
                 }
                 return true;
             }).onCompleted(async (requestContext, jobAssignment) => {

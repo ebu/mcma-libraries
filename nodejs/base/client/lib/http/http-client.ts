@@ -1,4 +1,3 @@
-//"use strict";
 import { McmaException, Utils } from "@mcma/core";
 import axios, { AxiosResponse } from "axios";
 

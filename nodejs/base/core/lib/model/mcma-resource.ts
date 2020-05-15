@@ -2,8 +2,8 @@ import { McmaObject } from "./mcma-object";
 
 export interface McmaResourceProperties {
     id?: string;
-    dateCreated?: Date;
-    dateModified?: Date;
+    dateCreated?: Date | string;
+    dateModified?: Date | string;
 }
 
 export function onResourceCreate(resource: McmaResourceProperties, id: string) {
@@ -20,12 +20,15 @@ export function onResourceUpsert(resource: McmaResourceProperties, id: string) {
 }
 
 export abstract class McmaResource extends McmaObject implements McmaResourceProperties {
-    id: string;
+    id?: string;
     dateCreated?: Date;
     dateModified?: Date;
 
-    constructor(type: string, properties: McmaResourceProperties) {
+    protected constructor(type: string, properties: McmaResourceProperties) {
         super(type, properties);
+
+        this.dateCreated = new Date(this.dateCreated);
+        this.dateModified = new Date(this.dateModified)
     }
 
     onCreate = (id: string) => onResourceCreate(this, id);

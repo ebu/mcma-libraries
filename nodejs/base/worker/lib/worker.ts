@@ -6,9 +6,9 @@ import { OperationHandler } from "./operation-handler";
 import { WorkerOperation } from "./worker-operation";
 
 export class Worker {
-    private operations: WorkerOperation[];
+    private readonly operations: WorkerOperation[];
 
-    constructor(private providerCollection: ProviderCollection) {
+    constructor(private readonly providerCollection: ProviderCollection) {
         this.providerCollection = providerCollection;
         this.operations = [];
     }
@@ -69,14 +69,13 @@ export class Worker {
             throw new McmaException("No handler found for operation '" + request.operationName + "' that can handle this request.");
         }
 
-        const logger = this.providerCollection.loggerProvider.get(request.tracker);
-        logger.debug("Handling worker operation '" + request.operationName + "'...");
+        request.logger?.debug("Handling worker operation '" + request.operationName + "'...");
 
         try {
             await operation.execute(this.providerCollection, request, ctx);
         } catch (e) {
-            logger.error(e.message);
-            logger.error(e.toString());
+            request.logger?.error(e.message);
+            request.logger?.error(e.toString());
             throw new McmaException("Failed to process worker operation '" + request.operationName + "'", e);
         }
     }

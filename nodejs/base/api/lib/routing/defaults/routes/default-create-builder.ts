@@ -1,4 +1,4 @@
-import { uuid } from "uuidv4";
+import { v4 as uuidv4 } from "uuid";
 import { onResourceCreate, McmaResource, getTableName, McmaResourceType } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
 
@@ -26,7 +26,7 @@ export function defaultCreateBuilder<T extends McmaResource>(type: McmaResourceT
                         return;
                     }
 
-                    onResourceCreate(resource, getPublicUrl(requestContext) + root + "/" + uuid());
+                    onResourceCreate(resource, getPublicUrl(requestContext) + root + "/" + uuidv4());
                     
                     await dbTableProvider.get<T>(getTableName(requestContext), type).put(resource.id, resource);
                     

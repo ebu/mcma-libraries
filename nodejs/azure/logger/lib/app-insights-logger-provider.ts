@@ -7,13 +7,13 @@ AppInsights.setup(process.env["APPINSIGHTS_INSTRUMENTATIONKEY"]);
 AppInsights.start();
 
 export class AppInsightsLoggerProvider implements LoggerProvider {
-    private appInsightsClient: AppInsights.TelemetryClient;
+    private readonly appInsightsClient: AppInsights.TelemetryClient;
 
     constructor(private source: string, appInsightsClient?: AppInsights.TelemetryClient) {
         this.appInsightsClient = appInsightsClient ?? AppInsights.defaultClient;
     }
 
-    get(tracker?: McmaTrackerProperties): Logger {
-        return new AppInsightsLogger(this.appInsightsClient, this.source, tracker);
+    get(requestId?: string, tracker?: McmaTrackerProperties): Logger {
+        return new AppInsightsLogger(this.appInsightsClient, this.source, requestId, tracker);
     }
 }

@@ -1,4 +1,4 @@
-import { McmaException, Utils, McmaResourceType, Job, getTableName, JobAssignment } from "@mcma/core";
+import { getTableName, Job, JobAssignment, McmaException, McmaResourceType, Utils } from "@mcma/core";
 import { ProcessJobAssignmentHelper } from "./process-job-assignment-helper";
 import { ProviderCollection } from "../provider-collection";
 import { WorkerRequest } from "../worker-request";
@@ -40,7 +40,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
         return workerRequest.operationName === "ProcessJobAssignment";
     }
 
-    async execute(providerCollection: ProviderCollection, workerRequest: WorkerRequest, ctx: any) {
+    async execute(providerCollection: ProviderCollection, workerRequest: WorkerRequest, requestId?: string, ctx?: any) {
         if (!workerRequest) {
             throw new McmaException("request must be provided");
         }
@@ -52,17 +52,16 @@ export class ProcessJobAssignmentOperation<T extends Job> {
         }
 
         const dbTable = providerCollection.dbTableProvider.get(getTableName(workerRequest), JobAssignment);
-        const logger = providerCollection.loggerProvider.get(workerRequest.tracker);
         const resourceManager = providerCollection.resourceManagerProvider.get(workerRequest);
 
-        const jobAssignmentHelper = new ProcessJobAssignmentHelper<T>(dbTable, resourceManager, logger, workerRequest);
+        const jobAssignmentHelper = new ProcessJobAssignmentHelper<T>(dbTable, resourceManager, workerRequest);
 
         try {
-            logger.info("Initializing job helper...");
+            workerRequest.logger?.info("Initializing job helper...");
 
             await jobAssignmentHelper.initialize();
 
-            logger.info("Validating job...");
+            workerRequest.logger?.info("Validating job...");
 
             if (jobAssignmentHelper.job["@type"] !== this.jobType) {
                 throw new McmaException("Job has type '" + jobAssignmentHelper.job["@type"] + "', which does not match expected job type '" + this.jobType + "'.");
@@ -75,18 +74,18 @@ export class ProcessJobAssignmentOperation<T extends Job> {
 
             jobAssignmentHelper.validateJob();
 
-            logger.info("Found handler for job profile '" + jobAssignmentHelper.profile.name + "'");
+            workerRequest.logger?.info("Found handler for job profile '" + jobAssignmentHelper.profile.name + "'");
 
             await matchedProfile.execute(providerCollection, jobAssignmentHelper, ctx);
 
-            logger.info("Handler for job profile '" + jobAssignmentHelper.profile.name + "' completed")
+            workerRequest.logger?.info("Handler for job profile '" + jobAssignmentHelper.profile.name + "' completed");
         } catch (e) {
-            logger.error(e.message);
-            logger.error(e.toString());
+            workerRequest.logger?.error(e.message);
+            workerRequest.logger?.error(e.toString());
             try {
                 await jobAssignmentHelper.fail(e.message);
             } catch (inner) {
-                logger.error(inner.toString());
+                workerRequest.logger?.error(inner.toString());
             }
         }
     }

@@ -1,3 +1,4 @@
+.gradle
+.idea
 node_modules
-aws-credentials.json
 dist

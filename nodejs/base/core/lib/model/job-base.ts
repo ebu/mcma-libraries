@@ -4,7 +4,7 @@ import { McmaTracker, McmaTrackerProperties } from "./mcma-tracker";
 import { NotificationEndpointProperties, NotificationEndpoint } from "./notification-endpoint";
 
 export interface JobBaseProperties extends McmaResourceProperties {
-    tracker?:  string | McmaTrackerProperties;
+    tracker?:  McmaTrackerProperties;
     notificationEndpoint?: string | NotificationEndpointProperties;
     status?: string;
     statusMessage?: string;
@@ -22,7 +22,7 @@ export abstract class JobBase<T extends JobBaseProperties> extends McmaResource 
     jobOutput?: JobParameterBag;
     progress?: number;
 
-    constructor(type: string, properties: T) {
+    protected constructor(type: string, properties: T) {
         super(type, properties);
 
         this.checkProperty("tracker", "object", false);

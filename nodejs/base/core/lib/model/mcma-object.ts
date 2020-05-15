@@ -1,9 +1,12 @@
 import { McmaException } from "../mcma-exception";
 import { Utils } from "../utils";
 
-export class McmaObject {
+export interface McmaObjectProperties {
+    [key: string]: any;
+}
 
-    constructor(type: string, properties?: { [key: string]: any }) {
+export class McmaObject implements McmaObjectProperties {
+    constructor(type: string, properties?: McmaObjectProperties) {
         this["@type"] = type;
 
         if (properties) {
@@ -14,18 +17,18 @@ export class McmaObject {
             }
         }
     }
-    
+
     protected checkProperty(propertyName: string, expectedType: string, required?: boolean) {
         const propertyValue = this[propertyName];
         const propertyType = typeof propertyValue;
-    
+
         if (propertyValue === undefined || propertyValue === null) {
             if (required) {
                 throw new McmaException("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to be defined", null, this);
             }
             return;
         }
-    
+
         if (expectedType === "resource") { // special MCMA type that can either be a URL referencing a resource or embedded object
             if ((propertyType !== "string" && propertyType !== "object") ||
                 (propertyType === "string" && !Utils.isValidUrl(propertyValue)) ||

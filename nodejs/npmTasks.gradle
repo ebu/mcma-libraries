@@ -1,0 +1,89 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+task setVersion {
+    def packageJson = file("package.json")
+
+    inputs.file(packageJson)
+    inputs.property("VERSION", VERSION)
+    outputs.file(packageJson)
+
+    doLast {
+        def jsonSlurper = new JsonSlurper()
+        def object = jsonSlurper.parse(file("package.json"))
+
+        object.version = VERSION
+
+        if (object.dependencies != null) {
+            object.dependencies.keySet().each {
+                object.dependencies[it] = it.startsWith("@mcma/") ? VERSION : object.dependencies[it]
+            }
+        }
+        if (object.peerDependencies != null) {
+            object.peerDependencies.keySet().each {
+                object.peerDependencies[it] = it.startsWith("@mcma/") ? VERSION : object.peerDependencies[it]
+            }
+        }
+        if (object.devDependencies != null) {
+            object.devDependencies.keySet().each {
+                object.devDependencies[it] = it.startsWith("@mcma/") ? VERSION : object.devDependencies[it]
+            }
+        }
+
+        def json = JsonOutput.toJson(object)
+        def jsonPretty = JsonOutput.prettyPrint(json) + "\n"
+
+        packageJson.write(jsonPretty)
+    }
+}
+
+task npmInstall(type: Exec) {
+    dependsOn ":verifyNodeJS"
+    inputs.file("package.json")
+    outputs.file("package-lock.json")
+    outputs.dir("node_modules")
+    commandLine npmExecutable
+    args "install"
+}
+
+task npmUpdate(type: Exec) {
+    dependsOn ":verifyNodeJS"
+    inputs.file "package.json"
+    inputs.property("todaysDate", new Date().clearTime())
+    outputs.upToDateWhen { true }
+    commandLine npmExecutable
+    args "update"
+}
+
+task tsc(type: Exec) {
+    dependsOn ":verifyTsc"
+    dependsOn npmInstall
+    inputs.file("tsconfig.json")
+    inputs.file("package.json")
+    commandLine tscExecutable
+
+    doFirst {
+        delete "dist"
+    }
+}
+
+task npmPublish(type: Exec) {
+    dependsOn ":verifyNodeJS"
+    dependsOn tsc
+    inputs.file("package.json")
+    commandLine npmExecutable
+    args "publish", "--access", "public", "--registry", "https://registry.npmjs.org"
+}
+
+task npmPublishLocal(type: Exec) {
+    dependsOn ":verifyNodeJS"
+    dependsOn tsc
+    inputs.file("package.json")
+    commandLine npmExecutable
+    args "publish", "--access", "public", "--registry", "http://localhost:4873"
+}
+
+task clean(type: Delete) {
+    delete "dist"
+    delete "node_modules"
+}

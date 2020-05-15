@@ -1,8 +1,8 @@
-//"use strict";
 import { HttpStatusCode } from "./http-statuses";
 import { McmaApiRouteCollection } from "../routing";
 import { McmaApiRequestContext } from "./mcma-api-request-context";
 import { McmaApiError } from "./mcma-api-error";
+import { LoggerProvider } from "@mcma/core";
 
 const getDefaultResponseHeaders = () => {
     return {
@@ -13,7 +13,7 @@ const getDefaultResponseHeaders = () => {
 };
 
 export class McmaApiController {
-    constructor(private routes?: McmaApiRouteCollection) {
+    constructor(private readonly routes?: McmaApiRouteCollection) {
         this.routes = this.routes || new McmaApiRouteCollection();
     }
 
@@ -116,7 +116,8 @@ export class McmaApiController {
                 }
             }
         } catch (error) {
-            console.error(error);
+            const logger = requestContext.getLogger();
+            logger?.error(error);
 
             response.statusCode = HttpStatusCode.InternalServerError;
             response.headers = getDefaultResponseHeaders();

@@ -1,4 +1,4 @@
-import { ContextVariableProvider, McmaException, McmaTracker, Utils, McmaResource } from "@mcma/core";
+import { ContextVariableProvider, McmaException, McmaTracker, Utils, McmaResource, LoggerProvider, Logger } from "@mcma/core";
 import { McmaHeaders } from "@mcma/client";
 import { HttpStatusCode } from "./http-statuses";
 import { McmaApiRequest } from "./mcma-api-request";
@@ -7,7 +7,7 @@ import { McmaApiResponse } from "./mcma-api-response";
 export class McmaApiRequestContext extends ContextVariableProvider {
     public readonly response = new McmaApiResponse();
 
-    constructor(public readonly request: McmaApiRequest, contextVariables: { [key: string]: any }) {
+    constructor(public readonly request: McmaApiRequest, contextVariables: { [key: string]: any }, private loggerProvider?: LoggerProvider) {
         super(contextVariables);
     }
 
@@ -42,7 +42,7 @@ export class McmaApiRequestContext extends ContextVariableProvider {
         this.setResponseStatusCode(HttpStatusCode.NotFound, "No resource found on path '" + this.request.path + "'.");
     }
 
-    getTracker(): McmaTracker {
+    getTracker(): McmaTracker | undefined {
         // try to get the tracker from the headers or query string first
         const headerOrQueryParam =
             (this.request && this.request.headers && this.request.headers[McmaHeaders.tracker]) ||
@@ -54,12 +54,15 @@ export class McmaApiRequestContext extends ContextVariableProvider {
                     return new McmaTracker(JSON.parse(trackerDataJson));
                 }
             } catch (e) {
-                //Logger.warn(`Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: ${e}`);
-                throw new McmaException("Invalid MCMA tracker.", e, this.request);
+                this.loggerProvider?.get(this.request.id)?.warn(`Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: ${e}`);
             }
         }
 
         // if we didn't find it in the header or query string, try the body
-        return this.request && this.request.body && this.request.body.tracker;
+        return this.request?.body?.tracker;
+    }
+
+    getLogger(): Logger | undefined {
+        return this.loggerProvider?.get(this.request.id, this.getTracker());
     }
 }

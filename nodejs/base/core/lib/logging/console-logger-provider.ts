@@ -1,12 +1,12 @@
 import { LoggerProvider } from "./logger-provider";
 import { Logger } from "./logger";
-import { McmaTrackerProperties } from "../model/mcma-tracker";
+import { McmaTrackerProperties } from "../model";
 import { ConsoleLogger } from "./console-logger";
 
 export class ConsoleLoggerProvider implements LoggerProvider {
     constructor(private source: string) { }
 
-    get(tracker?: McmaTrackerProperties): Logger {
-        return new ConsoleLogger(this.source, tracker);
+    get(requestId?: string, tracker?: McmaTrackerProperties): Logger {
+        return new ConsoleLogger(this.source, requestId, tracker);
     }
 }

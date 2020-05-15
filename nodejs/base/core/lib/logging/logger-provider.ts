@@ -1,6 +1,6 @@
 import { Logger } from "./logger";
-import { McmaTrackerProperties } from "../model/mcma-tracker";
+import { McmaTrackerProperties } from "../model";
 
 export interface LoggerProvider {
-    get(tracker?: McmaTrackerProperties): Logger;
+    get(requestId?: string, tracker?: McmaTrackerProperties): Logger;
 }

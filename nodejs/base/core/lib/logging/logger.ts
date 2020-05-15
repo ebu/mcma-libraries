@@ -1,99 +1,98 @@
-import { McmaTrackerProperties } from "../model/mcma-tracker";
+import * as util from "util";
+
+import { v4 as uuidv4 } from "uuid";
+
+import { McmaTrackerProperties } from "../model";
 import { LogEvent } from "./log-event";
 
 export interface Logger {
-    debug(message: string, ...args: any[]): void;
-    debug(...args: any[]): void;
-    
-    info(message: string, ...args: any[]): void;
-    info(...args: any[]): void;
-    
-    warn(message: string, ...args: any[]): void;
-    warn(...args: any[]): void;
-    
-    error(message: string, ...args: any[]): void;
-    error(...args: any[]): void;
+    debug(message: any, ...optionalParams: any[]): void;
+    info(message: any, ...optionalParams: any[]): void;
+    warn(message: any, ...optionalParams: any[]): void;
+    error(message: any, ...optionalParams: any[]): void;
+    fatal(message: any, ...optionalParams: any[]): void;
 
-    fatal(message: string, ...args: any[]): void;
-    fatal(...args: any[]): void;
+    functionStart(message: any, ...optionalParams: any[]): void;
+    functionEnd(message: any, ...optionalParams: any[]): void;
 
-    functionStart(message: string, ...args: any[]): void;
-    functionEnd(message: string, ...args: any[]): void;
-
-    jobStart(message: string, ...args: any[]): void;
-    jobEnd(message: string, ...args: any[]): void;
+    jobStart(message: any, ...optionalParams: any[]): void;
+    jobUpdate(message: any, ...optionalParams: any[]): void;
+    jobEnd(message: any, ...optionalParams: any[]): void;
 }
 
 export abstract class Logger implements Logger {
-    private _source: string;
-    private _tracker: McmaTrackerProperties;
+    private readonly _source: string;
+    private readonly _requestId: string;
+    private readonly _tracker?: McmaTrackerProperties;
 
-    constructor(source: string, tracker?: McmaTrackerProperties) {
+    protected constructor(source: string, requestId?: string, tracker?: McmaTrackerProperties) {
         this._source = source;
+        this._requestId = requestId ?? uuidv4();
         this._tracker = tracker;
     }
 
-    protected get source(): string { return this._source; }
-    protected get tracker(): McmaTrackerProperties { return this._tracker; }
+    protected get source(): string {
+        return this._source;
+    }
+    protected get requestId(): string {
+        return this._requestId;
+    }
+    protected get tracker(): McmaTrackerProperties {
+        return this._tracker;
+    }
 
     static System: Logger;
 
-    protected buildLogEvent(level: number, type: string, messageOrFirstArg: string | any, ...args: any[]): LogEvent {
-        const timestamp = new Date();
-
-        let message: string = null;
-        if (typeof messageOrFirstArg === "string") {
-            message = messageOrFirstArg;
-        } else {
-            args.unshift(messageOrFirstArg);
+    protected buildLogEvent(level: number, type: string, message: any, ...optionalParams: any[]): LogEvent {
+        if (optionalParams.length) {
+            if (typeof message === "string") {
+                message = util.format(message, ...optionalParams);
+            } else {
+                message = [message, ...optionalParams];
+            }
         }
 
-        return {
-            trackerId: this.tracker && this.tracker.id || "",
-            trackerLabel: this.tracker && this.tracker.label || "",
-            source: this.source || "",
-            timestamp,
-            level,
-            type,
-            message,
-            args
-        };
+        return new LogEvent(type, level, this.source, this.requestId, new Date(), message, this.tracker);
     }
 
-    fatal(msg: string | any[], ...args: any[]): void {
-        this.log(this.buildLogEvent(100, "FATAL", msg, ...args));
+    fatal(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(100, "FATAL", message, ...optionalParams));
     }
 
-    error(msg: string | any, ...args: any[]): void {
-        this.log(this.buildLogEvent(200, "ERROR", msg, ...args));
+    error(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(200, "ERROR", message, ...optionalParams));
     }
 
-    warn(msg: string | any, ...args: any[]): void {
-        this.log(this.buildLogEvent(300, "WARN", msg, ...args));
+    warn(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(300, "WARN", message, ...optionalParams));
     }
 
-    info(msg: string | any, ...args: any[]): void {
-        this.log(this.buildLogEvent(400, "INFO", msg, ...args));
+    info(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(400, "INFO", message, ...optionalParams));
     }
 
-    debug(msg: string | any, ...args: any[]): void {
-        this.log(this.buildLogEvent(500, "DEBUG", msg, ...args));
+    debug(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(500, "DEBUG", message, ...optionalParams));
     }
 
-    functionStart(msg: string | any, ...args: any[]): void {
-        this.log(this.buildLogEvent(450, "FUNCTION_START", msg, ...args));
+    functionStart(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(450, "FUNCTION_START", message, ...optionalParams));
     }
 
-    functionEnd(msg: string | any, ...args: any[]): void {
-        this.log(this.buildLogEvent(450, "FUNCTION_END", msg, ...args));
+    functionEnd(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(450, "FUNCTION_END", message, ...optionalParams));
     }
 
-    jobStart(msg: string | any, ...args: any[]): void {
-        this.log(this.buildLogEvent(400, "JOB_START", msg, ...args));
+    jobStart(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(400, "JOB_START", message, ...optionalParams));
     }
 
-    jobEnd(msg: string | any, ...args: any[]): void {
-        this.log(this.buildLogEvent(400, "JOB_END", msg, ...args));
+    jobUpdate(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(400, "JOB_UPDATE", message, ...optionalParams));
+    }
+
+    jobEnd(message: any, ...optionalParams: any[]): void {
+        this.log(this.buildLogEvent(400, "JOB_END", message, ...optionalParams));
     }
 
     abstract log(logEvent: LogEvent): void;

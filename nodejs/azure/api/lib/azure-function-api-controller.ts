@@ -1,19 +1,23 @@
 import { URL } from "url";
 import * as fs from "fs";
 import { McmaApiController, McmaApiRouteCollection, McmaApiRequestContext, McmaApiRequest } from "@mcma/api";
+
+import { v4 as uuidv4 } from "uuid";
+
 import { HttpRequest } from "@azure/functions";
-import { McmaException } from "@mcma/core";
+import { LoggerProvider, McmaException } from "@mcma/core";
 
 export class AzureFunctionApiController {
     private apiController: McmaApiController;
 
-    constructor(routes: McmaApiRouteCollection) {
+    constructor(routes: McmaApiRouteCollection, private loggerProvider?: LoggerProvider) {
         this.apiController = new McmaApiController(routes);
     }
 
     async handleRequest(req: HttpRequest) {
         const requestContext = new McmaApiRequestContext(
             new McmaApiRequest({
+                id: uuidv4(),
                 path: this.getPath(req),
                 httpMethod: req.method,
                 headers: req.headers,
@@ -21,7 +25,8 @@ export class AzureFunctionApiController {
                 queryStringParameters: req.query,
                 body: req.body
             }),
-            process.env //context.bindingData
+            process.env, //context.bindingData
+            this.loggerProvider
         );
 
         await this.apiController.handleRequest(requestContext);

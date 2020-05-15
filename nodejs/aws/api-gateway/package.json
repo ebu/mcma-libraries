@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-api-gateway",
-    "version": "0.9.0",
+    "version": "0.9.1",
     "description": "Node module with code for using AWS's API Gateway as an entry point to an MCMA API handler.",
     "engines": {
         "node": "~10.16.3"
@@ -34,16 +34,16 @@
         "aws-sdk": "^2.530.0"
     },
     "peerDependencies": {
-        "@mcma/client": "0.9.0",
-        "@mcma/core": "0.9.0",
-        "@mcma/data": "0.9.0",
-        "@mcma/api": "0.9.0"
+        "@mcma/client": "0.9.1",
+        "@mcma/core": "0.9.1",
+        "@mcma/data": "0.9.1",
+        "@mcma/api": "0.9.1"
     },
     "devDependencies": {
-        "@mcma/api": "0.9.0",
-        "@mcma/client": "0.9.0",
-        "@mcma/core": "0.9.0",
-        "@mcma/data": "0.9.0",
+        "@mcma/api": "0.9.1",
+        "@mcma/client": "0.9.1",
+        "@mcma/core": "0.9.1",
+        "@mcma/data": "0.9.1",
         "@types/aws-lambda": "^8.10.44",
         "@types/node": "^13.7.6",
         "@types/uri-templates": "^0.1.30",

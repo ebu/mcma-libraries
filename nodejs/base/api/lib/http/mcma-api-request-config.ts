@@ -1,4 +1,5 @@
 export class McmaApiRequestConfig {
+    id: string;
     path: string;
     httpMethod: string;
     headers?: {

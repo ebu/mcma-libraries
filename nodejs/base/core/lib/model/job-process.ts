@@ -4,8 +4,8 @@ export interface JobProcessProperties extends JobBaseProperties {
     job: string;
     jobAssignment?: string;
 
-    actualStartDate?: Date;
-    actualEndDate?: Date;
+    actualStartDate?: Date | string;
+    actualEndDate?: Date | string;
     actualDuration?: number;
 }
 
@@ -21,5 +21,12 @@ export class JobProcess extends JobBase<JobProcessProperties> implements JobProc
         super("JobProcess", properties);
 
         this.checkProperty("job", "resource");
+
+        if (this.actualStartDate !== undefined && this.actualStartDate !== null) {
+            this.actualStartDate = new Date(this.actualStartDate);
+        }
+        if (this.actualEndDate !== undefined && this.actualEndDate !== null) {
+            this.actualEndDate = new Date(this.actualEndDate);
+        }
     }
 }

@@ -3,10 +3,15 @@ import { McmaResource, McmaException, McmaResourceType } from "@mcma/core";
 import { DbTable } from "@mcma/data";
 import { types } from "util";
 
+export interface DynamoDbTableOptions {
+    ConsistentGet?: boolean
+    ConsistentQuery?: boolean
+}
+
 export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
     private docClient = new DocumentClient();
 
-    constructor(private tableName: string, type: McmaResourceType<T>) {
+    constructor(private tableName: string, type: McmaResourceType<T>, private options?: DynamoDbTableOptions) {
         super(type);
     }
 
@@ -38,7 +43,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
     }
 
     async query(filter: (resource: T) => boolean): Promise<T[]> {
-        const params = {
+        const params: DocumentClient.QueryInput= {
             TableName: this.tableName,
             KeyConditionExpression: "#rs = :rs1",
             ExpressionAttributeNames: {
@@ -46,7 +51,8 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
             },
             ExpressionAttributeValues: {
                 ":rs1": this.type
-            }
+            },
+            ConsistentRead: this.options?.ConsistentQuery
         };
         const items = [];
         try {
@@ -66,12 +72,13 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
     }
     
     async get(id: string): Promise<T> {
-        const params = {
+        const params: DocumentClient.GetItemInput = {
             TableName: this.tableName,
             Key: {
                 "resource_type": this.type,
                 "resource_id": id,
-            }
+            },
+            ConsistentRead: this.options?.ConsistentGet
         };
         try {
             const data = await this.docClient.get(params).promise();
@@ -87,14 +94,13 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
 
     async put(id: string, resource: T): Promise<T> {
         this.normalize(resource);
-        const item = {
-            "resource_type": this.type,
-            "resource_id": id,
-            "resource": resource
-        };
-        const params = {
+        const params: DocumentClient.PutItemInput = {
             TableName: this.tableName,
-            Item: item
+            Item: {
+                "resource_type": this.type,
+                "resource_id": id,
+                "resource": resource
+            }
         };
         try {
             await this.docClient.put(params).promise();
@@ -106,7 +112,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
     }
 
     async delete(id: string): Promise<void> {
-        const params = {
+        const params: DocumentClient.DeleteItemInput = {
             TableName: this.tableName,
             Key: {
                 "resource_type": this.type,

@@ -5,19 +5,19 @@ import { JobProfile, JobProfileProperties } from "./job-profile";
 export interface ServiceProperties extends McmaResourceProperties {
     name: string;
     resources: ResourceEndpointProperties[];
-    authType: string;
-    jobType: string;
-    jobProfiles: (string | JobProfileProperties)[];
+    authType?: string;
     authContext?: any;
+    jobType?: string;
+    jobProfiles?: (string | JobProfileProperties)[];
 }
 
 export class Service extends McmaResource implements ServiceProperties {
     name: string;
     resources: ResourceEndpointProperties[];
-    authType: string;
-    jobType: string;
-    jobProfiles: (string | JobProfileProperties)[];
-    authContext: any;
+    authType?: string;
+    authContext?: any;
+    jobType?: string;
+    jobProfiles?: (string | JobProfileProperties)[];
 
     constructor(properties) {
         super("Service", properties);

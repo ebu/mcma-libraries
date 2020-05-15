@@ -1,16 +1,16 @@
-import { McmaObject } from "./mcma-object";
+import { McmaObject, McmaObjectProperties } from "./mcma-object";
 
-export interface ResourceEndpointProperties {
+export interface ResourceEndpointProperties extends McmaObjectProperties {
     resourceType: string;
     httpEndpoint: string;
-    authType: string;
+    authType?: string;
     authContext?: any;
 }
 
 export class ResourceEndpoint extends McmaObject implements ResourceEndpointProperties {
     resourceType: string;
     httpEndpoint: string;
-    authType: string;
+    authType?: string;
     authContext?: any;
     
     constructor(properties: ResourceEndpointProperties) {
