@@ -1,13 +1,13 @@
-import { McmaTrackerProperties, McmaException } from "@mcma/core";
+import { McmaException, McmaTrackerProperties } from "@mcma/core";
 
-export type WorkerRequest = {
+export interface WorkerRequestProperties {
     operationName: string;
-    contextVariables: { [key: string]: string };
-    input: any;
+    contextVariables?: { [key: string]: any };
+    input?: { [key: string]: any };
     tracker?: McmaTrackerProperties;
 }
 
-export type InvokeWorker = (workerFunctionId: string, payload: WorkerRequest) => Promise<void>;
+export type InvokeWorker = (workerFunctionId: string, workerRequest: WorkerRequestProperties) => Promise<void>;
 
 export class WorkerInvoker {
     constructor(private invokeWorker: InvokeWorker) {
@@ -15,11 +15,11 @@ export class WorkerInvoker {
             throw new McmaException("invokeWorker must be a function.");
         }
     }
-    
+
     async invoke(
         workerFunctionId: string,
-        operationNameOrRequest: string | WorkerRequest,
-        contextVariables?: { [key: string]: string },
+        operationNameOrRequest: string | WorkerRequestProperties,
+        contextVariables?: { [key: string]: any },
         input?: any,
         tracker?: McmaTrackerProperties
     ): Promise<void> {
@@ -40,5 +40,5 @@ export class WorkerInvoker {
         }
 
         await this.invokeWorker(workerFunctionId, { operationName, contextVariables, input, tracker });
-    };
+    }
 }

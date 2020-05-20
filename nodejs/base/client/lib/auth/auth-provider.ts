@@ -1,5 +1,6 @@
 import { AuthenticatorFactory } from "./authenticator-factory";
 import { Authenticator } from "./authenticator";
+import { McmaException } from "@mcma/core";
 
 export interface AuthTypeRegistration<T> {
     authType: string;
@@ -14,10 +15,10 @@ export class AuthProvider {
         let authType: string;
         if (typeof authTypeOrRegistration === "string") {
             if (Object.keys(this.registeredAuthTypes).find((k: string) => k.toLowerCase() === authTypeOrRegistration)) {
-                throw new Error("Auth type '" + authTypeOrRegistration + "' has already been registered.");
+                throw new McmaException("Auth type '" + authTypeOrRegistration + "' has already been registered.");
             }
             if (typeof authenticatorFactory !== "function") {
-                throw new Error("authenticatorFactory must be a function.");
+                throw new McmaException("authenticatorFactory must be a function.");
             }
             authType = authTypeOrRegistration;
         } else {

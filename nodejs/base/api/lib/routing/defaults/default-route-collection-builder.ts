@@ -17,7 +17,7 @@ export class DefaultRouteCollectionBuilder<T extends McmaResource> {
     constructor(dbTableProvider: DbTableProvider, resourceType: McmaResourceType<T>, root?: string) {
         resourceType = Utils.getTypeName(resourceType);
         if (!resourceType) {
-            throw new Error("Invalid resource type specified for default routes.");
+            throw new McmaException("Invalid resource type specified for default routes.");
         }
 
         root = root || pluralizeKebabCase(camelCaseToKebabCase(resourceType));

@@ -2,6 +2,7 @@ import { EncryptionHelper } from "@mcma/encryption";
 import { Authenticator, HttpRequestConfig } from "@mcma/client";
 
 import { AzureFunctionKeyAuthContext } from "./function-key-auth-context";
+import { McmaException } from "@mcma/core";
 
 const DefaultDecryptionKey = typeof process !== "undefined" && process.env && process.env["FunctionKeyEncryptionKey"];
 const FunctionKeyHeader = "x-functions-key";
@@ -21,7 +22,7 @@ export class AzureFunctionKeyAuthenticator implements Authenticator {
         }
 
         if (!this.decryptionKey || this.decryptionKey.length === 0) {
-            throw new Error("Function key is encrypted, but a key for decrypting it was not found in the environment variables for this application.");
+            throw new McmaException("Function key is encrypted, but a key for decrypting it was not found in the environment variables for this application.");
         }
 
         return EncryptionHelper.decrypt(this.authContext.functionKey, this.decryptionKey);

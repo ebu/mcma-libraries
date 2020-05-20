@@ -26,12 +26,14 @@ export function defaultRoutesForJobs(
             }).onCompleted(async (requestContext, jobAssignment) => {
                 await workerInvoker.invoke(
                     getWorkerFunctionId(requestContext),
-                    "ProcessJobAssignment",
-                    requestContext.getAllContextVariables(),
                     {
-                        jobAssignmentId: jobAssignment.id
-                    },
-                    jobAssignment.tracker,
+                        operationName: "ProcessJobAssignment",
+                        contextVariables: requestContext.getAllContextVariables(),
+                        input: {
+                            jobAssignmentId: jobAssignment.id
+                        },
+                        tracker: jobAssignment.tracker
+                    }
                 );
                 return jobAssignment;
             })

@@ -1,5 +1,5 @@
 import { DynamoDB } from "aws-sdk";
-import { McmaException, Logger } from "@mcma/core";
+import { McmaException, Logger, Utils } from "@mcma/core";
 
 export class DynamoDbMutex {
     private readonly dc: DynamoDB.DocumentClient;
@@ -61,10 +61,6 @@ export class DynamoDbMutex {
         Item["random"] = this.random;
         Item["timestamp"] = Date.now();
         return Item;
-    }
-
-    private async sleep(timeout: number) {
-        return new Promise((resolve => setTimeout(() => resolve(), timeout)));
     }
 
     private async getLockData() {
@@ -140,7 +136,7 @@ export class DynamoDbMutex {
             }
 
             if (!this.hasLock) {
-                this.sleep(500);
+                await Utils.sleep(500);
             }
         }
         this.logger?.debug("Acquired lock for mutex '" + this.mutexName + "' by '" + this.mutexHolder + "'");

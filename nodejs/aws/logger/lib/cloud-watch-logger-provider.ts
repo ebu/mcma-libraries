@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { CloudWatchLogs } from "aws-sdk";
-import { LogEvent, Logger, LoggerProvider, McmaException, McmaTrackerProperties } from "@mcma/core";
+import { LogEvent, Logger, LoggerProvider, McmaException, McmaTrackerProperties, Utils } from "@mcma/core";
 import { AwsCloudWatchLogger } from "./cloud-watch-logger";
 
 export class AwsCloudWatchLoggerProvider implements LoggerProvider {
@@ -102,10 +102,6 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
         setTimeout(() => this.processBatch(), 1000);
     }
 
-    private async sleep(timeout: number): Promise<void> {
-        return new Promise((resolve) => setTimeout(() => resolve(), timeout));
-    }
-
     get(requestId?: string, tracker?: McmaTrackerProperties): Logger {
         return new AwsCloudWatchLogger(le => this.addLogEvent(le), this.source, requestId, tracker);
     }
@@ -121,7 +117,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                 return;
             }
 
-            await this.sleep(10);
+            await Utils.sleep(10);
         }
     }
 }

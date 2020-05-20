@@ -3,6 +3,7 @@ import { AwsV4Authenticator } from "./aws-v4";
 import { Aws, isAwsInstance } from "./aws";
 import { AwsConfig, isAwsConfigInstance } from "./aws-config";
 import { AwsAuthContext, isAwsAuthContext1Instance, isAwsAuthContext2Instance } from "./aws-auth-context";
+import { McmaException } from "@mcma/core";
 
 const conformToAwsV4AuthContext = (awsConfig?: Aws | AwsConfig | AwsAuthContext): AwsAuthContext => {
     let authContext: AwsAuthContext;
@@ -24,7 +25,7 @@ const conformToAwsV4AuthContext = (awsConfig?: Aws | AwsConfig | AwsAuthContext)
         }
         // check that it's valid
         if (!isAwsAuthContext1Instance(authContext) && !isAwsAuthContext2Instance(authContext)) {
-            throw new Error("Invalid AWS config object.");
+            throw new McmaException("Invalid AWS config object.");
         }
         return authContext;
     }

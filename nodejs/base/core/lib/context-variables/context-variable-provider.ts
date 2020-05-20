@@ -1,42 +1,44 @@
+import { McmaException } from "../mcma-exception";
+
 function isContextVariableProvider(x: any): x is ContextVariableProvider {
     return !!x?.getAllContextVariables;
 }
 
 export class ContextVariableProvider {
-    constructor(private contextVariables: { [key: string]: any } = {}) {}
+    constructor(private _contextVariables: { [key: string]: any } = {}) {}
 
     getAllContextVariables(): { [key: string]: any } {
-        return this.contextVariables;
+        return this._contextVariables;
     }
 
     getRequiredContextVariable<T>(key: string): T {
         if (!key) {
-            throw new Error("Invalid key specified.");
+            throw new McmaException("Invalid key specified.");
         }
 
-        const matchedKey = Object.keys(this.contextVariables).find(k => k.toLocaleLowerCase() === key.toLocaleLowerCase());
+        const matchedKey = Object.keys(this._contextVariables).find(k => k.toLocaleLowerCase() === key.toLocaleLowerCase());
         if (!matchedKey) {
-            throw new Error(`Required context variable with key "${key}" is missing.`);
+            throw new McmaException(`Required context variable with key "${key}" is missing.`);
         }
 
-        return this.contextVariables[matchedKey];
+        return this._contextVariables[matchedKey];
     }
 
     getOptionalContextVariable<T>(key: string, defaultValue?: T): T {
         if (!key) {
-            throw new Error("Invalid key specified.");
+            throw new McmaException("Invalid key specified.");
         }
 
-        const matchedKey = Object.keys(this.contextVariables).find(k => k.toLocaleLowerCase() === key.toLocaleLowerCase());
+        const matchedKey = Object.keys(this._contextVariables).find(k => k.toLocaleLowerCase() === key.toLocaleLowerCase());
         if (!matchedKey) {
             return defaultValue;
         }
 
-        return this.contextVariables[matchedKey];
+        return this._contextVariables[matchedKey];
     }
 
     setContextVariable(key: string, value: any): void {
-        this.contextVariables[key] = value;
+        this._contextVariables[key] = value;
     }
 
     merge(contextVariables: ContextVariableProvider)
@@ -46,8 +48,8 @@ export class ContextVariableProvider {
             contextVariables = contextVariables.getAllContextVariables();
         }
 
-        for (var key of Object.keys(contextVariables)) {
-            this.contextVariables[key] = contextVariables[key];
+        for (const key of Object.keys(contextVariables)) {
+            this._contextVariables[key] = contextVariables[key];
         }
 
         return this;

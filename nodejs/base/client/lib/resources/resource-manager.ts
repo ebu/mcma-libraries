@@ -166,7 +166,7 @@ export class ResourceManager {
         } else if (typeof resource === "object" && resource.id) {
             resourceId = resource.id;
         } else {
-            throw new Error("Unexpected input of type '" + typeof resource + "' for ResourceManager.delete");
+            throw new McmaException("Unexpected input of type '" + typeof resource + "' for ResourceManager.delete");
         }
 
         if (this.serviceClients.length === 0) {

@@ -1,5 +1,6 @@
 import { McmaApiRoute } from "./route";
 import { McmaApiRouteHandler } from "./route-handler";
+import { McmaException } from "@mcma/core";
 
 export class McmaApiRouteCollection {
     private routes: McmaApiRoute[] = [];
@@ -16,14 +17,14 @@ export class McmaApiRouteCollection {
         } else if (typeof methodOrRoute === "string" && typeof path === "string" && typeof handler === "function") {
             this.routes.push(new McmaApiRoute(methodOrRoute, path, handler));
         } else {
-            throw new Error("Invalid arguments. Must provide either an McmaApiRoute object or an HTTP method, a path, and a handler.");
+            throw new McmaException("Invalid arguments. Must provide either an McmaApiRoute object or an HTTP method, a path, and a handler.");
         }
         return this;
     }
 
     addRoutes(routes): McmaApiRouteCollection {
         if (routes && typeof routes[Symbol.iterator] !== "function") {
-            throw new Error("Argument must be an array of routes.");
+            throw new McmaException("Argument must be an array of routes.");
         }
         for (let route of routes) {
             this.addRoute(route);

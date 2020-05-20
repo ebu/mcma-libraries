@@ -1,4 +1,4 @@
-import { Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, Logger, McmaException } from "@mcma/core";
+import { Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, Logger, McmaException, Utils } from "@mcma/core";
 import { DbTable } from "@mcma/data";
 import { ResourceManager } from "@mcma/client";
 
@@ -140,15 +140,11 @@ export class ProcessJobAssignmentHelper<T extends Job> {
             }
 
             this.logger?.warn(`Failed to obtain job assignment from DynamoDB table. Trying again in ${timeout} seconds`);
-            await this.sleep(timeout * 1000);
+            await Utils.sleep(timeout * 1000);
             jobAssignment = await this.dbTable.get(this.jobAssignmentId);
         }
 
         return jobAssignment;
-    }
-
-    private async sleep(timeout: number) {
-        return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
     }
 
     async sendNotification(): Promise<void> {

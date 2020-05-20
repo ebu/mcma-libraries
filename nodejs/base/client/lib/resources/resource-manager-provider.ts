@@ -1,4 +1,4 @@
-import { ContextVariableProvider } from "@mcma/core";
+import { ContextVariableProvider, McmaException } from "@mcma/core";
 import { AuthProvider } from "../auth";
 
 import { ResourceManagerConfig } from "./resource-manager-config";
@@ -16,7 +16,7 @@ export class ResourceManagerProvider {
     get(config?: ResourceManagerConfig | ContextVariableProvider) {
         config = config || this.defaultConfig;
         if (!config) {
-            throw new Error("Config for resource manager not provided, and there is no default config available");
+            throw new McmaException("Config for resource manager not provided, and there is no default config available");
         }
         if (this.isContextVariableProvider(config)) {
             config = getResourceManagerConfig(config);

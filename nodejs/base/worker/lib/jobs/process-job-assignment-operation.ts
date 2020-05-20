@@ -40,7 +40,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
         return workerRequest.operationName === "ProcessJobAssignment";
     }
 
-    async execute(providerCollection: ProviderCollection, workerRequest: WorkerRequest, requestId?: string, ctx?: any) {
+    async execute(providerCollection: ProviderCollection, workerRequest: WorkerRequest, ctx?: any) {
         if (!workerRequest) {
             throw new McmaException("request must be provided");
         }

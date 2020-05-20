@@ -54,9 +54,14 @@ function fromBase64(base64Text: string): string {
     throw new McmaException("Unable to convert to plain text from base64 string. Neither the function 'atob' nor the class 'Buffer' are defined on this platform.");
 }
 
+async function sleep(timeout: number): Promise<void> {
+    return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
+}
+
 export const Utils = {
     isValidUrl,
     getTypeName,
     toBase64,
-    fromBase64
+    fromBase64,
+    sleep
 };

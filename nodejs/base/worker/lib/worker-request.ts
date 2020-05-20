@@ -2,12 +2,12 @@ import { ContextVariableProvider, Logger, McmaException, McmaTrackerProperties }
 
 export interface WorkerRequestProperties {
     operationName: string;
-    contextVariables?: { [key: string]: string };
+    contextVariables?: { [key: string]: any };
     input?: { [key: string]: any };
     tracker?: McmaTrackerProperties;
 }
 
-export class WorkerRequest extends ContextVariableProvider {
+export class WorkerRequest extends ContextVariableProvider implements WorkerRequestProperties {
     private readonly _operationName: string;
     private readonly _input: { [key: string]: any };
     private readonly _tracker?: McmaTrackerProperties;
@@ -28,6 +28,7 @@ export class WorkerRequest extends ContextVariableProvider {
     }
 
     get operationName() { return this._operationName; }
+    get contextVariables() { return this.getAllContextVariables(); }
     get input() { return this._input; }
     get tracker() { return this._tracker; }
     get logger() { return this._logger; }

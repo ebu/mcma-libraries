@@ -13,7 +13,7 @@ export class ResourceEndpointClient implements Http {
         private serviceAuthContext?: any
     ) {
         if (!resourceEndpoint) {
-            throw new Error("resourceEndpoint cannot be null or undefined.");
+            throw new McmaException("resourceEndpoint cannot be null or undefined.");
         }
 
         if (!!authProvider && typeof authProvider.get !== "function") {

@@ -1,6 +1,6 @@
-import { McmaObject } from "./mcma-object";
+import { McmaObject, McmaObjectProperties } from "./mcma-object";
 
-export interface McmaResourceProperties {
+export interface McmaResourceProperties extends McmaObjectProperties {
     id?: string;
     dateCreated?: Date | string;
     dateModified?: Date | string;
