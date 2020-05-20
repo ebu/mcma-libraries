@@ -2,15 +2,14 @@ import { HttpStatusCode } from "./http-statuses";
 import { McmaApiRouteCollection } from "../routing";
 import { McmaApiRequestContext } from "./mcma-api-request-context";
 import { McmaApiError } from "./mcma-api-error";
-import { LoggerProvider } from "@mcma/core";
 
-const getDefaultResponseHeaders = () => {
+function getDefaultResponseHeaders() {
     return {
         "Date": new Date().toUTCString(),
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
     };
-};
+}
 
 export class McmaApiController {
     constructor(private readonly routes?: McmaApiRouteCollection) {

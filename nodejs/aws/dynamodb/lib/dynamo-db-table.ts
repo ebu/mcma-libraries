@@ -32,7 +32,11 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
                         if (propValue === "") {
                             delete object[prop];
                         } else if (types.isDate(propValue)) {
-                            object[prop] = propValue.toISOString();
+                            if (isNaN(propValue.getTime())) {
+                                delete object[prop];
+                            } else {
+                                object[prop] = propValue.toISOString();
+                            }
                         } else if (typeof propValue === "object") {
                             this.normalize(propValue);
                         }

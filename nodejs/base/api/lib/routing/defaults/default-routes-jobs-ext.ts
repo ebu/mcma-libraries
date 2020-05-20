@@ -1,22 +1,22 @@
 import { v4 as uuidv4 } from "uuid";
 
-import { McmaTracker, JobAssignment } from "@mcma/core";
+import { JobAssignment, McmaTracker } from "@mcma/core";
 import { DbTableProvider } from "@mcma/data";
 
 import { DefaultRouteCollectionBuilder } from "./default-route-collection-builder";
-import { WorkerInvoker, InvokeWorker } from "../../worker-invoker";
+import { InvokeWorker, WorkerInvoker } from "../../worker-invoker";
 import { getWorkerFunctionId } from "../../context-variable-provider-ext";
 
 export function defaultRoutesForJobs(
     dbTableProvider: DbTableProvider,
     invokeWorker: InvokeWorker,
     root?: string
-): DefaultRouteCollectionBuilder<JobAssignment> { 
+): DefaultRouteCollectionBuilder<JobAssignment> {
     const builder = new DefaultRouteCollectionBuilder<JobAssignment>(dbTableProvider, JobAssignment, root);
     const workerInvoker = new WorkerInvoker(invokeWorker);
 
     return builder.addAll()
-        .route(r => r.create).configure(rb =>
+                  .route(r => r.create).configure(rb =>
             rb.onStarted(async (requestContext) => {
                 let body = requestContext.getRequestBody();
                 if (!body.tracker) {
@@ -26,16 +26,14 @@ export function defaultRoutesForJobs(
             }).onCompleted(async (requestContext, jobAssignment) => {
                 await workerInvoker.invoke(
                     getWorkerFunctionId(requestContext),
+                    "ProcessJobAssignment",
+                    requestContext.getAllContextVariables(),
                     {
-                        operationName: "ProcessJobAssignment",
-                        contextVariables: requestContext.getAllContextVariables(),
-                        input: {
-                            jobAssignmentId: jobAssignment.id
-                        },
-                        tracker: jobAssignment.tracker
-                    }
+                        jobAssignmentId: jobAssignment.id
+                    },
+                    jobAssignment.tracker
                 );
                 return jobAssignment;
             })
         );
-};
+}

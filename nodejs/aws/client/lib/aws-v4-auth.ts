@@ -5,7 +5,7 @@ import { AwsConfig, isAwsConfigInstance } from "./aws-config";
 import { AwsAuthContext, isAwsAuthContext1Instance, isAwsAuthContext2Instance } from "./aws-auth-context";
 import { McmaException } from "@mcma/core";
 
-const conformToAwsV4AuthContext = (awsConfig?: Aws | AwsConfig | AwsAuthContext): AwsAuthContext => {
+function conformToAwsV4AuthContext(awsConfig?: Aws | AwsConfig | AwsAuthContext): AwsAuthContext {
     let authContext: AwsAuthContext;
     if (awsConfig) {
         // check if this is the global AWS object
@@ -29,12 +29,14 @@ const conformToAwsV4AuthContext = (awsConfig?: Aws | AwsConfig | AwsAuthContext)
         }
         return authContext;
     }
-};
+}
 
-export const awsV4Auth = (awsConfig?: Aws | AwsConfig | AwsAuthContext): AuthTypeRegistration<AwsAuthContext> => ({
-    authType: "AWS4",
-    authenticatorFactory: authContext => {
-        authContext = authContext ?? conformToAwsV4AuthContext(awsConfig);
-        return new AwsV4Authenticator(authContext);
-    }
-});
+export function awsV4Auth(awsConfig?: Aws | AwsConfig | AwsAuthContext): AuthTypeRegistration<AwsAuthContext> {
+    return {
+        authType: "AWS4",
+        authenticatorFactory: authContext => {
+            authContext = authContext ?? conformToAwsV4AuthContext(awsConfig);
+            return new AwsV4Authenticator(authContext);
+        }
+    };
+}
