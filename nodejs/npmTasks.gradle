@@ -73,6 +73,9 @@ task npmPublish(type: Exec) {
     inputs.file("package.json")
     commandLine npmExecutable
     args "publish", "--access", "public", "--registry", "https://registry.npmjs.org"
+    doLast {
+        sleep(2000)
+    }
 }
 
 task npmPublishLocal(type: Exec) {
