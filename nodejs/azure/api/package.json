@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-functions-api",
-    "version": "0.9.3",
+    "version": "0.9.4",
     "description": "Build MCMA APIs using Azure Function Apps",
     "engines": {
         "node": "~10.16.3"
@@ -37,17 +37,17 @@
         "uuid": "^7.0.3"
     },
     "peerDependencies": {
-        "@mcma/api": "0.9.3",
-        "@mcma/client": "0.9.3",
-        "@mcma/core": "0.9.3",
-        "@mcma/data": "0.9.3"
+        "@mcma/api": "0.9.4",
+        "@mcma/client": "0.9.4",
+        "@mcma/core": "0.9.4",
+        "@mcma/data": "0.9.4"
     },
     "devDependencies": {
         "@azure/functions": "^1.2.0",
-        "@mcma/api": "0.9.3",
-        "@mcma/client": "0.9.3",
-        "@mcma/core": "0.9.3",
-        "@mcma/data": "0.9.3",
+        "@mcma/api": "0.9.4",
+        "@mcma/client": "0.9.4",
+        "@mcma/core": "0.9.4",
+        "@mcma/data": "0.9.4",
         "@types/uri-templates": "^0.1.30",
         "@types/uuid": "^7.0.3",
         "jasmine": "^3.2.0"

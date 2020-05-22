@@ -27,8 +27,8 @@ export abstract class McmaResource extends McmaObject implements McmaResourcePro
     protected constructor(type: string, properties: McmaResourceProperties) {
         super(type, properties);
 
-        this.dateCreated = new Date(this.dateCreated);
-        this.dateModified = new Date(this.dateModified)
+        this.dateCreated = this.ensureValidDateOrUndefined(this.dateCreated);
+        this.dateModified = this.ensureValidDateOrUndefined(this.dateModified);
     }
 
     onCreate = (id: string) => onResourceCreate(this, id);

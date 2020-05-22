@@ -3,6 +3,16 @@ import { McmaApiRouteCollection } from "../routing";
 import { McmaApiRequestContext } from "./mcma-api-request-context";
 import { McmaApiError } from "./mcma-api-error";
 
+const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+function reviver(this: any, key: string, value: any): any {
+    if (typeof value === "string" && dateFormat.test(value)) {
+        return new Date(value);
+    }
+
+    return value;
+}
+
 function getDefaultResponseHeaders() {
     return {
         "Date": new Date().toUTCString(),
@@ -30,7 +40,7 @@ export class McmaApiController {
 
             if (request.body) {
                 try {
-                    request.body = JSON.parse(request.body);
+                    request.body = JSON.parse(request.body, reviver);
                 } catch (error) {
                     response.statusCode = HttpStatusCode.BadRequest;
                     response.body = new McmaApiError(response.statusCode, error.message, request.path);

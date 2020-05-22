@@ -45,7 +45,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         this._profile = await this.resourceManager.get<JobProfile>(this._job.jobProfile);
 
         this._job.jobInput = new JobParameterBag(this._job.jobInput);
-        this._job.jobOutput = new JobParameterBag(this._job.jobOutput);
+        this._job.jobOutput = new JobParameterBag(this._jobAssignment.jobOutput);
     }
 
     validateJob(): void {

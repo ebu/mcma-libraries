@@ -53,4 +53,15 @@ export class McmaObject implements McmaObjectProperties {
             }
         }
     }
+
+    protected ensureValidDateOrUndefined(maybeDate: any) {
+        if (maybeDate === undefined || maybeDate === null) {
+            return undefined;
+        }
+        const date = new Date(maybeDate);
+        if (isNaN(date.getTime())) {
+            return undefined;
+        }
+        return date;
+    }
 }

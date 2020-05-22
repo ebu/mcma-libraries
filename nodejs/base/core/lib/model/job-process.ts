@@ -22,11 +22,7 @@ export class JobProcess extends JobBase<JobProcessProperties> implements JobProc
 
         this.checkProperty("job", "resource");
 
-        if (this.actualStartDate !== undefined && this.actualStartDate !== null) {
-            this.actualStartDate = new Date(this.actualStartDate);
-        }
-        if (this.actualEndDate !== undefined && this.actualEndDate !== null) {
-            this.actualEndDate = new Date(this.actualEndDate);
-        }
+        this.actualStartDate = this.ensureValidDateOrUndefined(this.actualStartDate);
+        this.actualEndDate = this.ensureValidDateOrUndefined(this.actualEndDate);
     }
 }

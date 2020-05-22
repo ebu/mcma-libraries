@@ -3,6 +3,16 @@ import { McmaException, ResourceEndpointProperties } from "@mcma/core";
 import { Http, HttpClient, HttpRequestConfig } from "../http";
 import { AuthProvider } from "../auth";
 
+const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+function reviver(this: any, key: string, value: any): any {
+    if (typeof value === "string" && dateFormat.test(value)) {
+        return new Date(value);
+    }
+
+    return value;
+}
+
 export class ResourceEndpointClient implements Http {
     private _httpClient: HttpClient;
 
@@ -21,14 +31,16 @@ export class ResourceEndpointClient implements Http {
         }
     }
 
-    get httpEndpoint(): string { return this.resourceEndpoint.httpEndpoint; }
+    get httpEndpoint(): string {
+        return this.resourceEndpoint.httpEndpoint;
+    }
 
     private get httpClient(): HttpClient {
         if (!this._httpClient) {
             const authenticator =
                 this.authProvider &&
                 this.authProvider.get(this.resourceEndpoint.authType || this.serviceAuthType, this.resourceEndpoint.authContext || this.serviceAuthContext);
-                
+
             this._httpClient = new HttpClient(authenticator);
         }
         return this._httpClient;
@@ -51,6 +63,15 @@ export class ResourceEndpointClient implements Http {
         config = config || {};
 
         config.baseURL = this.resourceEndpoint.httpEndpoint;
+        config.transformResponse = (data) => {
+            if (data) {
+                try {
+                    return JSON.parse(data, reviver);
+                } catch {
+                }
+            }
+            return data;
+        };
 
         return { url, config, body };
     }

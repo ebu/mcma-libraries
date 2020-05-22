@@ -15,35 +15,38 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
         super(type);
     }
 
-    private normalize(object: any) {
+    private serialize<T extends any>(object: T): T {
         if (object) {
-            if (Array.isArray(object)) {
-                for (let i = object.length - 1; i >= 0; i--) {
-                    if (object[i] === "") {
-                        object.splice(i, 1);
-                    } else if (typeof object[i] === "object") {
-                        this.normalize(object[i]);
+            for (const key of Object.keys(object)) {
+                const value = object[key];
+                if (types.isDate(value)) {
+                    if (isNaN(value.getTime())) {
+                        delete object[key];
+                    } else {
+                        object[key] = value.toISOString();
                     }
-                }
-            } else if (typeof object === "object") {
-                for (const prop in object) {
-                    if (object.hasOwnProperty(prop)) {
-                        const propValue = object[prop];
-                        if (propValue === "") {
-                            delete object[prop];
-                        } else if (types.isDate(propValue)) {
-                            if (isNaN(propValue.getTime())) {
-                                delete object[prop];
-                            } else {
-                                object[prop] = propValue.toISOString();
-                            }
-                        } else if (typeof propValue === "object") {
-                            this.normalize(propValue);
-                        }
-                    }
+                } else if (typeof value === "object") {
+                    object[key] = this.serialize(value);
                 }
             }
         }
+        return object;
+    }
+
+    private readonly dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+    private deserialize<T extends any>(object: T): T {
+        if (object) {
+            for (const key of Object.keys(object)) {
+                const value = object[key];
+                if (typeof value === "string" && this.dateFormat.test(value)) {
+                    object[key] = new Date(value);
+                } else if (typeof value === "object") {
+                    object[key] = this.deserialize(value);
+                }
+            }
+        }
+        return object;
     }
 
     async query(filter: (resource: T) => boolean): Promise<T[]> {
@@ -64,7 +67,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
             if (data.Items) {
                 for (const item of data.Items) {
                     if (!filter || filter(item.resource)) {
-                        items.push(item.resource);
+                        items.push(this.deserialize(item.resource));
                     }
                 }
             }
@@ -87,7 +90,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
         try {
             const data = await this.docClient.get(params).promise();
             if (data?.Item?.resource) {
-                return data.Item.resource;
+                return this.deserialize(data.Item.resource);
             }
         }
         catch (error) {
@@ -97,7 +100,8 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
     }
 
     async put(id: string, resource: T): Promise<T> {
-        this.normalize(resource);
+        resource = this.serialize(resource);
+
         const params: DocumentClient.PutItemInput = {
             TableName: this.tableName,
             Item: {
@@ -112,7 +116,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
         catch (error) {
             throw new McmaException("Failed to put resource in DynamoDB table", error);
         }
-        return resource;
+        return this.deserialize(resource);
     }
 
     async delete(id: string): Promise<void> {
