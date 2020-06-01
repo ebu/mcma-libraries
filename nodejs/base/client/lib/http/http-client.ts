@@ -6,15 +6,7 @@ import { McmaHeaders } from "./headers";
 import { Http } from "./http";
 import { HttpRequestConfig } from "./http-request-config";
 
-const dateFormat = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
 
-function reviver(this: any, key: string, value: any): any {
-    if (typeof value === "string" && dateFormat.test(value)) {
-        return new Date(value);
-    }
-
-    return value;
-}
 
 export class HttpClient implements Http {
     constructor(private authenticator?: Authenticator) {
@@ -67,7 +59,7 @@ export class HttpClient implements Http {
         config.transformResponse = (data) => {
             if (data) {
                 try {
-                    return JSON.parse(data, reviver);
+                    return JSON.parse(data, Utils.reviver);
                 } catch {
                 }
             }

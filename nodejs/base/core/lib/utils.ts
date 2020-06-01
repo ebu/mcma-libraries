@@ -58,10 +58,26 @@ async function sleep(timeout: number): Promise<void> {
     return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
 }
 
+const dateFormat = /^(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))$|^(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))$|^(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))$/;
+
+function isValidDateString(value: any): boolean {
+    return typeof value === "string" && dateFormat.test(value);
+}
+
+function reviver(this: any, key: string, value: any): any {
+    if (isValidDateString(value)) {
+        return new Date(value);
+    }
+
+    return value;
+}
+
 export const Utils = {
     isValidUrl,
     getTypeName,
     toBase64,
     fromBase64,
-    sleep
+    sleep,
+    isValidDateString,
+    reviver,
 };

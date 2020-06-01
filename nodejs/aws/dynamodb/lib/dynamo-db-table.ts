@@ -1,5 +1,5 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { McmaResource, McmaException, McmaResourceType } from "@mcma/core";
+import { McmaResource, McmaException, McmaResourceType, Utils } from "@mcma/core";
 import { DbTable } from "@mcma/data";
 import { types } from "util";
 
@@ -33,13 +33,11 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
         return object;
     }
 
-    private readonly dateFormat = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
-
     private deserialize<T extends any>(object: T): T {
         if (object) {
             for (const key of Object.keys(object)) {
                 const value = object[key];
-                if (typeof value === "string" && this.dateFormat.test(value)) {
+                if (Utils.isValidDateString(value)) {
                     object[key] = new Date(value);
                 } else if (typeof value === "object") {
                     object[key] = this.deserialize(value);

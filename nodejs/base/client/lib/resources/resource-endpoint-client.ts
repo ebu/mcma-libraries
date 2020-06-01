@@ -1,17 +1,7 @@
 import { AxiosResponse } from "axios";
-import { McmaException, ResourceEndpointProperties } from "@mcma/core";
+import { McmaException, ResourceEndpointProperties, Utils } from "@mcma/core";
 import { Http, HttpClient, HttpRequestConfig } from "../http";
 import { AuthProvider } from "../auth";
-
-const dateFormat = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
-
-function reviver(this: any, key: string, value: any): any {
-    if (typeof value === "string" && dateFormat.test(value)) {
-        return new Date(value);
-    }
-
-    return value;
-}
 
 export class ResourceEndpointClient implements Http {
     private _httpClient: HttpClient;
@@ -66,7 +56,7 @@ export class ResourceEndpointClient implements Http {
         config.transformResponse = (data) => {
             if (data) {
                 try {
-                    return JSON.parse(data, reviver);
+                    return JSON.parse(data, Utils.reviver);
                 } catch {
                 }
             }

@@ -2,16 +2,7 @@ import { HttpStatusCode } from "./http-statuses";
 import { McmaApiRouteCollection } from "../routing";
 import { McmaApiRequestContext } from "./mcma-api-request-context";
 import { McmaApiError } from "./mcma-api-error";
-
-const dateFormat = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
-
-function reviver(this: any, key: string, value: any): any {
-    if (typeof value === "string" && dateFormat.test(value)) {
-        return new Date(value);
-    }
-
-    return value;
-}
+import { Utils } from "@mcma/core";
 
 function getDefaultResponseHeaders() {
     return {
@@ -40,7 +31,7 @@ export class McmaApiController {
 
             if (request.body) {
                 try {
-                    request.body = JSON.parse(request.body, reviver);
+                    request.body = JSON.parse(request.body, Utils.reviver);
                 } catch (error) {
                     response.statusCode = HttpStatusCode.BadRequest;
                     response.body = new McmaApiError(response.statusCode, error.message, request.path);
