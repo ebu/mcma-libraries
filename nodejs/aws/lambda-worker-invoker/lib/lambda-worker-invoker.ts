@@ -8,7 +8,12 @@ export async function invokeLambdaWorker(workerFunctionId: string, workerRequest
         FunctionName: workerFunctionId,
         InvocationType: "Event",
         LogType: "None",
-        Payload: JSON.stringify(workerRequest)
+        Payload: JSON.stringify({
+            operationName: workerRequest.operationName,
+            contextVariables: workerRequest.contextVariables,
+            input: workerRequest.input,
+            tracker: workerRequest.tracker,
+        })
     }).promise();
 }
 
