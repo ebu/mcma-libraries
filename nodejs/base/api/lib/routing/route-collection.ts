@@ -22,7 +22,7 @@ export class McmaApiRouteCollection {
         return this;
     }
 
-    addRoutes(routes): McmaApiRouteCollection {
+    addRoutes(routes: McmaApiRouteCollection | McmaApiRoute[]): McmaApiRouteCollection {
         if (routes && typeof routes[Symbol.iterator] !== "function") {
             throw new McmaException("Argument must be an array of routes.");
         }

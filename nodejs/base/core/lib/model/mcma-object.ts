@@ -6,15 +6,14 @@ export interface McmaObjectProperties {
 }
 
 export class McmaObject implements McmaObjectProperties {
+    ["@type"]: string;
+    [key: string]: any;
+
     constructor(type: string, properties?: McmaObjectProperties) {
         this["@type"] = type;
 
         if (properties) {
-            for (const prop in properties) {
-                if (properties.hasOwnProperty(prop) && prop !== "@type") {
-                    this[prop] = properties[prop];
-                }
-            }
+            Object.assign(this, properties);
         }
     }
 
@@ -29,13 +28,7 @@ export class McmaObject implements McmaObjectProperties {
             return;
         }
 
-        if (expectedType === "resource") { // special MCMA type that can either be a URL referencing a resource or embedded object
-            if ((propertyType !== "string" && propertyType !== "object") ||
-                (propertyType === "string" && !Utils.isValidUrl(propertyValue)) ||
-                (propertyType === "object" && Array.isArray(propertyValue))) {
-                throw new McmaException("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have a valid URL or an object", null, this);
-            }
-        } else if (expectedType === "url") {
+        if (expectedType === "url") {
             if (propertyType !== "string" || !Utils.isValidUrl(propertyValue)) {
                 throw new McmaException("Resource of type '" + this["@type"] + "' requires property '" + propertyName + "' to have a valid URL", null, this);
             }

@@ -1,6 +1,5 @@
 import { McmaResource, McmaResourceProperties } from "./mcma-resource";
 import { ResourceEndpoint, ResourceEndpointProperties } from "./resource-endpoint";
-import { JobProfile, JobProfileProperties } from "./job-profile";
 
 export interface ServiceProperties extends McmaResourceProperties {
     name: string;
@@ -8,7 +7,7 @@ export interface ServiceProperties extends McmaResourceProperties {
     authType?: string;
     authContext?: any;
     jobType?: string;
-    jobProfiles?: (string | JobProfileProperties)[];
+    jobProfiles?: string[];
 }
 
 export class Service extends McmaResource implements ServiceProperties {
@@ -17,9 +16,9 @@ export class Service extends McmaResource implements ServiceProperties {
     authType?: string;
     authContext?: any;
     jobType?: string;
-    jobProfiles?: (string | JobProfileProperties)[];
+    jobProfiles?: string[];
 
-    constructor(properties) {
+    constructor(properties: ServiceProperties) {
         super("Service", properties);
 
         this.checkProperty("name", "string", true);
@@ -42,15 +41,6 @@ export class Service extends McmaResource implements ServiceProperties {
 
         for (let i = 0; i < this.resources.length; i++) {
             this.resources[i] = new ResourceEndpoint(this.resources[i]);
-        }
-
-        if (this.jobProfiles !== undefined) {
-            for (let i = 0; i < this.jobProfiles.length; i++) {
-                const jobProfile = this.jobProfiles[i];
-                if (typeof jobProfile !== "string") {
-                    this.jobProfiles[i] = new JobProfile(jobProfile);
-                }
-            }
         }
     }
 }

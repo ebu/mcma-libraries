@@ -1,10 +1,10 @@
-import { McmaResourceProperties, McmaResource } from "./mcma-resource";
+import { McmaObject, McmaObjectProperties } from "./mcma-object";
 
-export interface NotificationEndpointProperties extends McmaResourceProperties {
+export interface NotificationEndpointProperties extends McmaObjectProperties {
     httpEndpoint: string;
 }
 
-export class NotificationEndpoint extends McmaResource implements NotificationEndpointProperties {
+export class NotificationEndpoint extends McmaObject implements NotificationEndpointProperties {
     httpEndpoint: string;
     constructor(properties: NotificationEndpointProperties) {
         super("NotificationEndpoint", properties);

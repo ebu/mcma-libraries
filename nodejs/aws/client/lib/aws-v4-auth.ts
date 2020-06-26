@@ -23,12 +23,13 @@ function conformToAwsV4AuthContext(awsConfig?: Aws | AwsConfig | AwsAuthContext)
         } else {
             authContext = awsConfig;
         }
-        // check that it's valid
-        if (!isAwsAuthContext1Instance(authContext) && !isAwsAuthContext2Instance(authContext)) {
-            throw new McmaException("Invalid AWS config object.");
-        }
-        return authContext;
     }
+
+    // check that it's valid
+    if (!isAwsAuthContext1Instance(authContext) && !isAwsAuthContext2Instance(authContext)) {
+        throw new McmaException("Invalid AWS config object.");
+    }
+    return authContext;
 }
 
 export function awsV4Auth(awsConfig?: Aws | AwsConfig | AwsAuthContext): AuthTypeRegistration<AwsAuthContext> {

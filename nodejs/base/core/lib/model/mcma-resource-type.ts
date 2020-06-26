@@ -1,7 +1,7 @@
 import { McmaResource } from "./mcma-resource";
 
 export interface McmaResourceConstructor<T extends McmaResource> {
-    new(...args): T;
+    new(...args: any[]): T;
 
     name: string;
 }

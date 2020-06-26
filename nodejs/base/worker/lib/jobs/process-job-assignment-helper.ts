@@ -3,6 +3,7 @@ import { DbTable } from "@mcma/data";
 import { ResourceManager } from "@mcma/client";
 
 import { WorkerRequest } from "../worker-request";
+import { ProblemDetail, ProblemDetailProperties } from "@mcma/core/dist/lib/model/problem-detail";
 
 export class ProcessJobAssignmentHelper<T extends Job> {
     private _jobAssignment: JobAssignment;
@@ -63,31 +64,29 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         }
     }
 
-    async complete(message?: string): Promise<JobAssignment> {
+    async complete(): Promise<JobAssignment> {
         return await this.updateJobAssignment(
             ja => {
                 ja.status = JobStatus.Completed;
-                ja.statusMessage = message;
                 ja.jobOutput = this._job?.jobOutput;
             },
             true);
     }
 
-    async fail(message: string): Promise<JobAssignment> {
+    async fail(error: ProblemDetailProperties): Promise<JobAssignment> {
         return await this.updateJobAssignment(
             ja => {
                 ja.status = JobStatus.Failed;
-                ja.statusMessage = message;
+                ja.error = new ProblemDetail(error);
                 ja.jobOutput = this._job?.jobOutput;
             },
             true);
     }
 
-    async cancel(message?: string): Promise<JobAssignment> {
+    async cancel(): Promise<JobAssignment> {
         return await this.updateJobAssignment(
             ja => {
                 ja.status = JobStatus.Canceled;
-                ja.statusMessage = message;
                 ja.jobOutput = this._job?.jobOutput;
             },
             true);
@@ -97,11 +96,10 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         return await this.updateJobAssignment(ja => ja.jobOutput = this._job?.jobOutput);
     }
 
-    async updateJobAssignmentStatus(status: string, statusMessage?: string): Promise<JobAssignment> {
+    async updateJobAssignmentStatus(status: string): Promise<JobAssignment> {
         return await this.updateJobAssignment(
             ja => {
                 ja.status = status;
-                ja.statusMessage = statusMessage;
             },
             true);
     }

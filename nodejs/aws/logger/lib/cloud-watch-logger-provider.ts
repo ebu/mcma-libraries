@@ -10,7 +10,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
     private logGroupVerified = false;
     private logStreamCreated = false;
     private processing = false;
-    private sequenceToken = undefined;
+    private sequenceToken: string = undefined;
 
     private cloudWatchLogsClient = new CloudWatchLogs();
 
@@ -34,7 +34,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
 
                     let nextToken = undefined;
                     do {
-                        const params = {
+                        const params: CloudWatchLogs.DescribeLogGroupsRequest = {
                             logGroupNamePrefix: this.logGroupName,
                             nextToken,
                         };
@@ -68,7 +68,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                     this.logStreamCreated = true;
                 }
 
-                const params = {
+                const params: CloudWatchLogs.PutLogEventsRequest = {
                     logEvents: this.logEvents.map(le => ({
                         message: le.toString(),
                         timestamp: le.timestamp.getTime()

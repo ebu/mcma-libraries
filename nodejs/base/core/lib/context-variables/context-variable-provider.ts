@@ -5,7 +5,8 @@ function isContextVariableProvider(x: any): x is ContextVariableProvider {
 }
 
 export class ContextVariableProvider {
-    constructor(private _contextVariables: { [key: string]: any } = {}) {}
+    constructor(private _contextVariables: { [key: string]: any } = {}) {
+    }
 
     getAllContextVariables(): { [key: string]: any } {
         return this._contextVariables;
@@ -41,9 +42,9 @@ export class ContextVariableProvider {
         this._contextVariables[key] = value;
     }
 
-    merge(contextVariables: ContextVariableProvider)
-    merge(contextVariables: { [key: string]: any })
-    merge(contextVariables: ContextVariableProvider | { [key: string]: any }) {
+    merge(contextVariables: ContextVariableProvider): ContextVariableProvider
+    merge(contextVariables: { [key: string]: any }): ContextVariableProvider
+    merge(contextVariables: ContextVariableProvider | { [key: string]: any }): ContextVariableProvider {
         if (isContextVariableProvider(contextVariables)) {
             contextVariables = contextVariables.getAllContextVariables();
         }

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SecureRandom } from "./rng";
 import { BigInteger } from "./jsbn";
 

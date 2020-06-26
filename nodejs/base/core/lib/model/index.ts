@@ -5,14 +5,15 @@ export * from "./job-assignment";
 export * from "./job-base";
 export * from "./job-parameter-bag";
 export * from "./job-parameter";
-export * from "./job-process";
+export * from "./job-execution";
 export * from "./job-profile";
 export * from "./locator";
 export * from "./mcma-tracker";
 export * from "./notification-endpoint";
 export * from "./notification";
+export * from "./problem-detail";
 export * from "./resource-endpoint";
 export * from "./service";
 export * from "./job-status";
 
-export * from "./jobs/index";
+export * from "./jobs";
