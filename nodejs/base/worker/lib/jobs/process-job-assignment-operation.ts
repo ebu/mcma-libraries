@@ -86,7 +86,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
             try {
                 await jobAssignmentHelper.fail(new ProblemDetail({
                     type: "uri://mcma.ebu.ch/rfc7807/generic-job-failure",
-                    title: "Generic Job failure",
+                    title: "Generic job failure",
                     detail: e.message
                 }));
             } catch (inner) {
