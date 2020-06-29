@@ -18,7 +18,7 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
         super(type);
     }
 
-    private serialize(object) {
+    private serialize(object: any) {
         if (object) {
             for (const key of Object.keys(object)) {
                 const value = object[key];
@@ -36,7 +36,7 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
         return object;
     }
 
-    private deserialize(object) {
+    private deserialize(object: any) {
         if (object) {
             for (const key of Object.keys(object)) {
                 const value = object[key];
@@ -98,69 +98,61 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
     }
 
     private async executeQuery(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
-        try {
-            let keyConditionExpression = "#PartitionKey = :partitionKey";
-            let expressionAttributeNames = { "#PartitionKey": this.config.partitionKeyName };
-            let expressionAttributeValues = { ":partitionKey": query.partitionKey };
+        let keyConditionExpression = "#PartitionKey = :partitionKey";
+        let expressionAttributeNames: DocumentClient.ExpressionAttributeNameMap = { "#PartitionKey": this.config.partitionKeyName };
+        let expressionAttributeValues: DocumentClient.ExpressionAttributeValueMap = { ":partitionKey": query.partitionKey };
 
-            if (query.sortKey) {
-                keyConditionExpression += " and #SortKey = :sortKey";
-                expressionAttributeNames["#SortKey"] = this.config.sortKeyName;
-                expressionAttributeValues[":sorTKey"] = query.sortKey;
-            }
-
-            let filterExpression: string;
-            if (query.filter) {
-                const dynamoDbFilter = new DynamoDbFilter(query.filter);
-                dynamoDbFilter.build();
-                
-                filterExpression = dynamoDbFilter.expression;
-                expressionAttributeNames = Object.assign(expressionAttributeNames, dynamoDbFilter.attributeNames);
-                expressionAttributeValues = Object.assign(expressionAttributeValues, dynamoDbFilter.attributeValues);
-            }
-
-            const params: DocumentClient.QueryInput = {
-                TableName: this.tableName,
-                KeyConditionExpression: keyConditionExpression,
-                FilterExpression: filterExpression,
-                ExpressionAttributeNames: expressionAttributeNames,
-                ExpressionAttributeValues: expressionAttributeValues,
-                ConsistentRead: this.options?.consistentQuery
-            };
-
-            return this.executeScanOrQuery(
-                () => this.docClient.query(params).promise(),
-                params,
-                query.pageSize,
-                query.pageNumber
-            );
-        } catch (error) {
-            console.error(error);
+        if (query.sortKey) {
+            keyConditionExpression += " and #SortKey = :sortKey";
+            expressionAttributeNames["#SortKey"] = this.config.sortKeyName;
+            expressionAttributeValues[":sortKey"] = query.sortKey;
         }
+
+        let filterExpression: string;
+        if (query.filter) {
+            const dynamoDbFilter = new DynamoDbFilter(query.filter);
+            dynamoDbFilter.build();
+            
+            filterExpression = dynamoDbFilter.expression;
+            expressionAttributeNames = Object.assign(expressionAttributeNames, dynamoDbFilter.attributeNames);
+            expressionAttributeValues = Object.assign(expressionAttributeValues, dynamoDbFilter.attributeValues);
+        }
+
+        const params: DocumentClient.QueryInput = {
+            TableName: this.tableName,
+            KeyConditionExpression: keyConditionExpression,
+            FilterExpression: filterExpression,
+            ExpressionAttributeNames: expressionAttributeNames,
+            ExpressionAttributeValues: expressionAttributeValues,
+            ConsistentRead: this.options?.consistentQuery
+        };
+
+        return this.executeScanOrQuery(
+            () => this.docClient.query(params).promise(),
+            params,
+            query.pageSize,
+            query.pageNumber
+        );
     }
 
     private async executeScan(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
-        try {
-            const dynamoDbFilter = new DynamoDbFilter(query.filter);
-            dynamoDbFilter.build();
+        const dynamoDbFilter = new DynamoDbFilter(query.filter);
+        dynamoDbFilter.build();
 
-            const params: DocumentClient.ScanInput = {
-                TableName: this.tableName,
-                FilterExpression: dynamoDbFilter.expression,
-                ExpressionAttributeNames:  dynamoDbFilter.attributeNames,
-                ExpressionAttributeValues: dynamoDbFilter.attributeValues,
-                ConsistentRead: this.options?.consistentQuery
-            };
+        const params: DocumentClient.ScanInput = {
+            TableName: this.tableName,
+            FilterExpression: dynamoDbFilter.expression,
+            ExpressionAttributeNames:  dynamoDbFilter.attributeNames,
+            ExpressionAttributeValues: dynamoDbFilter.attributeValues,
+            ConsistentRead: this.options?.consistentQuery
+        };
 
-            return this.executeScanOrQuery(
-                () => this.docClient.scan(params).promise(),
-                params,
-                query.pageSize,
-                query.pageNumber
-            );
-        } catch (error) {
-            console.error(error);
-        }
+        return this.executeScanOrQuery(
+            () => this.docClient.scan(params).promise(),
+            params,
+            query.pageSize,
+            query.pageNumber
+        );
     }
 
     async query(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
