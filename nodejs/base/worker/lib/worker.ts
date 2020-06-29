@@ -14,7 +14,7 @@ export class Worker {
     }
 
     private isWorkerOperation(operation: string | OperationFilter | WorkerOperation): operation is WorkerOperation {
-        return operation && typeof operation["execute"] !== "undefined";
+        return operation && typeof (<any>operation)["execute"] !== "undefined";
     }
 
     addOperation(operationName: string, handler: OperationHandler): this;

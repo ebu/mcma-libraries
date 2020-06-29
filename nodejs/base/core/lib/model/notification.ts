@@ -1,18 +1,18 @@
-import { McmaResource, McmaResourceProperties } from "./mcma-resource";
-import { McmaObject } from "./mcma-object";
+import { McmaObject, McmaObjectProperties } from "./mcma-object";
 
-export interface NotificationProperties extends McmaResourceProperties {
-    content: McmaObject;
+export interface NotificationProperties extends McmaObjectProperties {
     source?: string;
+    content: any;
 }
 
-export class Notification extends McmaResource implements NotificationProperties {
-    content: McmaObject;
+export class Notification extends McmaObject implements NotificationProperties {
     source?: string;
-    constructor(properties) {
+    content: any;
+
+    constructor(properties: NotificationProperties) {
         super("Notification", properties);
 
         this.checkProperty("source", "string", false);
-        this.checkProperty("content", "resource", true);
+        this.checkProperty("content", "object", true);
     }
 }

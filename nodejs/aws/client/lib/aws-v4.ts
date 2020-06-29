@@ -1,5 +1,6 @@
 import * as CryptoJS from "crypto-js";
 import { HttpRequestConfig } from "@mcma/client";
+import { McmaException } from "@mcma/core";
 
 const AWS_SHA_256 = "AWS4-HMAC-SHA256";
 const AWS4_REQUEST = "aws4_request";
@@ -17,19 +18,19 @@ const X_AMZ_SIGNEDHEADERS_QUERY_PARAM = "X-Amz-SignedHeaders";
 const X_AMZ_SIGNATURE_QUERY_PARAM = "X-Amz-Signature";
 const X_AMZ_EXPIRES_QUERY_PARAM = "X-Amz-Expires";
 
-function hash(value) {
+function hash(value: string) {
     return CryptoJS.SHA256(value);
 }
 
-function hexEncode(value) {
+function hexEncode(value: CryptoJS.WordArray) {
     return value.toString(CryptoJS.enc.Hex);
 }
 
-function hmac(secret, value) {
+function hmac(secret: string | CryptoJS.WordArray, value: string) {
     return CryptoJS.HmacSHA256(value, secret, { asBytes: true });
 }
 
-function buildCanonicalRequest(method, pathname, queryParams, headers, data) {
+function buildCanonicalRequest(method: string, pathname: string, queryParams: { [key: string]: string }, headers: { [key: string]: string }, data: any) {
     return method + "\n" +
         buildCanonicalUri(pathname) + "\n" +
         buildCanonicalQueryString(queryParams) + "\n" +
@@ -38,55 +39,55 @@ function buildCanonicalRequest(method, pathname, queryParams, headers, data) {
         hexEncode(hash(typeof data === "string" ? data : JSON.stringify(data)));
 }
 
-function hashCanonicalRequest(request) {
+function hashCanonicalRequest(request: string) {
     return hexEncode(hash(request));
 }
 
-function buildCanonicalUri(uri) {
+function buildCanonicalUri(uri: string) {
     return encodeURI(uri);
 }
 
-function buildCanonicalQueryString(queryParams) {
+function buildCanonicalQueryString(queryParams: { [key: string]: string }) {
     if (Object.keys(queryParams ?? {}).length < 1) {
         return "";
     }
 
-    var sortedQueryParams = [];
-    for (var property of Object.keys(queryParams)) {
+    const sortedQueryParams = [];
+    for (const property of Object.keys(queryParams)) {
         sortedQueryParams.push(property);
     }
     sortedQueryParams.sort();
 
-    var canonicalQueryString = "";
-    for (var i = 0; i < sortedQueryParams.length; i++) {
+    let canonicalQueryString = "";
+    for (let i = 0; i < sortedQueryParams.length; i++) {
         canonicalQueryString += sortedQueryParams[i] + "=" + fixedEncodeURIComponent(queryParams[sortedQueryParams[i]]) + "&";
     }
     return canonicalQueryString.substr(0, canonicalQueryString.length - 1);
 }
 
-function fixedEncodeURIComponent(str) {
+function fixedEncodeURIComponent(str: string) {
     return encodeURIComponent(str).replace(/[!"()*]/g, function (c) {
         return "%" + c.charCodeAt(0).toString(16).toUpperCase();
     });
 }
 
-function buildCanonicalHeaders(headers) {
-    var canonicalHeaders = "";
-    var sortedKeys = [];
-    for (var property of Object.keys(headers)) {
+function buildCanonicalHeaders(headers: { [key: string]: string }) {
+    let canonicalHeaders = "";
+    const sortedKeys: string[] = [];
+    for (const property of Object.keys(headers)) {
         sortedKeys.push(property);
     }
     sortedKeys.sort();
 
-    for (var i = 0; i < sortedKeys.length; i++) {
+    for (let i = 0; i < sortedKeys.length; i++) {
         canonicalHeaders += sortedKeys[i].toLowerCase() + ":" + headers[sortedKeys[i]] + "\n";
     }
     return canonicalHeaders;
 }
 
-function buildCanonicalSignedHeaders(headers) {
-    var sortedKeys = [];
-    for (var property of Object.keys(headers)) {
+function buildCanonicalSignedHeaders(headers: { [key: string]: string }): string {
+    const sortedKeys = [];
+    for (const property of Object.keys(headers)) {
         sortedKeys.push(property.toLowerCase());
     }
     sortedKeys.sort();
@@ -94,44 +95,44 @@ function buildCanonicalSignedHeaders(headers) {
     return sortedKeys.join(";");
 }
 
-function buildStringToSign(datetime, credentialScope, hashedCanonicalRequest) {
+function buildStringToSign(datetime: string, credentialScope: string, hashedCanonicalRequest: string) {
     return AWS_SHA_256 + "\n" +
         datetime + "\n" +
         credentialScope + "\n" +
         hashedCanonicalRequest;
 }
 
-function buildCredentialScope(datetime, region, service) {
+function buildCredentialScope(datetime: string, region: string, service: string) {
     return datetime.substr(0, 8) + "/" + region + "/" + service + "/" + AWS4_REQUEST;
 }
 
-function calculateSigningKey(secretKey, datetime, region, service) {
+function calculateSigningKey(secretKey: string, datetime: string, region: string, service: string): CryptoJS.WordArray {
     return hmac(hmac(hmac(hmac(AWS4 + secretKey, datetime.substr(0, 8)), region), service), AWS4_REQUEST);
 }
 
-function calculateSignature(key, stringToSign) {
+function calculateSignature(key: CryptoJS.WordArray, stringToSign: string) {
     return hexEncode(hmac(key, stringToSign));
 }
 
-function buildAuthorizationHeader(signature, credentialScope, signedHeaders) {
+function buildAuthorizationHeader(signature: string, credentialScope: string, signedHeaders: string) {
     return AWS_SHA_256 + " Credential=" + credentialScope + ", SignedHeaders=" + signedHeaders + ", Signature=" + signature;
 }
 
-function generateSignature(request, credentials, datetime, credentialScope) {
+function generateSignature(request: HttpRequestConfig, credentials: ConformedCredentials, datetime: string, credentialScope: string): string {
     if (!credentials) {
-        return;
+        return "";
     }
 
     // parse the url and create a params object from the query string, if any
     const requestUrl = new URL(request.url);
 
-    let requestQueryParams = {};
+    let requestQueryParams: { [key: string]: string } = {};
     for (let entry of requestUrl.searchParams.entries()) {
         requestQueryParams[entry[0]] = entry[1];
     }
 
     // build full set of query params, both from the url and from the params property of the request, into a single object
-    const queryParams = Object.assign({}, requestQueryParams, request.params ?? {});
+    const queryParams: { [key: string]: string } = Object.assign({}, requestQueryParams, request.params ?? {});
 
     // build signature
     const canonicalRequest = buildCanonicalRequest(request.method, requestUrl.pathname, queryParams, request.headers, request.data);
@@ -142,7 +143,7 @@ function generateSignature(request, credentials, datetime, credentialScope) {
     return calculateSignature(signingKey, stringToSign);
 }
 
-function getAwsDate() {
+function getAwsDate(): string {
     return new Date().toISOString().replace(/\.\d{3}Z$/, "Z").replace(/[:\-]|\.\d{3}/g, "");
 }
 
@@ -156,7 +157,7 @@ function conformCredentials(credentials: Credentials): ConformedCredentials {
 
     // ensure access key and secret key is set
     if (!credentials.accessKey || !credentials.secretKey) {
-        return;
+        throw new McmaException("Failed to conform AWS credentials");
     }
 
     // if no service name was provided, we"ll assume this is an API Gateway request
@@ -166,7 +167,7 @@ function conformCredentials(credentials: Credentials): ConformedCredentials {
 }
 
 export class AwsV4Authenticator {
-    private credentials: ConformedCredentials;
+    private readonly credentials: ConformedCredentials;
 
     constructor(credentials: Credentials) {
         this.credentials = conformCredentials(credentials);
@@ -177,8 +178,6 @@ export class AwsV4Authenticator {
 
         // create headers object in case missing
         request.headers = request.headers ?? {};
-
-        const test = request?.headers;
 
         // capture request datetime
         const datetime = getAwsDate();
@@ -208,18 +207,18 @@ export class AwsV4Authenticator {
 }
 
 export class AwsV4PresignedUrlGenerator {
-    private credentials: ConformedCredentials;
+    private readonly credentials: ConformedCredentials;
 
     constructor(credentials: Credentials) {
         this.credentials = conformCredentials(credentials);
     }
     
-    generatePresignedUrl = (method, requestUrl, expires = 300) => {
+    generatePresignedUrl = (method: string, requestUrl: string, expires = 300) => {
         // parse the url we want to sign so we can work with the query string
         const requestUrlParsed = new URL(requestUrl);
 
         // gather inputs for generating the signature
-        const headers = {};
+        const headers: { [key: string]: string } = {};
         headers[HOST] = requestUrlParsed.host;
 
         const datetime = getAwsDate();
@@ -238,7 +237,7 @@ export class AwsV4PresignedUrlGenerator {
             requestUrlParsed.searchParams.set(X_AMZ_SECURITY_TOKEN_QUERY_PARAM, this.credentials.sessionToken);
         }
 
-        let params = {};
+        let params: { [key: string]: string } = {};
         for (let entry of requestUrlParsed.searchParams.entries()) {
             params[entry[0]] = entry[1];
         }

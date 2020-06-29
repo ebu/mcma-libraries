@@ -1,5 +1,15 @@
 import { DynamoDB } from "aws-sdk";
-import { McmaException, Logger, Utils } from "@mcma/core";
+import { Logger, McmaException, Utils } from "@mcma/core";
+
+interface TableKey {
+    [key: string]: any
+}
+
+interface TableItem extends TableKey {
+    mutexHolder?: string
+    random?: number
+    timestamp?: number
+}
 
 export class DynamoDbMutex {
     private readonly dc: DynamoDB.DocumentClient;
@@ -39,7 +49,7 @@ export class DynamoDbMutex {
     }
 
     private generateTableKey() {
-        const Key = {};
+        const Key: TableKey = {};
         if (this.tableKey.sortKey) {
             Key[this.tableKey.partitionKey] = "Mutex";
             Key[this.tableKey.sortKey] = this.mutexName;
@@ -50,7 +60,7 @@ export class DynamoDbMutex {
     }
 
     private generateTableItem() {
-        const Item = {};
+        const Item: TableItem = {};
         if (this.tableKey.sortKey) {
             Item[this.tableKey.partitionKey] = "Mutex";
             Item[this.tableKey.sortKey] = this.mutexName;
@@ -84,7 +94,7 @@ export class DynamoDbMutex {
     }
 
     private async putLockData() {
-        const value = {
+        const value: DynamoDB.DocumentClient.PutItemInput = {
             TableName: this.tableName,
             Item: this.generateTableItem(),
             Expected: {
@@ -98,7 +108,7 @@ export class DynamoDbMutex {
         await this.dc.put(value).promise();
     }
 
-    private async deleteLockData(random) {
+    private async deleteLockData(random: number) {
         await this.dc.delete({
             TableName: this.tableName,
             Key: this.generateTableKey(),

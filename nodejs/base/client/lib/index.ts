@@ -1,3 +1,3 @@
-export * from "./auth/index";
-export * from "./http/index";
-export * from "./resources/index";
+export * from "./auth";
+export * from "./http";
+export * from "./resources";

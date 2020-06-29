@@ -4,6 +4,7 @@ const Prefix = "CosmosDb";
 
 export function fillOptionsFromEnvironmentVariables(options: CosmosDbTableProviderOptions): CosmosDbTableProviderOptions {
     for (let prop of Object.keys(options)) {
+        // @ts-ignore
         options[prop] = process.env[Prefix + prop];
     }
     return options;
@@ -14,6 +15,7 @@ export function fillOptionsFromContextVariableProvider(
     contextVariableProvider: ContextVariableProvider
 ): CosmosDbTableProviderOptions {
     for (let prop of Object.keys(options)) {
+        // @ts-ignore
         options[prop] = contextVariableProvider.getRequiredContextVariable[Prefix + prop];
     }
     return options;

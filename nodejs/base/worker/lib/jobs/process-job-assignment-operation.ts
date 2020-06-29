@@ -4,9 +4,10 @@ import { ProviderCollection } from "../provider-collection";
 import { WorkerRequest } from "../worker-request";
 import { JobProfileHandler } from "./job-profile-handler";
 import { ProcessJobProfile } from "./process-job-profile";
+import { ProblemDetail } from "@mcma/core/dist/lib/model/problem-detail";
 
 export class ProcessJobAssignmentOperation<T extends Job> {
-    private jobType: string;
+    private readonly jobType: string;
     private profiles: ProcessJobProfile<T>[] = [];
 
     constructor(jobType: McmaResourceType<T>) {
@@ -83,7 +84,11 @@ export class ProcessJobAssignmentOperation<T extends Job> {
             workerRequest.logger?.error(e.message);
             workerRequest.logger?.error(e.toString());
             try {
-                await jobAssignmentHelper.fail(e.message);
+                await jobAssignmentHelper.fail(new ProblemDetail({
+                    type: "uri://mcma.ebu.ch/rfc7807/generic-job-failure",
+                    title: "Generic job failure",
+                    detail: e.message
+                }));
             } catch (inner) {
                 workerRequest.logger?.error(inner.toString());
             }

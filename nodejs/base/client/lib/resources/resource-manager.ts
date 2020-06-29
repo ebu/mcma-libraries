@@ -1,4 +1,4 @@
-import { McmaException, Service, ResourceEndpoint, Notification, McmaResource, McmaResourceType, NotificationEndpointProperties, NotificationEndpoint, ServiceProperties } from "@mcma/core";
+import { McmaException, McmaResource, McmaResourceType, Notification, NotificationEndpointProperties, ResourceEndpoint, Service, ServiceProperties } from "@mcma/core";
 
 import { Http, HttpClient } from "../http";
 import { AuthProvider } from "../auth";
@@ -16,7 +16,6 @@ export class ResourceManager {
             throw new McmaException("Missing property 'servicesUrl' in ResourceManager config");
         }
     }
-    
 
     async init(): Promise<void> {
         try {
@@ -77,7 +76,7 @@ export class ResourceManager {
             }
 
             try {
-                if (!usedHttpEndpoints[resourceEndpoint.httpEndpoint]) {
+                if (!usedHttpEndpoints.includes(resourceEndpoint.httpEndpoint)) {
                     let response = await resourceEndpoint.get<T[]>({ params: filter });
                     result.push(...(response.data));
                 }
@@ -92,7 +91,7 @@ export class ResourceManager {
 
         if (errors.length > 0) {
             throw new McmaException("Failed to query any available resource endpoints for resource type '" + resourceType + "'\n" +
-                                "Errors:\n" + errors.join("\n"));
+                                    "Errors:\n" + errors.join("\n"));
         }
 
         return result;
@@ -118,19 +117,15 @@ export class ResourceManager {
         throw new McmaException("ResourceManager: Failed to find service to create resource of type '" + resourceType + "'.");
     };
 
-    async get<T extends McmaResource>(resource: T | string): Promise<T | null> {
+    async get<T extends McmaResource>(resource: string): Promise<T | null> {
         let resolvedResource: T;
 
-        if (typeof resource === "string") {
-            let http: Http = await this.getResourceEndpointClient(resource) || this.httpClient;
-            try {
-                let response = await http.get<T>(resource);
-                resolvedResource = response.data;
-            } catch (error) {
-                throw new McmaException("ResourceManager: Failed to get resource from URL '" + resource + "'", error);
-            }
-        } else {
-            resolvedResource = resource;
+        let http: Http = await this.getResourceEndpointClient(resource) || this.httpClient;
+        try {
+            let response = await http.get<T>(resource);
+            resolvedResource = response.data;
+        } catch (error) {
+            throw new McmaException("ResourceManager: Failed to get resource from URL '" + resource + "'", error);
         }
 
         if (!resolvedResource) {
@@ -193,23 +188,16 @@ export class ResourceManager {
         return undefined;
     };
 
-    async sendNotification<T extends { id?: string, notificationEndpoint?: NotificationEndpointProperties | string }>(resource: T): Promise<void> {
+    async sendNotification<T extends { id?: string, notificationEndpoint?: NotificationEndpointProperties }>(resource: T): Promise<void> {
         if (resource.notificationEndpoint) {
             try {
-                let notificationEndpoint: NotificationEndpointProperties;
-                if (typeof resource.notificationEndpoint === "string") {
-                    notificationEndpoint = await this.get<NotificationEndpoint>(resource.notificationEndpoint);
-                } else {
-                    notificationEndpoint = resource.notificationEndpoint;
-                }
-
-                let http: Http = await this.getResourceEndpointClient(notificationEndpoint.httpEndpoint) || this.httpClient;
+                let http: Http = await this.getResourceEndpointClient(resource.notificationEndpoint.httpEndpoint) ?? this.httpClient;
 
                 let notification = new Notification({
                     source: resource.id,
                     content: resource
                 });
-                await http.post(notification, notificationEndpoint.httpEndpoint);
+                await http.post(notification, resource.notificationEndpoint.httpEndpoint);
             } catch (error) {
                 throw new McmaException("ResourceManager: Failed to send notification.", error);
             }

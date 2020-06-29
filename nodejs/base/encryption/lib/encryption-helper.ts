@@ -16,10 +16,11 @@ export interface RSAPrivateParams extends RSAPublicParams {
 }
 
 function isPrivateParams(rsa: RSAPublicParams): rsa is RSAPrivateParams {
+    // @ts-ignore
     return typeof rsa["p"] !== "undefined";
 }
 
-function exportRsaKey(rsa: RSAKey, includePrivate: boolean): (typeof includePrivate extends  true ? RSAPrivateParams : RSAPublicParams) {
+function exportRsaKey(rsa: RSAKey, includePrivate: boolean): (typeof includePrivate extends true ? RSAPrivateParams : RSAPublicParams) {
     let rsaKey = {
         n: rsa.n.toString(16),
         e: rsa.e.toString(16)
@@ -27,9 +28,7 @@ function exportRsaKey(rsa: RSAKey, includePrivate: boolean): (typeof includePriv
 
     if (!includePrivate) {
         return rsaKey;
-    }
-
-    if (includePrivate) {
+    } else {
         return Object.assign(rsaKey, {
             d: rsa.d.toString(16),
             p: rsa.p.toString(16),
@@ -68,7 +67,7 @@ function generateNewKeys(): [string, string] {
     return [exportJson(rsa, true), exportJson(rsa, false)];
 }
 
-function encrypt(toEncrypt: string, publicKeyJson: string): string{
+function encrypt(toEncrypt: string, publicKeyJson: string): string {
     const rsa = new RSAKey();
     importJson(rsa, publicKeyJson);
     return Utils.toBase64(rsa.encrypt(toEncrypt));
@@ -84,4 +83,4 @@ export const EncryptionHelper = {
     generateNewKeys,
     encrypt,
     decrypt
-}
+};
