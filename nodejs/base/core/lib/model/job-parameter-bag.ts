@@ -1,9 +1,9 @@
-import { McmaObject } from "./mcma-object";
+import { McmaObject, McmaObjectProperties } from "./mcma-object";
 
 export class JobParameterBag extends McmaObject {
     [key: string]: any;
 
-    constructor(properties?: { [key: string]: any }) {
+    constructor(properties?: McmaObjectProperties) {
         super("JobParameterBag", properties);
     }
 

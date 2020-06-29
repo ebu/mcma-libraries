@@ -1,5 +1,5 @@
 import { AccessTokenAuthenticator, AuthTypeRegistration } from "@mcma/client";
-import { AzureManagedIdentityAccessTokenProvider } from "./azure-managed-identity-authenticator";
+import { AzureManagedIdentityAccessTokenProvider } from "./azure-managed-identity-access-token-provider";
 import { AzureAdAuthContext } from "../azure-ad-auth-context";
 
 export function azureAdManagedIdentityAuth(): AuthTypeRegistration<AzureAdAuthContext> {

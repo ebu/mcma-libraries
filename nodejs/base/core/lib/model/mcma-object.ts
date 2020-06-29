@@ -2,10 +2,14 @@ import { McmaException } from "../mcma-exception";
 import { Utils } from "../utils";
 
 export interface McmaObjectProperties {
+    ["@type"]?: string;
+
     [key: string]: any;
 }
 
 export class McmaObject implements McmaObjectProperties {
+    ["@type"]: string;
+
     constructor(type: string, properties?: McmaObjectProperties) {
         this["@type"] = type;
 

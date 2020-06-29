@@ -1,24 +1,20 @@
-import { McmaResource, McmaResourceType, McmaException } from "@mcma/core";
-import { DbTable } from "@mcma/data";
-import { CosmosClient, Container, Database, extractPartitionKey, SqlQuerySpec } from "@azure/cosmos";
-import { SqlBuilder } from "./cosmos-db-sql-builder";
+import { DocumentDatabaseTable, DocumentDatabaseTableConfig, DocumentType, Document, DocumentDatabaseQuery } from "@mcma/data";
+import { CosmosClient, Container } from "@azure/cosmos";
+import { CosmosDbFilter } from "./cosmos-db-filter";
 import { CosmosDbItem } from "./cosmos-db-item";
+import { McmaException } from "@mcma/core";
 
-export class CosmosDbTable<T extends McmaResource> extends DbTable<T> {
+export class CosmosDbTable<TDocument extends Document = Document, TPartitionKey = string, TSortKey = string> extends DocumentDatabaseTable<TDocument, TPartitionKey, TSortKey> {
     private containerPromise: Promise<Container>;
 
     constructor(
-        type: McmaResourceType<T>,
-        private cosmosClient: CosmosClient,
-        private databaseId: string,
         private tableName: string,
-        private partitionKeySelector: (x: T) => string
+        type: DocumentType<TDocument>,
+        private config: DocumentDatabaseTableConfig<TDocument, TPartitionKey, TSortKey>,
+        private cosmosClient: CosmosClient,
+        private databaseId: string
     ) {
         super(type);
-
-        if (!partitionKeySelector) {
-            this.partitionKeySelector = x => x["@type"];
-        }
     }
 
     private async getContainer(): Promise<Container> {
@@ -35,23 +31,26 @@ export class CosmosDbTable<T extends McmaResource> extends DbTable<T> {
         return await this.containerPromise;
     }
 
-    async query(filter: (resource: T) => boolean): Promise<T[]> {
+    async query(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
         const container = await this.getContainer();
 
-        const sqlBuilder = new SqlBuilder<T>(this.type);
-        sqlBuilder.addFilter(filter);
+        const filter = new CosmosDbFilter<TDocument>(query.filter);
 
-        const queryIterator = container.items.query<CosmosDbItem<T>>(sqlBuilder.toSqlQuerySpec());
+        const queryIterator = container.items.query<CosmosDbItem<TDocument>>(filter.toSqlQuerySpec());
 
         const resp = await queryIterator.fetchAll();
 
         return resp.resources.map(x => x.resource);
     }
     
-    async get(id: string): Promise<T> {
+    async get(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<TDocument> {
+        if (!sortKey) {
+            throw new McmaException("Sort key was not provided.");
+        }
+
         const container = await this.getContainer();
 
-        const resp = await container.item(id).read<CosmosDbItem<T>>();
+        const resp = await container.item(sortKey.toString(), partitionKey).read<CosmosDbItem<TDocument>>();
         if (resp.statusCode === 404) {
             return null;
         }
@@ -59,23 +58,29 @@ export class CosmosDbTable<T extends McmaResource> extends DbTable<T> {
         return resp.resource.resource;
     }
     
-    async put(id: string, resource: T): Promise<T> {
-        if (resource.id !== id) {
-            resource.id = id;
-        }
+    async put(resource: TDocument): Promise<TDocument> {
 
         const container = await this.getContainer();
 
-        const item = new CosmosDbItem<T>(resource, this.partitionKeySelector(resource));
+        const partitionKey = this.config.getPartitionKey(resource);
+        const sortKey = this.config.getSortKey(resource);
+        if (!sortKey) {
+            throw new McmaException("Sort key is not set on resource.");
+        }
 
-        const resp = await container.items.upsert<CosmosDbItem<T>>(item);
+        const item = new CosmosDbItem<TDocument, TPartitionKey>(partitionKey, sortKey.toString(), resource);
+
+        const resp = await container.items.upsert<CosmosDbItem<TDocument, TPartitionKey>>(item);
 
         return resp.resource.resource;
     }
     
-    async delete(id: string): Promise<void> {
-        const container = await this.getContainer();
+    async delete(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<void> {
+        if (!sortKey) {
+            throw new McmaException("Sort key was not provided.");
+        }
 
-        await container.item(id).delete();
+        const container = await this.getContainer();
+        await container.item(sortKey.toString(), partitionKey).delete();
     }
 }

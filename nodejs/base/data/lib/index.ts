@@ -1,2 +1,1 @@
-export * from "./db-table-provider";
-export * from "./db-table";
+export * from "./document-database/index";

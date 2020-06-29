@@ -1,13 +1,18 @@
-import { McmaResource, McmaResourceType } from "@mcma/core";
-import { DbTableProvider } from "@mcma/data";
+import { DocumentDatabaseTableProvider, DocumentDatabaseTableConfig, DocumentType, Document } from "@mcma/data";
 
-import { DynamoDbTable, DynamoDbTableOptions } from "./dynamo-db-table";
+import { DynamoDbTable } from "./dynamo-db-table";
+import { DynamoDbTableOptions } from "./dynamo-db-table-options";
 
-export class DynamoDbTableProvider implements DbTableProvider {
+export class DynamoDbTableProvider extends DocumentDatabaseTableProvider {
     constructor(private options?: DynamoDbTableOptions) {
+        super();
     }
 
-    get<T extends McmaResource>(tableName: string, type: McmaResourceType<T>) {
-        return new DynamoDbTable<T>(tableName, type, this.options);
+    protected getFromConfig<TDocument extends Document = Document, TPartitionKey = string, TSortKey = string>(
+        tableName: string,
+        type: DocumentType<TDocument>,
+        config: DocumentDatabaseTableConfig<TDocument, TPartitionKey, TSortKey>
+    ) {
+        return new DynamoDbTable<TDocument, TPartitionKey, TSortKey>(tableName, type, config, this.options);
     }
 }

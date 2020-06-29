@@ -1,20 +1,16 @@
-import { McmaResource } from "@mcma/core";
+import { Document } from "@mcma/data";
 
-export interface CosmosDbItem<T extends McmaResource> {
-    id: string;
-    type: string;
-    partitionKey: string;
-    resource: T;
+export interface CosmosDbItem<TDocument extends Document = Document, TPartitionKey = string, TSortKey = string> {
+    partitionKey: TPartitionKey;
+    sortKey: TSortKey;
+    resource: TDocument;
 }
 
-export class CosmosDbItem<T extends McmaResource> {
-    constructor()
-    constructor(resource: T, partitionKey: string)
-    constructor(resource?: T, partitionKey?: string) {
+export class CosmosDbItem<TDocument extends Document = Document, TPartitionKey = string, TSortKey = string> {
+    constructor(partitionKey: TPartitionKey, sortKey: TSortKey, resource: TDocument) {
         if (resource) {
-            this.id = resource.id;
-            this.type = resource["@type"];
             this.partitionKey = partitionKey;
+            this.sortKey = sortKey;
             this.resource = resource;
         }
     }

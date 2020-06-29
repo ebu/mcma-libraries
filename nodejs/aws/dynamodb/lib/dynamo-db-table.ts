@@ -1,21 +1,24 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { McmaResource, McmaException, McmaResourceType, Utils } from "@mcma/core";
-import { DbTable } from "@mcma/data";
+import { McmaException, Utils } from "@mcma/core";
+import { DocumentDatabaseTable, DocumentType, DocumentDatabaseTableConfig, DocumentDatabaseQuery, Document } from "@mcma/data";
 import { types } from "util";
 
-export interface DynamoDbTableOptions {
-    ConsistentGet?: boolean
-    ConsistentQuery?: boolean
-}
+import { DynamoDbTableOptions } from "./dynamo-db-table-options";
+import { DynamoDbFilter } from "./dynamo-db-filter";
 
-export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
+export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey = string, TSortKey = string> extends DocumentDatabaseTable<TDocument, TPartitionKey, TSortKey> {
     private docClient = new DocumentClient();
 
-    constructor(private tableName: string, type: McmaResourceType<T>, private options?: DynamoDbTableOptions) {
+    constructor(
+        private tableName: string,
+        type: DocumentType<TDocument>,
+        private config: DocumentDatabaseTableConfig<TDocument, TPartitionKey, TSortKey>,
+        private options?: DynamoDbTableOptions
+    ) {
         super(type);
     }
 
-    private serialize<T extends any>(object: T): T {
+    private serialize(object) {
         if (object) {
             for (const key of Object.keys(object)) {
                 const value = object[key];
@@ -33,7 +36,7 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
         return object;
     }
 
-    private deserialize<T extends any>(object: T): T {
+    private deserialize(object) {
         if (object) {
             for (const key of Object.keys(object)) {
                 const value = object[key];
@@ -47,65 +50,151 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
         return object;
     }
 
-    async query(filter: (resource: T) => boolean): Promise<T[]> {
-        const params: DocumentClient.QueryInput= {
-            TableName: this.tableName,
-            KeyConditionExpression: "#rs = :rs1",
-            ExpressionAttributeNames: {
-                "#rs": "resource_type"
-            },
-            ExpressionAttributeValues: {
-                ":rs1": this.type
-            },
-            ConsistentRead: this.options?.ConsistentQuery
-        };
+    private async executeScanOrQuery(
+        executeScanOrQuery: (() => Promise<DocumentClient.ScanOutput> | Promise<DocumentClient.QueryOutput>),
+        params: DocumentClient.ScanInput | DocumentClient.QueryInput,
+        pageSize?: number,
+        pageNumber?: number
+    ): Promise<TDocument[]> {
         const items = [];
-        try {
-            const data = await this.docClient.query(params).promise();
-            if (data.Items) {
-                for (const item of data.Items) {
-                    if (!filter || filter(item.resource)) {
-                        items.push(this.deserialize(item.resource));
-                    }
+        let itemsReturned = 0;
+        do
+        {
+            const data = await executeScanOrQuery();
+            
+            let itemsToAdd: DocumentClient.ItemList = [];
+            if (!pageSize) {
+                itemsToAdd.push(...data.Items);
+            } else {
+                // calculate the start and end index for the page we're looking for
+                const startIndex = pageSize * (pageNumber ?? 0);
+                const endIndex = startIndex + pageSize;
+
+                for (let i = 0; i < data.Count; i++) {
+                    const currentOverallIndex = itemsReturned + i;
+                    if (currentOverallIndex >= startIndex && currentOverallIndex < endIndex) {
+                        // add the item
+                        itemsToAdd.push(data.Items[i]);
+
+                        // if we reached the page size, we can break out now
+                        if (items.length + itemsToAdd.length == pageSize) {
+                            break;
+                        }
+                    } 
                 }
             }
+
+            params.ExclusiveStartKey = data.LastEvaluatedKey;
+
+            // deserialize and add to master list 
+            items.push(...itemsToAdd.map(i => this.deserialize(i.resource)));
+
+            // track the total number of returned items
+            itemsReturned += data.Count;
         }
-        catch (error) {
-            console.error(error);
-        }
+        while (params.ExclusiveStartKey && (!pageSize || items.length < pageSize));
+
         return items;
     }
+
+    private async executeQuery(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
+        try {
+            let keyConditionExpression = "#PartitionKey = :partitionKey";
+            let expressionAttributeNames = { "#PartitionKey": this.config.partitionKeyName };
+            let expressionAttributeValues = { ":partitionKey": query.partitionKey };
+
+            if (query.sortKey) {
+                keyConditionExpression += " and #SortKey = :sortKey";
+                expressionAttributeNames["#SortKey"] = this.config.sortKeyName;
+                expressionAttributeValues[":sorTKey"] = query.sortKey;
+            }
+
+            let filterExpression: string;
+            if (query.filter) {
+                const dynamoDbFilter = new DynamoDbFilter(query.filter);
+                dynamoDbFilter.build();
+                
+                filterExpression = dynamoDbFilter.expression;
+                expressionAttributeNames = Object.assign(expressionAttributeNames, dynamoDbFilter.attributeNames);
+                expressionAttributeValues = Object.assign(expressionAttributeValues, dynamoDbFilter.attributeValues);
+            }
+
+            const params: DocumentClient.QueryInput = {
+                TableName: this.tableName,
+                KeyConditionExpression: keyConditionExpression,
+                FilterExpression: filterExpression,
+                ExpressionAttributeNames: expressionAttributeNames,
+                ExpressionAttributeValues: expressionAttributeValues,
+                ConsistentRead: this.options?.consistentQuery
+            };
+
+            return this.executeScanOrQuery(
+                () => this.docClient.query(params).promise(),
+                params,
+                query.pageSize,
+                query.pageNumber
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    private async executeScan(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
+        try {
+            const dynamoDbFilter = new DynamoDbFilter(query.filter);
+            dynamoDbFilter.build();
+
+            const params: DocumentClient.ScanInput = {
+                TableName: this.tableName,
+                FilterExpression: dynamoDbFilter.expression,
+                ExpressionAttributeNames:  dynamoDbFilter.attributeNames,
+                ExpressionAttributeValues: dynamoDbFilter.attributeValues,
+                ConsistentRead: this.options?.consistentQuery
+            };
+
+            return this.executeScanOrQuery(
+                () => this.docClient.scan(params).promise(),
+                params,
+                query.pageSize,
+                query.pageNumber
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async query(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
+        if (query.partitionKey) {
+            return this.executeQuery(query);
+        } else {
+            return this.executeScan(query);
+        }
+    }
     
-    async get(id: string): Promise<T> {
+    async get(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<TDocument> {
         const params: DocumentClient.GetItemInput = {
             TableName: this.tableName,
             Key: {
-                "resource_type": this.type,
-                "resource_id": id,
+                [this.config.partitionKeyName]: partitionKey,
+                [this.config.sortKeyName]: sortKey
             },
-            ConsistentRead: this.options?.ConsistentGet
+            ConsistentRead: this.options?.consistentGet
         };
-        try {
-            const data = await this.docClient.get(params).promise();
-            if (data?.Item?.resource) {
-                return this.deserialize(data.Item.resource);
-            }
-        }
-        catch (error) {
-            console.error(error);
-        }
-        return null;
+
+        const data = await this.docClient.get(params).promise();
+        
+        return data?.Item?.resource ? this.deserialize(data.Item.resource) : null;
     }
 
-    async put(id: string, resource: T): Promise<T> {
+    async put(resource: TDocument): Promise<TDocument> {
         resource = this.serialize(resource);
 
         const params: DocumentClient.PutItemInput = {
             TableName: this.tableName,
             Item: {
-                "resource_type": this.type,
-                "resource_id": id,
-                "resource": resource
+                [this.config.partitionKeyName]: this.config.getPartitionKey(resource),
+                [this.config.sortKeyName]: this.config.getSortKey(resource),
+                resource
             }
         };
         try {
@@ -117,12 +206,12 @@ export class DynamoDbTable<T extends McmaResource> extends DbTable<T> {
         return this.deserialize(resource);
     }
 
-    async delete(id: string): Promise<void> {
+    async delete(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<void> {
         const params: DocumentClient.DeleteItemInput = {
             TableName: this.tableName,
             Key: {
-                "resource_type": this.type,
-                "resource_id": id,
+                [this.config.partitionKeyName]: partitionKey,
+                [this.config.sortKeyName]: sortKey
             }
         };
         try {

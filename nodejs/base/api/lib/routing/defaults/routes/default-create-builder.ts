@@ -1,12 +1,16 @@
 import { v4 as uuidv4 } from "uuid";
 import { onResourceCreate, McmaResource, getTableName, McmaResourceType } from "@mcma/core";
-import { DbTableProvider } from "@mcma/data";
+import { DocumentDatabaseTableProvider } from "@mcma/data";
 
 import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
 
-export function defaultCreateBuilder<T extends McmaResource>(type: McmaResourceType<T>, dbTableProvider: DbTableProvider, root: string): DefaultRouteBuilder<T> {
+export function defaultCreateBuilder<T extends McmaResource>(
+    type: McmaResourceType<T>,
+    dbTableProvider: DocumentDatabaseTableProvider,
+    root: string
+): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "POST",
         root,
@@ -28,7 +32,7 @@ export function defaultCreateBuilder<T extends McmaResource>(type: McmaResourceT
 
                     onResourceCreate(resource, getPublicUrl(requestContext) + root + "/" + uuidv4());
                     
-                    await dbTableProvider.get<T>(getTableName(requestContext), type).put(resource.id, resource);
+                    await dbTableProvider.get<T>(getTableName(requestContext), type).put(resource);
                     
                     if (onCompleted) {
                         await onCompleted(requestContext, resource);

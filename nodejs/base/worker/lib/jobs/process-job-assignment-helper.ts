@@ -1,5 +1,5 @@
 import { Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, Logger, McmaException, Utils } from "@mcma/core";
-import { DbTable } from "@mcma/data";
+import { DocumentDatabaseTable } from "@mcma/data";
 import { ResourceManager } from "@mcma/client";
 
 import { WorkerRequest } from "../worker-request";
@@ -12,7 +12,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     public readonly jobAssignmentId: string;
 
     constructor(
-        public readonly dbTable: DbTable<JobAssignment>,
+        public readonly dbTable: DocumentDatabaseTable<JobAssignment>,
         public readonly resourceManager: ResourceManager,
         public readonly workerRequest: WorkerRequest
     ) {
@@ -119,7 +119,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         update(jobAssignment);
 
         jobAssignment.dateModified = new Date();
-        await this.dbTable.put(jobAssignment.id, jobAssignment);
+        await this.dbTable.put(jobAssignment);
 
         this._jobAssignment = jobAssignment;
 
@@ -132,7 +132,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
 
     // Automatic retry as the JobAssignment may not be retrievable yet in case it's attempted to do so immediately (in a few milliseconds) after insertion.
     private async getJobAssignment() {
-        let jobAssignment = await this.dbTable.get(this.jobAssignmentId);
+        let jobAssignment = await this.dbTable.get(Utils.getTypeName(JobAssignment), this.jobAssignmentId);
 
         for (const timeout of [5, 10, 15]) {
             if (jobAssignment) {
@@ -141,7 +141,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
 
             this.logger?.warn(`Failed to obtain job assignment from DynamoDB table. Trying again in ${timeout} seconds`);
             await Utils.sleep(timeout * 1000);
-            jobAssignment = await this.dbTable.get(this.jobAssignmentId);
+            jobAssignment = await this.dbTable.get(Utils.getTypeName(JobAssignment), this.jobAssignmentId);
         }
 
         return jobAssignment;

@@ -1,11 +1,11 @@
 import { ContextVariableProvider, LoggerProvider, McmaException } from "@mcma/core";
 import { AuthProvider, ResourceManagerProvider } from "@mcma/client";
-import { DbTableProvider } from "@mcma/data";
+import { DocumentDatabaseTableProvider } from "@mcma/data";
 
 export interface Providers {
     authProvider?: AuthProvider;
     contextVariableProvider?: ContextVariableProvider;
-    dbTableProvider?: DbTableProvider;
+    dbTableProvider?: DocumentDatabaseTableProvider;
     loggerProvider?: LoggerProvider;
     resourceManagerProvider?: ResourceManagerProvider;
 }
@@ -13,7 +13,7 @@ export interface Providers {
 export class ProviderCollection implements Providers {
     private readonly _authProvider: AuthProvider;
     private readonly _contextVariableProvider: ContextVariableProvider;
-    private readonly _dbTableProvider: DbTableProvider;
+    private readonly _dbTableProvider: DocumentDatabaseTableProvider;
     private readonly _loggerProvider: LoggerProvider;
     private readonly _resourceManagerProvider: ResourceManagerProvider;
 
