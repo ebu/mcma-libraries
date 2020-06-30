@@ -3,11 +3,12 @@ import { DocumentDatabaseTableProvider } from "@mcma/data";
 import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
+import { McmaApiRequestContext } from "../../../http/mcma-api-request-context";
 
 export function defaultGetBuilder<T extends McmaResource>(
-    type: McmaResourceType<T>,
     dbTableProvider: DocumentDatabaseTableProvider,
-    root: string
+    root: string,
+    partitionKeyProvider: ((requestContext: McmaApiRequestContext) => string)
 ): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "GET",
@@ -22,9 +23,12 @@ export function defaultGetBuilder<T extends McmaResource>(
                 }
                 
                 const id = getPublicUrl(requestContext) + requestContext.request.path;
-                const typeName = Utils.getTypeName(type);
 
-                const resource = await dbTableProvider.get<T>(getTableName(requestContext), type).get(typeName, id);
+                const dbTable = await dbTableProvider.get(getTableName(requestContext));
+
+                const partitionKey = partitionKeyProvider(requestContext);
+
+                const resource = await dbTable.get<T>(partitionKey, id);
                 if (onCompleted) {
                     await onCompleted(requestContext, resource);
                 }

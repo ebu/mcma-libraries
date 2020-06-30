@@ -1,10 +1,9 @@
-import { getTableName, Job, JobAssignment, McmaException, McmaResourceType, Utils } from "@mcma/core";
+import { getTableName, Job, JobAssignment, McmaException, McmaResourceType, Utils, ProblemDetail } from "@mcma/core";
 import { ProcessJobAssignmentHelper } from "./process-job-assignment-helper";
 import { ProviderCollection } from "../provider-collection";
 import { WorkerRequest } from "../worker-request";
 import { JobProfileHandler } from "./job-profile-handler";
 import { ProcessJobProfile } from "./process-job-profile";
-import { ProblemDetail } from "@mcma/core/dist/lib/model/problem-detail";
 
 export class ProcessJobAssignmentOperation<T extends Job> {
     private readonly jobType: string;
@@ -52,7 +51,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
             throw new McmaException("request.input does not specify a jobAssignmentId");
         }
 
-        const dbTable = providerCollection.dbTableProvider.get(getTableName(workerRequest), JobAssignment);
+        const dbTable = await providerCollection.dbTableProvider.get(getTableName(workerRequest));
         const resourceManager = providerCollection.resourceManagerProvider.get(workerRequest);
 
         const jobAssignmentHelper = new ProcessJobAssignmentHelper<T>(dbTable, resourceManager, workerRequest);

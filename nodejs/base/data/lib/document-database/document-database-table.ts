@@ -1,20 +1,13 @@
-import { Utils } from "@mcma/core";
 import { DocumentDatabaseQuery } from "./document-database-query";
 import { Document } from "./document";
-import { DocumentType } from "./document-type";
 
-export abstract class DocumentDatabaseTable<TDocument extends Document = Document, TPartitionKey = string, TSortKey = string> {
-    protected type: string;
+export abstract class DocumentDatabaseTable<TPartitionKey = string, TSortKey = string> {
+    
+    abstract query<TDocument extends Document = Document>(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]>;
 
-    protected constructor(type: DocumentType<TDocument>) {
-        this.type = Utils.getTypeName(type);
-    }
+    abstract get<TDocument extends Document = Document>(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<TDocument>;
 
-    abstract query(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]>;
-
-    abstract get(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<TDocument>;
-
-    abstract put(resource: TDocument): Promise<TDocument>;
+    abstract put<TDocument extends Document = Document>(partitionKey: TPartitionKey, sortKey: TSortKey, resource: TDocument): Promise<TDocument>;
 
     abstract delete(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<void>
 }

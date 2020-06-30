@@ -1,22 +1,25 @@
-import { DocumentDatabaseTableProvider, DocumentDatabaseTable, DocumentDatabaseTableConfig, DocumentType, Document } from "@mcma/data";
-import { CosmosClient } from "@azure/cosmos";
+import { DocumentDatabaseTableProvider, DocumentDatabaseTable } from "@mcma/data";
+import { CosmosClient, Database, Container } from "@azure/cosmos";
 
 import { CosmosDbTable } from "./cosmos-db-table";
 import { CosmosDbTableProviderOptions } from "./cosmos-db-table-provider-options";
 
-export class CosmosDbTableProvider extends DocumentDatabaseTableProvider {
+export class CosmosDbTableProvider implements DocumentDatabaseTableProvider {
     private cosmosClient: CosmosClient;
+    private database: Database;
+    private containers: { [key: string]: Container };
 
     constructor(private options: CosmosDbTableProviderOptions) {
-        super();
         this.cosmosClient = new CosmosClient({ endpoint: options.endpoint, key: options.key });
     }
-    
-    protected getFromConfig<TDocument extends Document = Document, TPartitionKey = string, TSortKey = string>(
-        tableName: string,
-        type: DocumentType<TDocument>,
-        config: DocumentDatabaseTableConfig<TDocument, TPartitionKey, TSortKey>
-    ): DocumentDatabaseTable<TDocument, TPartitionKey, TSortKey> {
-        return new CosmosDbTable<TDocument, TPartitionKey, TSortKey>(tableName, type, config, this.cosmosClient, this.options.databaseId);
+
+    async get<TPartitionKey = string, TSortKey = string>(tableName: string): Promise<DocumentDatabaseTable<TPartitionKey, TSortKey>> {
+        if (!this.containers[tableName]) {
+            if (!this.database) {
+                this.database = (await this.cosmosClient.database(this.options.databaseId).read()).database;
+            }
+            this.containers[tableName] = (await this.database.container(tableName).read()).container;
+        }
+        return new CosmosDbTable<TPartitionKey, TSortKey>(this.containers[tableName]);
     }
 }

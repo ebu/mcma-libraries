@@ -3,11 +3,12 @@ import { DocumentDatabaseTableProvider, getFilterExpressionFromKeyValuePairs, Do
 
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
+import { McmaApiRequestContext } from "../../../http/mcma-api-request-context";
 
 export function defaultQueryBuilder<T extends McmaResource>(
-    type: McmaResourceType<T>,
     dbTableProvider: DocumentDatabaseTableProvider,
-    root: string
+    root: string,
+    partitionKeyProvider?: ((requestContext: McmaApiRequestContext) => string)
 ): DefaultRouteBuilder<T[]> {
     return new DefaultRouteBuilder<T[]>(
         "GET",
@@ -42,9 +43,11 @@ export function defaultQueryBuilder<T extends McmaResource>(
                     }
                 }
 
-                const table = dbTableProvider.get<T>(getTableName(requestContext), type);
+                const table = await dbTableProvider.get(getTableName(requestContext));
 
-                const resources = await table.query({ partitionKey: Utils.getTypeName(type), pageNumber, pageSize, filter });
+                const partitionKey = partitionKeyProvider(requestContext);
+
+                const resources = await table.query({ partitionKey, pageNumber, pageSize, filter });
                 if (onCompleted) {
                     await onCompleted(requestContext, resources);
                 }

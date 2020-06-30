@@ -1,13 +1,14 @@
-import { onResourceUpsert, McmaResource, getTableName, McmaResourceType } from "@mcma/core";
+import { onResourceUpsert, McmaResource, getTableName, McmaResourceType, Utils } from "@mcma/core";
 import { DocumentDatabaseTableProvider } from "@mcma/data";
 import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
+import { McmaApiRequestContext } from "../../../http/mcma-api-request-context";
 
 export function defaultUpdateBuilder<T extends McmaResource>(
-    type: McmaResourceType<T>,
     dbTableProvider: DocumentDatabaseTableProvider,
-    root: string
+    root: string,
+    partitionKeyProvider: ((requestContext: McmaApiRequestContext, resource: T) => string)
 ): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "PUT",
@@ -20,16 +21,25 @@ export function defaultUpdateBuilder<T extends McmaResource>(
                         return;
                     }
                 }
+
                 const resource = requestContext.getRequestBody();
                 if (!resource) {
                     requestContext.setResponseBadRequestDueToMissingBody();
                     return;
                 }
+
                 onResourceUpsert(resource, getPublicUrl(requestContext) + requestContext.request.path);
-                await dbTableProvider.get<T>(getTableName(requestContext), type).put(resource);
+                
+                const dbTable = await dbTableProvider.get(getTableName(requestContext));
+
+                const partitionKey = partitionKeyProvider(requestContext, resource);
+                
+                await dbTable.put<T>(partitionKey, resource.id, resource);
+
                 if (onCompleted) {
                     await onCompleted(requestContext, resource);
                 }
+
                 requestContext.setResponseBody(resource);
             }
         )

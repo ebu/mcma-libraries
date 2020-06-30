@@ -15,7 +15,7 @@ export class McmaApiRequestContext extends ContextVariableProvider {
         return !!this.request.body;
     }
 
-    getRequestBody() {
+    getRequestBody<T = any>(): T {
         return this.request.body;
     }
 

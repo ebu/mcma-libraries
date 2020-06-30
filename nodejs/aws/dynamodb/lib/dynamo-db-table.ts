@@ -1,21 +1,20 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { McmaException, Utils } from "@mcma/core";
-import { DocumentDatabaseTable, DocumentType, DocumentDatabaseTableConfig, DocumentDatabaseQuery, Document } from "@mcma/data";
+import { DocumentDatabaseTable, DocumentDatabaseQuery, Document } from "@mcma/data";
 import { types } from "util";
 
 import { DynamoDbTableOptions } from "./dynamo-db-table-options";
 import { DynamoDbFilter } from "./dynamo-db-filter";
+import { DynamoDbTableDescription } from "./dynamo-db-table-description";
 
-export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey = string, TSortKey = string> extends DocumentDatabaseTable<TDocument, TPartitionKey, TSortKey> {
+export class DynamoDbTable<TPartitionKey = string, TSortKey = string> extends DocumentDatabaseTable<TPartitionKey, TSortKey> {
     private docClient = new DocumentClient();
 
     constructor(
-        private tableName: string,
-        type: DocumentType<TDocument>,
-        private config: DocumentDatabaseTableConfig<TDocument, TPartitionKey, TSortKey>,
+        private tableDescription: DynamoDbTableDescription,
         private options?: DynamoDbTableOptions
     ) {
-        super(type);
+        super();
     }
 
     private serialize(object: any) {
@@ -50,7 +49,7 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
         return object;
     }
 
-    private async executeScanOrQuery(
+    private async executeScanOrQuery<TDocument extends Document = Document> (
         executeScanOrQuery: (() => Promise<DocumentClient.ScanOutput> | Promise<DocumentClient.QueryOutput>),
         params: DocumentClient.ScanInput | DocumentClient.QueryInput,
         pageSize?: number,
@@ -97,14 +96,14 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
         return items;
     }
 
-    private async executeQuery(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
+    private async executeQuery<TDocument extends Document = Document>(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
         let keyConditionExpression = "#PartitionKey = :partitionKey";
-        let expressionAttributeNames: DocumentClient.ExpressionAttributeNameMap = { "#PartitionKey": this.config.partitionKeyName };
+        let expressionAttributeNames: DocumentClient.ExpressionAttributeNameMap = { "#PartitionKey": this.tableDescription.partitionKeyName };
         let expressionAttributeValues: DocumentClient.ExpressionAttributeValueMap = { ":partitionKey": query.partitionKey };
 
         if (query.sortKey) {
             keyConditionExpression += " and #SortKey = :sortKey";
-            expressionAttributeNames["#SortKey"] = this.config.sortKeyName;
+            expressionAttributeNames["#SortKey"] = this.tableDescription.sortKeyName;
             expressionAttributeValues[":sortKey"] = query.sortKey;
         }
 
@@ -119,7 +118,7 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
         }
 
         const params: DocumentClient.QueryInput = {
-            TableName: this.tableName,
+            TableName: this.tableDescription.tableName,
             KeyConditionExpression: keyConditionExpression,
             FilterExpression: filterExpression,
             ExpressionAttributeNames: expressionAttributeNames,
@@ -135,12 +134,12 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
         );
     }
 
-    private async executeScan(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
+    private async executeScan<TDocument extends Document = Document>(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
         const dynamoDbFilter = new DynamoDbFilter(query.filter);
         dynamoDbFilter.build();
 
         const params: DocumentClient.ScanInput = {
-            TableName: this.tableName,
+            TableName: this.tableDescription.tableName,
             FilterExpression: dynamoDbFilter.expression,
             ExpressionAttributeNames:  dynamoDbFilter.attributeNames,
             ExpressionAttributeValues: dynamoDbFilter.attributeValues,
@@ -155,7 +154,7 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
         );
     }
 
-    async query(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
+    async query<TDocument extends Document = Document>(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
         if (query.partitionKey) {
             return this.executeQuery(query);
         } else {
@@ -163,12 +162,12 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
         }
     }
     
-    async get(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<TDocument> {
+    async get<TDocument extends Document = Document>(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<TDocument> {
         const params: DocumentClient.GetItemInput = {
-            TableName: this.tableName,
+            TableName: this.tableDescription.tableName,
             Key: {
-                [this.config.partitionKeyName]: partitionKey,
-                [this.config.sortKeyName]: sortKey
+                [this.tableDescription.partitionKeyName]: partitionKey,
+                [this.tableDescription.sortKeyName]: sortKey
             },
             ConsistentRead: this.options?.consistentGet
         };
@@ -178,14 +177,14 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
         return data?.Item?.resource ? this.deserialize(data.Item.resource) : null;
     }
 
-    async put(resource: TDocument): Promise<TDocument> {
+    async put<TDocument extends Document = Document>(partitionKey: TPartitionKey, sortKey: TSortKey, resource: TDocument): Promise<TDocument> {
         resource = this.serialize(resource);
 
         const params: DocumentClient.PutItemInput = {
-            TableName: this.tableName,
+            TableName: this.tableDescription.tableName,
             Item: {
-                [this.config.partitionKeyName]: this.config.getPartitionKey(resource),
-                [this.config.sortKeyName]: this.config.getSortKey(resource),
+                [this.tableDescription.partitionKeyName]: partitionKey,
+                [this.tableDescription.sortKeyName]: sortKey,
                 resource
             }
         };
@@ -200,10 +199,10 @@ export class DynamoDbTable<TDocument extends Document = Document, TPartitionKey 
 
     async delete(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<void> {
         const params: DocumentClient.DeleteItemInput = {
-            TableName: this.tableName,
+            TableName: this.tableDescription.tableName,
             Key: {
-                [this.config.partitionKeyName]: partitionKey,
-                [this.config.sortKeyName]: sortKey
+                [this.tableDescription.partitionKeyName]: partitionKey,
+                [this.tableDescription.sortKeyName]: sortKey
             }
         };
         try {
