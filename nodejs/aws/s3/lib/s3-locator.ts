@@ -11,7 +11,7 @@ export abstract class AwsS3Locator extends Locator implements AwsS3LocatorProper
     
     public abstract readonly path: string;
     
-    constructor(type: string, properties: AwsS3LocatorProperties) {
+    protected constructor(type: string, properties: AwsS3LocatorProperties) {
         super(type, properties);
 
         this.checkProperty("awsS3Bucket", "string", true);

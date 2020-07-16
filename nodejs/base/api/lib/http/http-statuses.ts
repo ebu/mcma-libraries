@@ -7,7 +7,7 @@ export enum HttpStatusCode {
     Created = 201,
     Accepted = 202,
     NonAuthoritativeInformation = 203,
-    NoConsent = 204,
+    NoContent = 204,
     ResetContent = 205,
     PartialContent = 206,
     MultiStatus = 207,
@@ -36,7 +36,7 @@ export enum HttpStatusCode {
     PayloadTooLarge = 413,
     UriTooLong = 414,
     UnsupportedMediaType = 415,
-    RequiredRangeNotSatisfiable = 416,
+    RequestedRangeNotSatisfiable = 416,
     ExpectationFailed = 417,
     IAmATeapot = 418,
     UnprocessableEntity = 422,
@@ -80,7 +80,7 @@ export function getStatusError(statusCode: number) {
             return "Accepted";
         case HttpStatusCode.NonAuthoritativeInformation:
             return "Non-Authoritative Information";
-        case HttpStatusCode.NoConsent:
+        case HttpStatusCode.NoContent:
             return "No Content";
         case HttpStatusCode.ResetContent:
             return "Reset Content";
@@ -138,7 +138,7 @@ export function getStatusError(statusCode: number) {
             return "URI Too Long";
         case HttpStatusCode.UnsupportedMediaType:
             return "Unsupported Media Type";
-        case HttpStatusCode.RequiredRangeNotSatisfiable:
+        case HttpStatusCode.RequestedRangeNotSatisfiable:
             return "Requested Range Not Satisfiable";
         case HttpStatusCode.ExpectationFailed:
             return "Expectation Failed";

@@ -5,7 +5,7 @@ import { DocumentDatabaseTableProvider } from "@mcma/data";
 
 import { DefaultRouteCollectionBuilder } from "./default-route-collection-builder";
 import { InvokeWorker, WorkerInvoker } from "../../worker-invoker";
-import { getWorkerFunctionId } from "../../context-variable-provider-ext";
+import { getWorkerFunctionId, getPublicUrl } from "../../context-variable-provider-ext";
 
 export function defaultRoutesForJobs(
     dbTableProvider: DocumentDatabaseTableProvider,
@@ -29,7 +29,7 @@ export function defaultRoutesForJobs(
                     "ProcessJobAssignment",
                     requestContext.getAllContextVariables(),
                     {
-                        jobAssignmentId: jobAssignment.id
+                        jobAssignmentId: jobAssignment.id.replace(getPublicUrl(requestContext), "")
                     },
                     jobAssignment.tracker
                 );

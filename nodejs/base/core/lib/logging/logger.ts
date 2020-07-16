@@ -1,9 +1,24 @@
 import * as util from "util";
-
 import { v4 as uuidv4 } from "uuid";
 
 import { McmaTrackerProperties } from "../model";
 import { LogEvent } from "./log-event";
+
+export enum LogLevel {
+    Fatal = 100,
+    Error = 200,
+    Warn = 300,
+    Info = 400,
+    Debug = 500
+}
+
+export enum LogType {
+    Fatal = "FATAL",
+    Error = "ERROR",
+    Warn = "WARN",
+    Info = "INFO",
+    Debug = "DEBUG"
+}
 
 export interface Logger {
     debug(message: any, ...optionalParams: any[]): void;
@@ -56,44 +71,48 @@ export abstract class Logger implements Logger {
     }
 
     fatal(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(100, "FATAL", message, ...optionalParams));
+        this.log(LogLevel.Fatal, LogType.Fatal, message, ...optionalParams);
     }
 
     error(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(200, "ERROR", message, ...optionalParams));
+        this.log(LogLevel.Error, LogType.Error, message, ...optionalParams);
     }
 
     warn(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(300, "WARN", message, ...optionalParams));
+        this.log(LogLevel.Warn, LogType.Warn, message, ...optionalParams);
     }
 
     info(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(400, "INFO", message, ...optionalParams));
+        this.log(LogLevel.Info, LogType.Info, message, ...optionalParams);
     }
 
     debug(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(500, "DEBUG", message, ...optionalParams));
+        this.log(LogLevel.Debug, LogType.Debug, message, ...optionalParams);
     }
 
     functionStart(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(450, "FUNCTION_START", message, ...optionalParams));
+        this.log(450, "FUNCTION_START", message, ...optionalParams);
     }
 
     functionEnd(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(450, "FUNCTION_END", message, ...optionalParams));
+        this.log(450, "FUNCTION_END", message, ...optionalParams);
     }
 
     jobStart(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(400, "JOB_START", message, ...optionalParams));
+        this.log(LogLevel.Info, "JOB_START", message, ...optionalParams);
     }
 
     jobUpdate(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(400, "JOB_UPDATE", message, ...optionalParams));
+        this.log(LogLevel.Info, "JOB_UPDATE", message, ...optionalParams);
     }
 
     jobEnd(message: any, ...optionalParams: any[]): void {
-        this.log(this.buildLogEvent(400, "JOB_END", message, ...optionalParams));
+        this.log(LogLevel.Info, "JOB_END", message, ...optionalParams);
+    }
+    
+    log(level: number, type: string, message: any, ...optionalParams: any[]): void {
+        this.writeLogEvent(this.buildLogEvent(level, type, message, ...optionalParams));
     }
 
-    abstract log(logEvent: LogEvent): void;
+    protected abstract writeLogEvent(logEvent: LogEvent): void;
 }

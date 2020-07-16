@@ -1,5 +1,6 @@
 import { DynamoDB } from "aws-sdk";
 import { Logger, McmaException, Utils } from "@mcma/core";
+import { DynamoDbTableDescription, getTableDescription } from "./dynamo-db-table-description";
 
 interface TableKey {
     [key: string]: any
@@ -15,57 +16,45 @@ export class DynamoDbMutex {
     private readonly dc: DynamoDB.DocumentClient;
     private readonly random: number;
     private hasLock: boolean;
-    private tableKey: { partitionKey: string, sortKey?: string };
+    private tableDescription: DynamoDbTableDescription;
 
-    constructor(public mutexName: string, private mutexHolder: string, private tableName: string, private logger?: Logger, private lockTimeout: number = 60000) {
-        this.dc = new DynamoDB.DocumentClient();
+    constructor(
+        public mutexName: string,
+        private mutexHolder: string,
+        private tableName: string,
+        private logger?: Logger,
+        private lockTimeout: number = 60000,
+        private dynamoDb = new DynamoDB()
+    ) {
+        this.dc = new DynamoDB.DocumentClient({ service: dynamoDb });
         this.random = Math.random() * 2147483648 << 0;
         this.hasLock = false;
     }
 
-    private async initializeTableKey() {
-        if (!this.tableKey) {
-            const dynamoDB = new DynamoDB();
-
-            const data = await dynamoDB.describeTable({
-                TableName: this.tableName
-            }).promise();
-
-            const tableKey: any = {};
-
-            for (const key of data.Table.KeySchema) {
-                switch (key.KeyType) {
-                    case "HASH":
-                        tableKey.partitionKey = key.AttributeName;
-                        break;
-                    case "RANGE":
-                        tableKey.sortKey = key.AttributeName;
-                        break;
-                }
-            }
-
-            this.tableKey = tableKey;
+    private async initializeTableDescription() {
+        if (!this.tableDescription) {
+            this.tableDescription = await getTableDescription(this.dynamoDb, this.tableName);
         }
     }
 
     private generateTableKey() {
         const Key: TableKey = {};
-        if (this.tableKey.sortKey) {
-            Key[this.tableKey.partitionKey] = "Mutex";
-            Key[this.tableKey.sortKey] = this.mutexName;
+        if (this.tableDescription.sortKeyName) {
+            Key[this.tableDescription.partitionKeyName] = "Mutex";
+            Key[this.tableDescription.sortKeyName] = this.mutexName;
         } else {
-            Key[this.tableKey.partitionKey] = "Mutex-" + this.mutexName;
+            Key[this.tableDescription.partitionKeyName] = "Mutex-" + this.mutexName;
         }
         return Key;
     }
 
     private generateTableItem() {
         const Item: TableItem = {};
-        if (this.tableKey.sortKey) {
-            Item[this.tableKey.partitionKey] = "Mutex";
-            Item[this.tableKey.sortKey] = this.mutexName;
+        if (this.tableDescription.sortKeyName) {
+            Item[this.tableDescription.partitionKeyName] = "Mutex";
+            Item[this.tableDescription.sortKeyName] = this.mutexName;
         } else {
-            Item[this.tableKey.partitionKey] = "Mutex-" + this.mutexName;
+            Item[this.tableDescription.partitionKeyName] = "Mutex-" + this.mutexName;
         }
         Item["mutexHolder"] = this.mutexHolder;
         Item["random"] = this.random;
@@ -103,7 +92,7 @@ export class DynamoDbMutex {
                 }
             }
         };
-        value.Expected[this.tableKey.partitionKey] = { Exists: false };
+        value.Expected[this.tableDescription.partitionKeyName] = { Exists: false };
 
         await this.dc.put(value).promise();
     }
@@ -123,7 +112,7 @@ export class DynamoDbMutex {
             throw new McmaException("Cannot lock when already locked");
         }
 
-        await this.initializeTableKey();
+        await this.initializeTableDescription();
 
         this.logger?.debug("Requesting lock for mutex '" + this.mutexName + "' by '" + this.mutexHolder + "'");
         while (!this.hasLock) {
@@ -156,7 +145,7 @@ export class DynamoDbMutex {
         if (!this.hasLock) {
             throw new McmaException("Cannot unlock when not locked");
         }
-        await this.initializeTableKey();
+        await this.initializeTableDescription();
 
         await this.deleteLockData(this.random);
         this.hasLock = false;

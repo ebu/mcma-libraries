@@ -6,7 +6,7 @@ export class AppInsightsLogger extends Logger {
         super(source, requestId, tracker);
     }
 
-    log(logEvent: LogEvent): void {
+    protected writeLogEvent(logEvent: LogEvent): void {
         this.appInsightsClient.trackTrace({ message: logEvent.toString() });
     }
 }

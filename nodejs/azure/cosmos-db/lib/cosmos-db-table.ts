@@ -1,32 +1,37 @@
-import { DocumentDatabaseTable, Document, DocumentDatabaseQuery } from "@mcma/data";
-import { CosmosClient, Container } from "@azure/cosmos";
+import { DocumentDatabaseTable, Document, Query } from "@mcma/data";
+import { Container, ContainerDefinition } from "@azure/cosmos";
 import { CosmosDbFilter } from "./cosmos-db-filter";
-import { CosmosDbItem } from "./cosmos-db-item";
 import { McmaException } from "@mcma/core";
 
-export class CosmosDbTable<TPartitionKey = string, TSortKey = string> extends DocumentDatabaseTable<TPartitionKey, TSortKey> {
+function parsePartitionKey(id: string): string {
+    const lastSlashIndex = id.lastIndexOf("/");
+    return lastSlashIndex > 0 ? id.substr(0, lastSlashIndex) : null;
+}
 
-    constructor(private container: Container) {
-        super();
+export class CosmosDbTable implements DocumentDatabaseTable {
+
+    private readonly partitionKeyName: string;
+
+    constructor(private container: Container, containerDefinition: ContainerDefinition) {
+        if (containerDefinition.partitionKey.paths.length > 1) {
+            throw new McmaException(`Container ${containerDefinition.id} defines a partition key with multiple paths. MCMA only supports partition keys with a single path.`);
+        }
+        
+        this.partitionKeyName = containerDefinition.partitionKey.paths[0].substr(1);
     }
 
+    async query<TDocument extends Document = Document>(query: Query<TDocument>): Promise<TDocument[]> {
+        const filter = new CosmosDbFilter<TDocument>(query, this.partitionKeyName);
 
-    async query<TDocument extends Document = Document>(query: DocumentDatabaseQuery<TDocument, TPartitionKey, TSortKey>): Promise<TDocument[]> {
-        const filter = new CosmosDbFilter<TDocument>(query.filter);
-
-        const queryIterator = this.container.items.query<CosmosDbItem<TDocument>>(filter.toSqlQuerySpec());
+        const queryIterator = this.container.items.query(filter.toSqlQuerySpec());
 
         const resp = await queryIterator.fetchAll();
 
         return resp.resources.map(x => x.resource);
     }
     
-    async get<TDocument extends Document = Document>(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<TDocument> {
-        if (!sortKey) {
-            throw new McmaException("Sort key was not provided.");
-        }
-
-        const resp = await this.container.item(sortKey.toString(), partitionKey).read<CosmosDbItem<TDocument>>();
+    async get<TDocument extends Document = Document>(id: string): Promise<TDocument> {
+        const resp = await this.container.item(id, parsePartitionKey(id)).read();
         if (resp.statusCode === 404) {
             return null;
         }
@@ -34,23 +39,19 @@ export class CosmosDbTable<TPartitionKey = string, TSortKey = string> extends Do
         return resp.resource.resource;
     }
     
-    async put<TDocument extends Document = Document>(partitionKey: TPartitionKey, sortKey: TSortKey, resource: TDocument): Promise<TDocument> {
-        if (!sortKey) {
-            throw new McmaException("Sort key was not provided.");
-        }
+    async put<TDocument extends Document = Document>(id: string, resource: TDocument): Promise<TDocument> {
+        const item = {
+            id,
+            [this.partitionKeyName]: parsePartitionKey(id),
+            resource
+        };
 
-        const item = new CosmosDbItem<TDocument, TPartitionKey>(partitionKey, sortKey.toString(), resource);
-
-        const resp = await this.container.items.upsert<CosmosDbItem<TDocument, TPartitionKey>>(item);
+        const resp = await this.container.items.upsert(item);
 
         return resp.resource.resource;
     }
     
-    async delete(partitionKey: TPartitionKey, sortKey: TSortKey): Promise<void> {
-        if (!sortKey) {
-            throw new McmaException("Sort key was not provided.");
-        }
-
-        await this.container.item(sortKey.toString(), partitionKey).delete();
+    async delete(id: string): Promise<void> {
+        await this.container.item(id, parsePartitionKey(id)).delete();
     }
 }

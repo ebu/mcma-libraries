@@ -1,14 +1,12 @@
-import { onResourceUpsert, McmaResource, getTableName, McmaResourceType, Utils } from "@mcma/core";
+import { onResourceUpsert, McmaResource, getTableName } from "@mcma/core";
 import { DocumentDatabaseTableProvider } from "@mcma/data";
 import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
-import { McmaApiRequestContext } from "../../../http/mcma-api-request-context";
 
 export function defaultUpdateBuilder<T extends McmaResource>(
     dbTableProvider: DocumentDatabaseTableProvider,
-    root: string,
-    partitionKeyProvider: ((requestContext: McmaApiRequestContext, resource: T) => string)
+    root: string
 ): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "PUT",
@@ -31,10 +29,8 @@ export function defaultUpdateBuilder<T extends McmaResource>(
                 onResourceUpsert(resource, getPublicUrl(requestContext) + requestContext.request.path);
                 
                 const dbTable = await dbTableProvider.get(getTableName(requestContext));
-
-                const partitionKey = partitionKeyProvider(requestContext, resource);
                 
-                await dbTable.put<T>(partitionKey, resource.id, resource);
+                await dbTable.put<T>(requestContext.request.path, resource);
 
                 if (onCompleted) {
                     await onCompleted(requestContext, resource);

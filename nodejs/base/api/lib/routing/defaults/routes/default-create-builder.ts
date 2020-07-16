@@ -1,16 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
-import { onResourceCreate, McmaResource, getTableName, McmaResourceType, Utils } from "@mcma/core";
+import { onResourceCreate, McmaResource, getTableName } from "@mcma/core";
 import { DocumentDatabaseTableProvider } from "@mcma/data";
 
 import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
-import { McmaApiRequestContext } from "../../../http/mcma-api-request-context";
 
 export function defaultCreateBuilder<T extends McmaResource>(
     dbTableProvider: DocumentDatabaseTableProvider,
-    root: string,
-    partitionKeyProvider?: ((requestContext: McmaApiRequestContext, resource: T) => string)
+    root: string
 ): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "POST",
@@ -31,13 +29,13 @@ export function defaultCreateBuilder<T extends McmaResource>(
                         return;
                     }
 
-                    onResourceCreate(resource, getPublicUrl(requestContext) + root + "/" + uuidv4());
+                    const resourcePath = root + "/" + uuidv4();
+
+                    onResourceCreate(resource, getPublicUrl(requestContext) + resourcePath);
                     
                     const dbTable = await dbTableProvider.get(getTableName(requestContext));
 
-                    const partitionKey = partitionKeyProvider(requestContext, resource);
-
-                    await dbTable.put<T>(partitionKey, resource.id, resource);
+                    await dbTable.put<T>(resourcePath, resource);
                     
                     if (onCompleted) {
                         await onCompleted(requestContext, resource);

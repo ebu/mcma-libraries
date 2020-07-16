@@ -1,0 +1,6 @@
+apply from:  "../../npmTasks.gradle"
+
+npmInstall.mustRunAfter ":base:core:npmPublish"
+npmInstall.mustRunAfter ":base:core:npmPublishLocal"
+npmInstall.mustRunAfter ":base:data:npmPublish"
+npmInstall.mustRunAfter ":base:data:npmPublishLocal"

@@ -1,0 +1,44 @@
+{
+    "name": "@mcma/gcp-client",
+    "version": "0.12.1",
+    "description": "Authentication for communicating with MCMA services hosted on Google Cloud Platform",
+    "engines": {
+        "node": "~10.16.3"
+    },
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "test": "jasmine"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ebu/mcma-libraries.git"
+    },
+    "keywords": [
+        "ebu",
+        "mcma",
+        "gcp"
+    ],
+    "author": "Evan Verney-Fink <evan@triskel-inc.com>",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/ebu/mcma-libraries/issues"
+    },
+    "homepage": "https://github.com/ebu/mcma-libraries/nodejs/gcp/client#readme",
+    "dependencies": {},
+    "peerDependencies": {
+        "@mcma/client": "0.12.1",
+        "@mcma/core": "0.12.1"
+    },
+    "devDependencies": {
+        "@mcma/client": "0.12.1",
+        "@mcma/core": "0.12.1",
+        "@mcma/encryption": "0.12.1",
+        "@types/node": "^13.7.6",
+        "jasmine": "^3.2.0"
+    }
+}

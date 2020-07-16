@@ -7,7 +7,7 @@ export class ConsoleLogger extends Logger {
         super(source, requestId, tracker);
     }
 
-    log(logEvent: LogEvent): void {
+    protected writeLogEvent(logEvent: LogEvent): void {
         if (logEvent.level > 0) {
             if (logEvent.level <= 200) {
                 console.error(logEvent.toString());

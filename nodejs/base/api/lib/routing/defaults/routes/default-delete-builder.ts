@@ -1,15 +1,12 @@
-import { McmaResource, getTableName, McmaResourceType, Utils } from "@mcma/core";
+import { McmaResource, getTableName } from "@mcma/core";
 import { DocumentDatabaseTableProvider } from "@mcma/data";
 
-import { getPublicUrl } from "../../../context-variable-provider-ext";
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
-import { McmaApiRequestContext } from "../../../http/mcma-api-request-context";
 
 export function defaultDeleteBuilder<T extends McmaResource>(
     dbTableProvider: DocumentDatabaseTableProvider,
-    root: string,
-    partitionKeyProvider: ((requestContext: McmaApiRequestContext) => string)
+    root: string
 ): DefaultRouteBuilder<T> {
     return new DefaultRouteBuilder<T>(
         "DELETE",
@@ -23,16 +20,13 @@ export function defaultDeleteBuilder<T extends McmaResource>(
                     }
                 }
                 const table = await dbTableProvider.get(getTableName(requestContext));
-                const id = getPublicUrl(requestContext) + requestContext.request.path;
                 
-                const partitionKey = partitionKeyProvider(requestContext);
-                
-                const resource = await table.get<T>(partitionKey, id);
+                const resource = await table.get<T>(requestContext.request.path);
                 if (!resource) {
                     requestContext.setResponseResourceNotFound();
                     return;
                 }
-                await table.delete(partitionKey, id);
+                await table.delete(requestContext.request.path);
                 if (onCompleted) {
                     await onCompleted(requestContext, resource);
                 }

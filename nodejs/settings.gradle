@@ -17,4 +17,9 @@ include "aws",
         "base:core",
         "base:data",
         "base:encryption",
-        "base:worker"
+        "base:worker",
+        "gcp:client",
+        "gcp:firestore",
+        "gcp:http-functions",
+        "gcp:logger",
+        "gcp:storage"

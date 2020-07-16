@@ -1,47 +1,46 @@
-import { Document, DocumentDatabaseFilterExpression, isExpression } from "@mcma/data";
+import { Document, isFilterCriteriaGroup, Query } from "@mcma/data";
 import { SqlQuerySpec, SqlParameter } from "@azure/cosmos";
+import { FilterExpression, FilterCriteria } from "@mcma/data/dist/lib/document-database/query/filter";
 
-export class CosmosDbFilter<T extends Document = Document> {
-    private query: string;
+export class CosmosDbFilter<TDocument extends Document = Document> {
     private parameters: SqlParameter[] = [];
 
-    private expressions: string[] = [];
-    private childExpressionIndex = 0;
     private criteriaIndex = 0;
+    private expressionParts: string[] = [];
 
-    constructor(private filter: DocumentDatabaseFilterExpression<T>) {}
+    constructor(private query: Query<TDocument>, private partitionKeyName: string) {}
 
-    get expression(): string {
-        return this.expressions.join(" " + (this.filter.logicalOperator === "||" ? "or" : "and") + " ");
+    private get expression(): string {
+        return this.expressionParts.map(p => "(" + p + ")").join(" && ");
     }
 
     build(): void {
-        for (const currentChild of this.filter.children) {
-            if (isExpression(currentChild)) {
-                const childFilter = new CosmosDbFilter(currentChild);
-                childFilter.build();
-                this.merge(childFilter);
-    
-                this.childExpressionIndex++;
-            } else {
-                const curParameterName = "@p" + this.criteriaIndex;
-                this.parameters.push({ name: curParameterName, value: currentChild.propertyValue });
-                this.expressions.push("root[\"resource\"][\"" + currentChild.propertyName + "\"]" + currentChild.operator + " " + curParameterName);
-    
-                this.criteriaIndex++;
-            }
+        if (this.query.path) {
+            const partitionKeyParamName = this.addParameter(this.query.path);
+            this.expressionParts.push("root[\"" + this.partitionKeyName + "\"] = " + partitionKeyParamName);
+        }
+
+        if (this.query.filterExpression) {
+            this.expressionParts.push(this.buildQueryFilterExpression(this.query.filterExpression));
         }
     }
 
-    private merge(childFilter: CosmosDbFilter): void {
-        for (const parameter of childFilter.parameters) {
-            this.parameters.push({
-                name: "@c" + this.childExpressionIndex + parameter.name.substr(1),
-                value: parameter.value
-            })
-        }
+    private addParameter(value: any): string {
+        const name = "@p" + this.criteriaIndex++;
+        this.parameters.push({ name, value });
+        return name;
+    }
 
-        this.expressions.push("(" + childFilter.expression + ")");
+    private buildQueryFilterExpression(queryFilter: FilterExpression<TDocument>): string {
+        if (isFilterCriteriaGroup<TDocument>(queryFilter)) {
+            return "(" + queryFilter.children.map(c => this.buildQueryFilterExpression(c)).join(queryFilter.logicalOperator) + ")";
+        } else {
+            return this.buildQueryFilterCriteria(queryFilter);
+        }
+    }
+
+    private buildQueryFilterCriteria(criteria: FilterCriteria<TDocument>): string {
+        return "root[\"resource\"][\"" + criteria.propertyName + "\"]" + criteria.operator + " " + this.addParameter(criteria.propertyValue);
     }
 
     toSqlQuerySpec(): SqlQuerySpec {

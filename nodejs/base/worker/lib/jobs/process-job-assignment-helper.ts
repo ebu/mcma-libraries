@@ -116,7 +116,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         update(jobAssignment);
 
         jobAssignment.dateModified = new Date();
-        await this.dbTable.put(JobAssignment.name, this.jobAssignmentId, jobAssignment);
+        await this.dbTable.put(this.jobAssignmentId, jobAssignment);
 
         this._jobAssignment = jobAssignment;
 
@@ -129,7 +129,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
 
     // Automatic retry as the JobAssignment may not be retrievable yet in case it's attempted to do so immediately (in a few milliseconds) after insertion.
     private async getJobAssignment(): Promise<JobAssignment> {
-        let jobAssignment = await this.dbTable.get<JobAssignment>(JobAssignment.name, this.jobAssignmentId);
+        let jobAssignment = await this.dbTable.get<JobAssignment>(this.jobAssignmentId);
 
         for (const timeout of [5, 10, 15]) {
             if (jobAssignment) {
@@ -138,7 +138,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
 
             this.logger?.warn(`Failed to obtain job assignment from DynamoDB table. Trying again in ${timeout} seconds`);
             await Utils.sleep(timeout * 1000);
-            jobAssignment = await this.dbTable.get<JobAssignment>(JobAssignment.name, this.jobAssignmentId);
+            jobAssignment = await this.dbTable.get<JobAssignment>(this.jobAssignmentId);
         }
 
         return jobAssignment;

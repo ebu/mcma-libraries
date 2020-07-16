@@ -10,7 +10,6 @@ import { DefaultRouteConfigurator } from "./default-route-configurator";
 import { DefaultRoutes } from "./default-routes";
 import { DefaultRouteCollection } from "./default-route-collection";
 import { DefaultRouteBuilder } from "./default-route-builder";
-import { DefaultRoutesPartitionKeyProviders, getConstantPartitionKeyProviders } from "./default-routes-partition-key-providers";
 
 export class DefaultRouteCollectionBuilder<T extends McmaResource> {
     private routes: DefaultRouteCollection<T>;
@@ -18,8 +17,7 @@ export class DefaultRouteCollectionBuilder<T extends McmaResource> {
     constructor(
         dbTableProvider: DocumentDatabaseTableProvider,
         resourceType: McmaResourceType<T>,
-        root?: string,
-        partitionKeyProviders?: DefaultRoutesPartitionKeyProviders<T>
+        root?: string
     ) {
         resourceType = Utils.getTypeName(resourceType);
         if (!resourceType) {
@@ -31,16 +29,12 @@ export class DefaultRouteCollectionBuilder<T extends McmaResource> {
             root = "/" + root;
         }
 
-        if (!partitionKeyProviders) {
-            partitionKeyProviders = getConstantPartitionKeyProviders(Utils.getTypeName(resourceType));
-        }
-
         this.routes = new DefaultRouteCollection<T>({
-            query: routes.defaultQueryBuilder<T>(dbTableProvider, root, partitionKeyProviders.query),
-            create: routes.defaultCreateBuilder<T>(dbTableProvider, root, partitionKeyProviders.create),
-            get: routes.defaultGetBuilder<T>(dbTableProvider, root, partitionKeyProviders.get),
-            update: routes.defaultUpdateBuilder<T>(dbTableProvider, root, partitionKeyProviders.update),
-            delete: routes.defaultDeleteBuilder<T>(dbTableProvider, root, partitionKeyProviders.delete)
+            query: routes.defaultQueryBuilder<T>(dbTableProvider, root),
+            create: routes.defaultCreateBuilder<T>(dbTableProvider, root),
+            get: routes.defaultGetBuilder<T>(dbTableProvider, root),
+            update: routes.defaultUpdateBuilder<T>(dbTableProvider, root),
+            delete: routes.defaultDeleteBuilder<T>(dbTableProvider, root)
         });
     }
 

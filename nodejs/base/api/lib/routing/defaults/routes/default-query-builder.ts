@@ -1,14 +1,12 @@
-import { McmaResource, getTableName, McmaResourceType, Utils } from "@mcma/core";
-import { DocumentDatabaseTableProvider, getFilterExpressionFromKeyValuePairs, DocumentDatabaseFilterExpression } from "@mcma/data";
+import { McmaResource, getTableName } from "@mcma/core";
+import { DocumentDatabaseTableProvider, getFilterExpressionFromKeyValuePairs, FilterExpression } from "@mcma/data";
 
 import { DefaultRouteHandlerConfigurator } from "../default-route-handler-configurator";
 import { DefaultRouteBuilder } from "../default-route-builder";
-import { McmaApiRequestContext } from "../../../http/mcma-api-request-context";
 
 export function defaultQueryBuilder<T extends McmaResource>(
     dbTableProvider: DocumentDatabaseTableProvider,
-    root: string,
-    partitionKeyProvider?: ((requestContext: McmaApiRequestContext) => string)
+    root: string
 ): DefaultRouteBuilder<T[]> {
     return new DefaultRouteBuilder<T[]>(
         "GET",
@@ -22,7 +20,7 @@ export function defaultQueryBuilder<T extends McmaResource>(
                     }
                 }
 
-                const filter: DocumentDatabaseFilterExpression<T> =
+                const filterExpression: FilterExpression<T> =
                     requestContext.request.queryStringParameters && Object.keys(requestContext.request.queryStringParameters).length > 0
                         ? getFilterExpressionFromKeyValuePairs<T>(requestContext.request.queryStringParameters)
                         : null;
@@ -45,9 +43,7 @@ export function defaultQueryBuilder<T extends McmaResource>(
 
                 const table = await dbTableProvider.get(getTableName(requestContext));
 
-                const partitionKey = partitionKeyProvider(requestContext);
-
-                const resources = await table.query({ partitionKey, pageNumber, pageSize, filter });
+                const resources = await table.query<T>({ path: requestContext.request.path, pageNumber, pageSize, filterExpression });
                 if (onCompleted) {
                     await onCompleted(requestContext, resources);
                 }
