@@ -1,6 +1,6 @@
 {
     "name": "@mcma/gcp-logger",
-    "version": "0.12.2-beta15",
+    "version": "0.13.0",
     "description": "Add Google Cloud Logging to your MCMA services",
     "engines": {
         "node": "~10.16.3"
@@ -34,10 +34,10 @@
         "@google-cloud/logging": "7.3.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.12.2-beta15"
+        "@mcma/core": "0.13.0"
     },
     "devDependencies": {
-        "@mcma/core": "0.12.2-beta15",
+        "@mcma/core": "0.13.0",
         "@types/node": "^13.7.6",
         "jasmine": "^3.2.0"
     }
