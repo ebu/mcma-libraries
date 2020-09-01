@@ -5,6 +5,10 @@ import { OperationFilter } from "./operation-filter";
 import { OperationHandler } from "./operation-handler";
 import { WorkerOperation } from "./worker-operation";
 
+function isWorkerOperation(operation: string | OperationFilter | WorkerOperation): operation is WorkerOperation {
+    return operation && typeof (<any>operation)["execute"] !== "undefined";
+}
+
 export class Worker {
     private readonly operations: WorkerOperation[];
 
@@ -13,16 +17,12 @@ export class Worker {
         this.operations = [];
     }
 
-    private isWorkerOperation(operation: string | OperationFilter | WorkerOperation): operation is WorkerOperation {
-        return operation && typeof (<any>operation)["execute"] !== "undefined";
-    }
-
     addOperation(operationName: string, handler: OperationHandler): this;
     addOperation(operationFilter: OperationFilter, handler: OperationHandler): this;
     addOperation(operation: WorkerOperation): this;
 
     addOperation(operation: string | OperationFilter | WorkerOperation, handler?: OperationHandler): this {
-        if (!this.isWorkerOperation(operation)) {
+        if (!isWorkerOperation(operation)) {
             if (handler) {
                 let operationFilter: OperationFilter;
                 if (typeof operation === "string") { // case 1. we turn operation into OperationFilter by converting it to a function that checks for operationName equality

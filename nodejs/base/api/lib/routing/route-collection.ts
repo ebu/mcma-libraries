@@ -3,7 +3,7 @@ import { McmaApiRouteHandler } from "./route-handler";
 import { McmaException } from "@mcma/core";
 
 export class McmaApiRouteCollection {
-    private routes: McmaApiRoute[] = [];
+    protected routes: McmaApiRoute[] = [];
 
     constructor(routes?: McmaApiRoute[]) {
         if (routes) {

@@ -6,9 +6,13 @@ import { DynamoDbTableOptions } from "./dynamo-db-table-options";
 import { getTableDescription } from "./dynamo-db-table-description";
 
 export class DynamoDbTableProvider implements DocumentDatabaseTableProvider {
-    constructor(private options?: DynamoDbTableOptions, private dynamoDb = new DynamoDB()) { }
+    
+    constructor(
+        private readonly options: DynamoDbTableOptions = {},
+        private readonly dynamoDb = new DynamoDB()) {
+    }
 
-    async get<TPartitionKey = string, TSortKey = string>(tableName: string): Promise<DocumentDatabaseTable> {
+    async get(tableName: string): Promise<DocumentDatabaseTable> {
         return new DynamoDbTable(this.dynamoDb, await getTableDescription(this.dynamoDb, tableName), this.options);
     }
 }

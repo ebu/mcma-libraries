@@ -1,12 +1,13 @@
-import { DynamoDB } from "aws-sdk";
-import { McmaException, Utils } from "@mcma/core";
-import { DocumentDatabaseTable, Query, Document } from "@mcma/data";
 import { types } from "util";
+import { DynamoDB } from "aws-sdk";
+import { DocumentClient, Key } from "aws-sdk/clients/dynamodb";
+import { McmaException, Utils } from "@mcma/core";
+import { DocumentDatabaseTable, Query, Document, DocumentDatabaseMutex, CustomQuery, QueryResults, hasFilterCriteria, CustomQueryParameters } from "@mcma/data";
 
 import { DynamoDbTableOptions } from "./dynamo-db-table-options";
-import { DynamoDbQueryFilter } from "./dynamo-db-query-filter";
+import { buildFilterExpression } from "./build-filter-expression";
 import { DynamoDbTableDescription } from "./dynamo-db-table-description";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DynamoDbMutex } from "./dynamo-db-mutex";
 
 function parsePartitionAndSortKeys(id: string): { partitionKey: string, sortKey: string } {
     const lastSlashIndex = id.lastIndexOf("/");
@@ -15,8 +16,23 @@ function parsePartitionAndSortKeys(id: string): { partitionKey: string, sortKey:
         : { partitionKey: id, sortKey: id };
 }
 
+function keyFromBase64Json(str: string): Key {
+    if (!str) {
+        return undefined;
+    }
+    try {
+        return JSON.parse(Utils.fromBase64(str));
+    } catch (e) {
+        throw new McmaException(`Invalid key '${str}'.`)
+    }
+}
+
+function base64JsonFromKey(key: Key): string {
+    return key ? Utils.toBase64(JSON.stringify(key)) : undefined;
+}
+
 export class DynamoDbTable implements DocumentDatabaseTable {
-    private docClient: DocumentClient;
+    private readonly docClient: DocumentClient;
     
     constructor(
         dynamoDb: DynamoDB,
@@ -27,97 +43,63 @@ export class DynamoDbTable implements DocumentDatabaseTable {
     }
 
     private serialize(object: any) {
+        let copy: any;
         if (object) {
+            copy = Array.isArray(object) ? [] : {};
             for (const key of Object.keys(object)) {
                 const value = object[key];
-                if (types.isDate(value)) {
-                    if (isNaN(value.getTime())) {
-                        delete object[key];
-                    } else {
-                        object[key] = value.toISOString();
-                    }
+                if (types.isDate(value) && !isNaN(value.getTime())) {
+                    copy[key] = value.toISOString();
                 } else if (typeof value === "object") {
-                    object[key] = this.serialize(value);
+                    copy[key] = this.serialize(value);
+                } else {
+                    copy[key] = value;
                 }
             }
         }
-        return object;
+        return copy;
     }
 
     private deserialize(object: any) {
+        let copy: any;
         if (object) {
+            copy = Array.isArray(object) ? [] : {};
             for (const key of Object.keys(object)) {
                 const value = object[key];
                 if (Utils.isValidDateString(value)) {
-                    object[key] = new Date(value);
+                    copy[key] = new Date(value);
                 } else if (typeof value === "object") {
-                    object[key] = this.deserialize(value);
+                    copy[key] = this.deserialize(value);
+                } else{
+                    copy[key] = value;
                 }
             }
         }
-        return object;
+        return copy;
     }
 
-    private async executeScanOrQuery<TDocument extends Document = Document> (
-        executeScanOrQuery: (() => Promise<DocumentClient.ScanOutput> | Promise<DocumentClient.QueryOutput>),
-        params: DocumentClient.ScanInput | DocumentClient.QueryInput,
-        pageSize?: number,
-        pageNumber?: number
-    ): Promise<TDocument[]> {
-        const items = [];
-        let itemsReturned = 0;
-        do
-        {
-            const data = await executeScanOrQuery();
-            
-            let itemsToAdd: DocumentClient.ItemList = [];
-            if (!pageSize) {
-                itemsToAdd.push(...data.Items);
-            } else {
-                // calculate the start and end index for the page we're looking for
-                const startIndex = pageSize * (pageNumber ?? 0);
-                const endIndex = startIndex + pageSize;
-
-                for (let i = 0; i < data.Count; i++) {
-                    const currentOverallIndex = itemsReturned + i;
-                    if (currentOverallIndex >= startIndex && currentOverallIndex < endIndex) {
-                        // add the item
-                        itemsToAdd.push(data.Items[i]);
-
-                        // if we reached the page size, we can break out now
-                        if (items.length + itemsToAdd.length == pageSize) {
-                            break;
-                        }
-                    } 
-                }
-            }
-
-            params.ExclusiveStartKey = data.LastEvaluatedKey;
-
-            // deserialize and add to master list 
-            items.push(...itemsToAdd.map(i => this.deserialize(i.resource)));
-
-            // track the total number of returned items
-            itemsReturned += data.Count;
-        }
-        while (params.ExclusiveStartKey && (!pageSize || items.length < pageSize));
-
-        return items;
-    }
-
-    private async executeQuery<TDocument extends Document = Document>(query: Query<TDocument>): Promise<TDocument[]> {
+    async query<TDocument extends Document = Document>(query: Query<TDocument>): Promise<QueryResults<TDocument>> {
+        let keyNames = this.tableDescription.keyNames;
         let keyConditionExpression = "#partitionKey = :partitionKey";
-        let expressionAttributeNames: DocumentClient.ExpressionAttributeNameMap = { "#partitionKey": this.tableDescription.partitionKeyName };
+        let expressionAttributeNames: DocumentClient.ExpressionAttributeNameMap = { "#partitionKey": keyNames.partition };
         let expressionAttributeValues: DocumentClient.ExpressionAttributeValueMap = { ":partitionKey": query.path };
 
         let filterExpression: string;
-        if (query.filterExpression) {
-            const dynamoDbFilter = new DynamoDbQueryFilter(query.filterExpression);
-            dynamoDbFilter.build();
+        if (hasFilterCriteria(query.filterExpression)) {
+            const dynamoDbExpression = buildFilterExpression(query.filterExpression);
             
-            filterExpression = dynamoDbFilter.expression;
-            expressionAttributeNames = Object.assign(expressionAttributeNames, dynamoDbFilter.attributeNames);
-            expressionAttributeValues = Object.assign(expressionAttributeValues, dynamoDbFilter.attributeValues);
+            filterExpression = dynamoDbExpression.expressionStatement;
+            expressionAttributeNames = Object.assign(expressionAttributeNames, dynamoDbExpression.expressionAttributeNames);
+            expressionAttributeValues = Object.assign(expressionAttributeValues, dynamoDbExpression.expressionAttributeValues);
+        }
+
+        let indexName;
+        if (query.sortBy) {
+            const matchingIndex = this.tableDescription.localSecondaryIndexes.find(x => x.sortKeyName?.toLowerCase() === query.sortBy.toLowerCase());
+            if (!matchingIndex) {
+                throw new McmaException(`No matching local secondary index found for sorting by '${query.sortBy}'`);
+            }
+            indexName = matchingIndex.name;
         }
 
         const params: DocumentClient.QueryInput = {
@@ -126,39 +108,40 @@ export class DynamoDbTable implements DocumentDatabaseTable {
             FilterExpression: filterExpression,
             ExpressionAttributeNames: expressionAttributeNames,
             ExpressionAttributeValues: expressionAttributeValues,
-            ConsistentRead: this.options?.consistentQuery
+            IndexName: indexName,
+            ScanIndexForward: query.sortAscending ?? true,
+            ConsistentRead: this.options?.consistentQuery,
+            Limit: query.pageSize,
+            ExclusiveStartKey: keyFromBase64Json(query.pageStartToken)
         };
 
-        return this.executeScanOrQuery(
-            () => this.docClient.query(params).promise(),
-            params,
-            query.pageSize,
-            query.pageNumber
-        );
-    }
+        const data = await this.docClient.query(params).promise();
 
-    private async executeScan<TDocument extends Document = Document>(query: Query<TDocument>): Promise<TDocument[]> {
-        const dynamoDbFilter = new DynamoDbQueryFilter(query.filterExpression);
-        dynamoDbFilter.build();
-
-        const params: DocumentClient.ScanInput = {
-            TableName: this.tableDescription.tableName,
-            FilterExpression: dynamoDbFilter.expression,
-            ExpressionAttributeNames:  dynamoDbFilter.attributeNames,
-            ExpressionAttributeValues: dynamoDbFilter.attributeValues,
-            ConsistentRead: this.options?.consistentQuery
+        return {
+            results: data.Items.map(i => this.deserialize(i.resource)),
+            nextPageStartToken: base64JsonFromKey(data.LastEvaluatedKey)
         };
-
-        return this.executeScanOrQuery(
-            () => this.docClient.scan(params).promise(),
-            params,
-            query.pageSize,
-            query.pageNumber
-        );
     }
 
-    async query<TDocument extends Document = Document>(query: Query<TDocument>): Promise<TDocument[]> {
-        return this.executeQuery(query);
+    async customQuery<TDocument extends Document = Document, TParameters extends CustomQueryParameters = CustomQueryParameters>(
+        query: CustomQuery<TDocument, TParameters>
+    ): Promise<QueryResults<TDocument>> {
+        const getQueryInputFromCustomQuery = this.options.customQueryRegistry[query.name];
+        if (!getQueryInputFromCustomQuery) {
+            throw new McmaException(`Custom query with name '${query.name}' has not been configured.`);
+        }
+
+        const params = getQueryInputFromCustomQuery(query);
+
+        params.TableName = this.tableDescription.tableName;
+        params.ExclusiveStartKey = keyFromBase64Json(query.pageStartToken);
+
+        const data = await this.docClient.query(params).promise();
+
+        return {
+            results: data.Items.map(i => this.deserialize(i.resource)),
+            nextPageStartToken: base64JsonFromKey(data.LastEvaluatedKey)
+        };
     }
     
     async get<TDocument extends Document = Document>(id: string): Promise<TDocument> {
@@ -166,8 +149,8 @@ export class DynamoDbTable implements DocumentDatabaseTable {
         const params: DocumentClient.GetItemInput = {
             TableName: this.tableDescription.tableName,
             Key: {
-                [this.tableDescription.partitionKeyName]: partitionKey,
-                [this.tableDescription.sortKeyName]: sortKey
+                [this.tableDescription.keyNames.partition]: partitionKey,
+                [this.tableDescription.keyNames.sort]: sortKey
             },
             ConsistentRead: this.options?.consistentGet
         };
@@ -179,22 +162,31 @@ export class DynamoDbTable implements DocumentDatabaseTable {
 
     async put<TDocument extends Document = Document>(id: string, resource: TDocument): Promise<TDocument> {
         const { partitionKey, sortKey } = parsePartitionAndSortKeys(id);
-        resource = this.serialize(resource);
+        const serializedResource = this.serialize(resource);
+        
+        let item = {
+            [this.tableDescription.keyNames.partition]: partitionKey,
+            [this.tableDescription.keyNames.sort]: sortKey,
+            resource: serializedResource
+        };
+
+        if (this.options?.topLevelAttributeMappings) {
+            for (let topLevelAttributeMappingKey of Object.keys(this.options.topLevelAttributeMappings)) {
+                item[topLevelAttributeMappingKey] = this.options.topLevelAttributeMappings[topLevelAttributeMappingKey](partitionKey, sortKey, resource);
+            }
+        }
 
         const params: DocumentClient.PutItemInput = {
             TableName: this.tableDescription.tableName,
-            Item: {
-                [this.tableDescription.partitionKeyName]: partitionKey,
-                [this.tableDescription.sortKeyName]: sortKey,
-                resource
-            }
+            Item: item 
         };
         try {
             await this.docClient.put(params).promise();
         } catch (error) {
             throw new McmaException("Failed to put resource in DynamoDB table", error);
         }
-        return this.deserialize(resource);
+
+        return resource;
     }
 
     async delete(id: string): Promise<void> {
@@ -202,8 +194,8 @@ export class DynamoDbTable implements DocumentDatabaseTable {
         const params: DocumentClient.DeleteItemInput = {
             TableName: this.tableDescription.tableName,
             Key: {
-                [this.tableDescription.partitionKeyName]: partitionKey,
-                [this.tableDescription.sortKeyName]: sortKey
+                [this.tableDescription.keyNames.partition]: partitionKey,
+                [this.tableDescription.keyNames.sort]: sortKey
             }
         };
         try {
@@ -211,5 +203,9 @@ export class DynamoDbTable implements DocumentDatabaseTable {
         } catch (error) {
             throw new McmaException("Failed to delete resource in DynamoDB table", error);
         }
+    }
+    
+    createMutex(mutexName: string, mutexHolder: string, lockTimeout: number = 60000): DocumentDatabaseMutex {
+        return new DynamoDbMutex(this.docClient, this.tableDescription, mutexName, mutexHolder, lockTimeout);
     }
 }

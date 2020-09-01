@@ -20,6 +20,10 @@ export class FilterCriteria<T extends Document = Document, K extends keyof T = s
     readonly propertyValue: T[K];
 }
 
+export function hasFilterCriteria<T extends Document = Document>(filterExpression: FilterExpression<T>): boolean {
+    return !!filterExpression && (!isFilterCriteriaGroup(filterExpression) || (!!filterExpression.children && filterExpression.children.length > 0));
+}
+
 export function isFilterCriteriaGroup<T extends Document = Document>(obj: any): obj is FilterCriteriaGroup<T> {
     return obj && obj.logicalOperator;
 }

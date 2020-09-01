@@ -7,6 +7,11 @@ import { ServiceClient } from "./service-client";
 import { ResourceManagerConfig } from "./resource-manager-config";
 import { ResourceEndpointClient } from "./resource-endpoint-client";
 
+type QueryResults<T> = {
+    results: T[];
+    nextPageStartToken: string;
+};
+
 export class ResourceManager {
     private httpClient = new HttpClient();
     private serviceClients: ServiceClient[] = [];
@@ -39,9 +44,9 @@ export class ResourceManager {
 
             let servicesEndpoint = serviceRegistryClient.getResourceEndpointClient("Service");
 
-            let response = await servicesEndpoint.get<ServiceProperties[]>();
+            let response = await servicesEndpoint.get<QueryResults<ServiceProperties>>();
 
-            for (const service of response.data) {
+            for (const service of response.data.results) {
                 try {
                     if (service.name === serviceRegistry.name) {
                         this.serviceClients.shift();
@@ -56,7 +61,12 @@ export class ResourceManager {
         }
     };
 
-    async query<T extends McmaResource>(resourceType: McmaResourceType<T>, filter?: any): Promise<T[] | null> {
+    async query<T extends McmaResource>(
+        resourceType: McmaResourceType<T>,
+        filter?: any,
+        sortBy?: string,
+        sortAscending?: boolean
+    ): Promise<T[]> {
         if (typeof resourceType === "function" && resourceType.name) {
             resourceType = resourceType.name;
         }
@@ -65,9 +75,20 @@ export class ResourceManager {
             await this.init();
         }
 
-        const result: T[] = [];
+        const results: T[] = [];
         const usedHttpEndpoints: string[] = [];
         const errors: Error[] = [];
+        
+        let params: any = {};
+        if (sortBy !== undefined && sortBy !== null) {
+            params.sortBy = sortBy;
+        }
+        if (sortAscending !== undefined && sortAscending !== null) {
+            params.sortAscending = sortAscending;
+        }
+        if (filter) {
+            params = Object.assign(params, filter);
+        }
 
         for (const serviceClient of this.serviceClients) {
             let resourceEndpoint = serviceClient.getResourceEndpointClient(resourceType);
@@ -77,8 +98,8 @@ export class ResourceManager {
 
             try {
                 if (!usedHttpEndpoints.includes(resourceEndpoint.httpEndpoint)) {
-                    let response = await resourceEndpoint.get<T[]>({ params: filter });
-                    result.push(...(response.data));
+                    let response = await resourceEndpoint.get<QueryResults<T>>({ params });
+                    results.push(...response.data.results);
                 }
 
                 usedHttpEndpoints.push(resourceEndpoint.httpEndpoint);
@@ -94,7 +115,7 @@ export class ResourceManager {
                                     "Errors:\n" + errors.join("\n"));
         }
 
-        return result;
+        return results;
     }
 
     async create<T extends McmaResource>(resource: T): Promise<T> {

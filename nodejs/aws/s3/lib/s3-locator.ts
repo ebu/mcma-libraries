@@ -1,12 +1,12 @@
 import { Locator } from "@mcma/core";
 
 export interface AwsS3LocatorProperties {
-    awsS3Bucket: string;
+    bucket: string;
     url?: string;
 }
 
 export abstract class AwsS3Locator extends Locator implements AwsS3LocatorProperties {
-    public awsS3Bucket: string;
+    public bucket: string;
     public url?: string;
     
     public abstract readonly path: string;
@@ -14,6 +14,6 @@ export abstract class AwsS3Locator extends Locator implements AwsS3LocatorProper
     protected constructor(type: string, properties: AwsS3LocatorProperties) {
         super(type, properties);
 
-        this.checkProperty("awsS3Bucket", "string", true);
+        this.checkProperty("bucket", "string", true);
     }
 }

@@ -69,6 +69,7 @@ task tsc(type: Exec) {
 
 task npmPublish(type: Exec) {
     dependsOn ":verifyNodeJS"
+    dependsOn setVersion
     dependsOn tsc
     inputs.file("package.json")
     commandLine npmExecutable
@@ -80,6 +81,7 @@ task npmPublish(type: Exec) {
 
 task npmPublishLocal(type: Exec) {
     dependsOn ":verifyNodeJS"
+    dependsOn setVersion
     dependsOn tsc
     inputs.file("package.json")
     commandLine npmExecutable

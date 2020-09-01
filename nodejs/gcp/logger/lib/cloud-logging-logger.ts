@@ -13,20 +13,22 @@ const CloudLoggingSeverities = {
 };
 
 function convertToCloudLogSeverity(logLevel: number): string {
-    switch (logLevel) {
-        case LogLevel.Debug:
-            return CloudLoggingSeverities.debug;
-        case LogLevel.Info:
-            return CloudLoggingSeverities.info;
-        case LogLevel.Warn:
-            return CloudLoggingSeverities.warning;
-        case LogLevel.Error:
-            return CloudLoggingSeverities.error;
-        case LogLevel.Fatal:
-            return CloudLoggingSeverities.critical;
-        default:
-            return CloudLoggingSeverities.debug;
+    if (logLevel >= LogLevel.Debug) {
+        return CloudLoggingSeverities.debug;
     }
+    if (logLevel >= LogLevel.Info) {
+        return CloudLoggingSeverities.info;
+    }
+    if (logLevel >= LogLevel.Warn) {
+            return CloudLoggingSeverities.warning
+    }
+    if (logLevel >= LogLevel.Error) {
+            return CloudLoggingSeverities.error
+    }
+    if (logLevel >= LogLevel.Fatal) {
+        return CloudLoggingSeverities.critical;
+    }
+    return CloudLoggingSeverities.emergency;
 }
 
 function convertToCloudLogEntry(logEvent: LogEvent): Entry {

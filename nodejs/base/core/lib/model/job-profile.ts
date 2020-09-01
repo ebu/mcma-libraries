@@ -6,6 +6,7 @@ export interface JobProfileProperties extends McmaResourceProperties {
     inputParameters?: JobParameter[];
     outputParameters?: JobParameter[];
     optionalInputParameters?: JobParameter[];
+    customProperties?: { [key: string]: any };
 }
 
 export class JobProfile extends McmaResource implements JobProfileProperties {
@@ -13,6 +14,7 @@ export class JobProfile extends McmaResource implements JobProfileProperties {
     inputParameters?: JobParameter[];
     outputParameters?: JobParameter[];
     optionalInputParameters?: JobParameter[];
+    customProperties?: { [key: string]: any };
 
     constructor(properties: JobProfileProperties) {
         super("JobProfile", properties);
@@ -21,5 +23,6 @@ export class JobProfile extends McmaResource implements JobProfileProperties {
         this.checkProperty("inputParameters", "Array", false);
         this.checkProperty("outputParameters", "Array", false);
         this.checkProperty("optionalInputParameters", "Array", false);
+        this.checkProperty("customProperties", "object", false);
     }
 }

@@ -1,5 +1,5 @@
 ﻿import { Document, FilterCriteria, FilterCriteriaGroup, FilterExpression, isFilterCriteriaGroup, Query } from "@mcma/data";
-import { CollectionReference, Query as FirestoreQuery, QueryDocumentSnapshot } from "@google-cloud/firestore";
+import { CollectionReference, Query as FirestoreQuery } from "@google-cloud/firestore";
 import { McmaException } from "@mcma/core";
 
 function addFilterCriteriaToQuery<TDocument>(firestoreQuery: FirestoreQuery, filterCriteria: FilterCriteria<TDocument>): FirestoreQuery {
@@ -33,31 +33,6 @@ function addFilterToQuery<TDocument>(firestoreQuery: FirestoreQuery, filterExpre
         : addFilterCriteriaToQuery(firestoreQuery, filterExpression);
 }
 
-async function pageQuery(firestoreQuery: FirestoreQuery, pageSize: number, pageNumber: number): Promise<FirestoreQuery> {
-    pageNumber = pageNumber ?? 0;
-
-    let curPageNum = 0;
-    let startAfter: QueryDocumentSnapshot;
-    while (curPageNum < pageNumber) {
-    
-        let pageQuery = firestoreQuery.orderBy("path").limit(pageSize);
-        if (startAfter) {
-            pageQuery = pageQuery.startAfter(startAfter);
-        }
-    
-        const pageResults = await pageQuery.get();
-        startAfter = pageResults.docs[pageResults.docs.length - 1];
-        curPageNum++;
-    }
-    
-    firestoreQuery = firestoreQuery.orderBy("path").limit(pageSize);
-    if (startAfter) {
-        firestoreQuery = firestoreQuery.startAfter(startAfter);
-    }
-    
-    return firestoreQuery;
-}
-
 export async function buildFirestoreQuery<TDocument extends Document = Document>(collectionRef: CollectionReference, query: Query<TDocument>): Promise<FirestoreQuery> {
     let firestoreQuery: FirestoreQuery = collectionRef;
     if (query.path) {
@@ -66,8 +41,14 @@ export async function buildFirestoreQuery<TDocument extends Document = Document>
     if (query.filterExpression) {
         firestoreQuery = addFilterToQuery<TDocument>(firestoreQuery, query.filterExpression);
     }
+    if (query.sortBy) {
+        firestoreQuery = firestoreQuery.orderBy(query.sortBy, query.sortAscending ? "asc" : "desc");
+    }
     if (query.pageSize) {
-        firestoreQuery = await pageQuery(firestoreQuery, query.pageSize, query.pageNumber);
+        firestoreQuery = firestoreQuery.limit(query.pageSize);
+    }
+    if (query.pageStartToken) {
+        firestoreQuery = firestoreQuery.startAfter(query.pageStartToken);
     }
     return firestoreQuery;
 }

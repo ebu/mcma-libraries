@@ -1,6 +1,29 @@
-import { ContextVariableProvider, McmaResourceType, McmaResource, Utils } from "@mcma/core";
+import { ContextVariableProvider } from "@mcma/core";
+import { CustomQuery } from "@mcma/data";
+import { SqlQuerySpec } from "@azure/cosmos";
 
 const Prefix = "CosmosDb";
+
+export type CustomQueryFactory = (customQuery: CustomQuery) => SqlQuerySpec;
+export type CustomQueryRegistry = { [key: string]: CustomQueryFactory };
+
+export interface CosmosDbTableProviderOptions {
+    endpoint: string;
+    key: string;
+    region: string;
+    databaseId: string;
+    customQueries: CustomQueryRegistry;
+}
+
+function emptyCosmosDbSettings(): CosmosDbTableProviderOptions {
+    return {
+        endpoint: null,
+        key: null,
+        region: null,
+        databaseId: null,
+        customQueries: {}
+    };
+}
 
 export function fillOptionsFromEnvironmentVariables(options: CosmosDbTableProviderOptions): CosmosDbTableProviderOptions {
     for (let prop of Object.keys(options)) {
@@ -21,23 +44,10 @@ export function fillOptionsFromContextVariableProvider(
     return options;
 }
 
-export class CosmosDbTableProviderOptions {
-    endpoint: string = null;
-    key: string = null;
-    region: string = null;
-    databaseId: string = null;
-    partitionKeySelectors: { [type: string]: (x: any) => string } = {};
+export function getOptionsFromEnvironmentVariables(): CosmosDbTableProviderOptions {
+    return fillOptionsFromEnvironmentVariables(emptyCosmosDbSettings());
+}
 
-    addPartitionKeySelector<T extends McmaResource>(type: McmaResourceType<T>, partitionKeySelector: (x: T) => string): this {
-        this.partitionKeySelectors[Utils.getTypeName(type)] = partitionKeySelector;
-        return this;
-    }
-
-    static fromEnvironmentVariables(): CosmosDbTableProviderOptions {
-        return fillOptionsFromEnvironmentVariables(new CosmosDbTableProviderOptions());
-    }
-
-    static fromContextVariableProvider(contextVariableProvider: ContextVariableProvider): CosmosDbTableProviderOptions {
-        return fillOptionsFromContextVariableProvider(new CosmosDbTableProviderOptions(), contextVariableProvider);
-    }
+export function getOptionsFromContextVariableProvider(contextVariableProvider: ContextVariableProvider): CosmosDbTableProviderOptions {
+    return fillOptionsFromContextVariableProvider(emptyCosmosDbSettings(), contextVariableProvider);
 }
