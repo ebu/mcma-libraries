@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Mcma.Core;
-using Mcma.Core.Serialization;
-using Mcma.Core.Utility;
+using Mcma;
+using Mcma.Serialization;
+using Mcma.Utility;
 
 namespace Mcma.Client
 {
@@ -59,11 +59,11 @@ namespace Mcma.Client
                 else if (url.IndexOf("http://") != 0 || url.IndexOf("https://") != 0)
                     url = BaseUrl + url.Replace(BaseUrl, string.Empty, StringComparison.OrdinalIgnoreCase);
                 else if (!url.StartsWith(BaseUrl))
-                    throw new Exception($"HttpClient: Making " + method + " request to URL '" + url + "' which does not match BaseUrl '" + BaseUrl + "'");
+                    throw new McmaException($"HttpClient: Making " + method + " request to URL '" + url + "' which does not match BaseUrl '" + BaseUrl + "'");
             }
 
             if (string.IsNullOrWhiteSpace(url))
-                throw new Exception("HttpClient: Missing url in request");
+                throw new McmaException("HttpClient: Missing url in request");
 
             var request = new HttpRequestMessage(method, url);
 

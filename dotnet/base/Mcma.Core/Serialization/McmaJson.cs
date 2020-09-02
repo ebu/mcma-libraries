@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Mcma.Core.Serialization
+namespace Mcma.Serialization
 {
     public static class McmaJson
     {

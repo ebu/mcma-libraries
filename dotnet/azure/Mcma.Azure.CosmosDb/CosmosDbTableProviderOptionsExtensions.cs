@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
-using Mcma.Core;
-using Mcma.Core.Context;
-using Mcma.Core.Utility;
+using Mcma;
+using Mcma.Context;
+using Mcma.Utility;
 
 namespace Mcma.Azure.CosmosDb
 {

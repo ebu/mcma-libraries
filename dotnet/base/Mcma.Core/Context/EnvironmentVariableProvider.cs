@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 
-namespace Mcma.Core.Context
+namespace Mcma.Context
 {
     public class EnvironmentVariableProvider : ContextVariableProvider
     {

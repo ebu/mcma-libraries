@@ -1,4 +1,4 @@
-namespace Mcma.Core.Logging
+namespace Mcma.Logging
 {
     public static class LogType
     {
@@ -7,9 +7,11 @@ namespace Mcma.Core.Logging
         public const string Warn = "WARN";
         public const string Info = "INFO";
         public const string Debug = "DEBUG";
-        public const string FunctionStart = "FUNCTION_START";
-        public const string FunctionEnd = "FUNCTION_END";
-        public const string JobStart = "JOB_START";
-        public const string JobEnd = "JOB_END";
+        
+        internal const string FunctionStart = "FUNCTION_START";
+        internal const string FunctionEnd = "FUNCTION_END";
+        internal const string JobStart = "JOB_START";
+        internal const string JobUpdate = "JOB_UPDATE";
+        internal const string JobEnd = "JOB_END";
     }
 }

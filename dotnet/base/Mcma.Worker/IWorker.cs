@@ -6,6 +6,6 @@ namespace Mcma.Worker
 {
     public interface IWorker
     {
-        Task DoWorkAsync(WorkerRequest request);
+        Task DoWorkAsync(WorkerRequestContext requestContext);
     }
 }

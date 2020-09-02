@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Mcma.Core.Logging;
+using Mcma.Logging;
 
-namespace Mcma.Core.Serialization
+namespace Mcma.Serialization
 {
     public static class McmaTypes
     {

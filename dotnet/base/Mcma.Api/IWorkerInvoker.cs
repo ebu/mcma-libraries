@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Mcma.Core;
+using Mcma;
 
 namespace Mcma.Api
 {

@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using Mcma.Api;
-using Mcma.Core.Context;
-using Mcma.Core.Serialization;
+using Mcma.Context;
+using Mcma.Serialization;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Queue;
 

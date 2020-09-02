@@ -4,8 +4,8 @@ namespace Mcma.Client
 {
     public interface IResourceManagerProvider
     {
-        ResourceManager Get(HttpClient httpClient, ResourceManagerConfig config = null);
+        IResourceManager Get(HttpClient httpClient, ResourceManagerConfig config = null);
 
-        ResourceManager Get(ResourceManagerConfig config = null);
+        IResourceManager Get(ResourceManagerConfig config = null);
     }
 } 

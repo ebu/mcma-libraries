@@ -20,8 +20,8 @@ namespace Mcma.Worker
             => AddOperation(new TOperation());
 
         public Worker AddOperation<TInput>(string operationName,
-                                           Func<WorkerRequest, TInput, Task> handler,
-                                           Func<WorkerRequest, bool> accepts = null)
+                                           Func<WorkerRequestContext, TInput, Task> handler,
+                                           Func<WorkerRequestContext, bool> accepts = null)
             => AddOperation(new DelegateWorkerOperation<TInput>(ProviderCollection, operationName, handler, accepts));
 
         public Worker AddOperation(IWorkerOperation operation)
@@ -35,25 +35,24 @@ namespace Mcma.Worker
             return this;
         }
 
-        public async Task DoWorkAsync(WorkerRequest request)
+        public async Task DoWorkAsync(WorkerRequestContext requestContext)
         {
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            if (requestContext == null)
+                throw new ArgumentNullException(nameof(requestContext));
 
-            var operation = Operations.FirstOrDefault(op => op.Accepts(request));
+            var operation = Operations.FirstOrDefault(op => op.Accepts(requestContext));
             if (operation == null)
-                throw new Exception($"No handler found for '{request.OperationName}' that can handle this request.");
-                
-            var logger = ProviderCollection.LoggerProvider.Get(request.Tracker);
-            logger.Debug("Handling worker operation '" + request.OperationName + "' with handler of type '" + operation.GetType().Name + "'");
+                throw new McmaException($"No handler found for '{requestContext.OperationName}' that can handle this request.");
+
+            requestContext.Logger?.Debug("Handling worker operation '" + requestContext.OperationName + "' with handler of type '" + operation.GetType().Name + "'");
             
             try
             {
-                await operation.ExecuteAsync(request);
+                await operation.ExecuteAsync(requestContext);
             }
             catch (Exception ex)
             {
-                logger.Error($"Failed to process worker operation '{request.OperationName}'. Exception: {ex}");
+                requestContext.Logger?.Error($"Failed to process worker operation '{requestContext.OperationName}'. Exception: {ex}");
                 throw;
             }
         }

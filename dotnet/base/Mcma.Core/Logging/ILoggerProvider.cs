@@ -1,7 +1,7 @@
-namespace Mcma.Core.Logging
+namespace Mcma.Logging
 {
     public interface ILoggerProvider
     {
-        ILogger Get(McmaTracker tracker = null);
+        ILogger Get(string requestId = null, McmaTracker tracker = null);
     }
 }

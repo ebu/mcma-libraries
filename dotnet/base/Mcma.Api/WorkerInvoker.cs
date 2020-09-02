@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Mcma.Core;
-using Mcma.Core.Context;
+using Mcma;
+using Mcma.Context;
 
 namespace Mcma.Api
 {

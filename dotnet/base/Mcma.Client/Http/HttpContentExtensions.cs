@@ -4,8 +4,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Mcma.Core.Logging;
-using Mcma.Core.Serialization;
+using Mcma.Logging;
+using Mcma.Serialization;
 
 namespace Mcma.Client
 {
@@ -29,7 +29,7 @@ namespace Mcma.Client
                 return null;
 
             if (!(jToken is JObject jObj))
-                throw new Exception($"Cannot parse response as an object because the returned JSON is a token of type '{jToken.Type}'.");
+                throw new McmaException($"Cannot parse response as an object because the returned JSON is a token of type '{jToken.Type}'.");
 
             return jObj;
         }

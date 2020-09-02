@@ -1,4 +1,4 @@
-using Mcma.Core.Serialization;
+using Mcma.Serialization;
 using Mcma.Worker;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json.Linq;

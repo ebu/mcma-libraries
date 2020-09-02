@@ -1,12 +1,22 @@
+using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
 using Mcma.Data;
-using Mcma.Core;
 
 namespace Mcma.Aws.DynamoDb
 {
-    public class DynamoDbTableProvider : IDbTableProvider
+    public class DynamoDbTableProvider : IDocumentDatabaseTableProvider
     {
-        public IDbTable<TResource, TPartitionKey> Get<TResource, TPartitionKey>(string tableName = null)
-            where TResource : McmaResource
-            => new DynamoDbTable<TResource,  TPartitionKey>(tableName ?? typeof(TResource).Name);
+        public DynamoDbTableProvider(DynamoDbTableOptions options = null, IAmazonDynamoDB dynamoDb = null)
+        {
+            Options = options ?? new DynamoDbTableOptions();
+            DynamoDb = dynamoDb ?? new AmazonDynamoDBClient();
+        }
+        
+        private DynamoDbTableOptions Options { get; }
+        
+        private IAmazonDynamoDB DynamoDb { get; }
+
+        public async Task<IDocumentDatabaseTable> GetAsync(string tableName)
+            => new DynamoDbTable(DynamoDb, await DynamoDb.GetTableDescriptionAsync(tableName), Options);
     }
 }

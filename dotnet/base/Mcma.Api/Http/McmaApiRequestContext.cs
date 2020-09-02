@@ -4,10 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Mcma.Core;
-using Mcma.Core.Context;
-using Mcma.Core.Logging;
-using Mcma.Core.Serialization;
+using Mcma.Context;
+using Mcma.Logging;
+using Mcma.Serialization;
 using Mcma.Client;
 using Newtonsoft.Json.Linq;
 
@@ -17,15 +16,20 @@ namespace Mcma.Api
     {
         private static readonly HttpMethod[] MethodsSupportingRequestBody = {HttpMethod.Post, HttpMethod.Put, new HttpMethod("PATCH")};
 
-        public McmaApiRequestContext(McmaApiRequest request, IDictionary<string, string> contextVariables)
+        public McmaApiRequestContext(McmaApiRequest request, IDictionary<string, string> contextVariables, ILoggerProvider loggerProvider = null)
             : base(contextVariables)
         {
             Request = request;
+            LoggerProvider = loggerProvider;
         }
 
         public McmaApiRequest Request { get; }
 
+        public ILoggerProvider LoggerProvider { get; }
+
         public McmaApiResponse Response { get; } = new McmaApiResponse();
+
+        public string RequestId => Request?.Id;
 
         public bool HasRequestBody() => !string.IsNullOrWhiteSpace(Request?.Body);
 
@@ -56,6 +60,19 @@ namespace Mcma.Api
 
         public T GetRequestBody<T>() where T : McmaObject => Request?.JsonBody?.ToMcmaObject<T>();
 
+        public void SetResponseStatusCode(HttpStatusCode status, string statusMessage = null)
+            => SetResponseStatus((int)status, statusMessage);
+
+        public void SetResponseStatus(int status, string statusMessage = null)
+        {
+            Response.StatusCode = status;
+            Response.StatusMessage = statusMessage;
+        }
+
+        public void SetResponseBody(object body) => Response.JsonBody = body?.ToMcmaJson();
+
+        public void SetResponseHeader(string header, string value) => Response.Headers[header] = value;
+
         public McmaTracker GetTracker()
         {
             string tracker = null;
@@ -74,8 +91,7 @@ namespace Mcma.Api
                 }
                 catch (Exception e)
                 {
-                    Logger.System.Warn($"Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: {e}");
-                    throw new Exception($"Invalid MCMA tracker in request: {Request.ToMcmaJson()}", e);
+                    LoggerProvider?.Get(RequestId)?.Warn($"Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: {e}");
                 }
             }
 
@@ -85,30 +101,18 @@ namespace Mcma.Api
                 if (!(GetRequestBodyJson() is JObject jsonBody))
                     return null;
 
-                var trackerProp = jsonBody.Properties().FirstOrDefault(j => j.Name.Equals(nameof(JobBase.Tracker), StringComparison.OrdinalIgnoreCase));
-                if (trackerProp == null)
-                    return null;
+                var trackerProp = jsonBody.Properties().FirstOrDefault(j => j.Name.Equals(nameof(Job.Tracker), StringComparison.OrdinalIgnoreCase));
 
-                return trackerProp.Value?.ToMcmaObject<McmaTracker>();
+                return trackerProp?.Value.ToMcmaObject<McmaTracker>();
             }
             catch (Exception e)
             {
-                Logger.System.Warn($"Failed to parse McmaTracker object found in body's 'tracker' property. Error: {e}");
-                throw new Exception($"Invalid MCMA tracker in request: {Request.ToMcmaJson()}", e);
+                LoggerProvider?.Get(RequestId)?.Warn($"Failed to parse McmaTracker object found in body's 'tracker' property. Error: {e}");
             }
+
+            return null;
         }
 
-        public void SetResponseStatusCode(HttpStatusCode status, string statusMessage = null)
-            => SetResponseStatus((int)status, statusMessage);
-
-        public void SetResponseStatus(int status, string statusMessage = null)
-        {
-            Response.StatusCode = status;
-            Response.StatusMessage = statusMessage;
-        }
-
-        public void SetResponseBody(object body) => Response.JsonBody = body?.ToMcmaJson();
-
-        public void SetResponseHeader(string header, string value) => Response.Headers[header] = value;
+        public ILogger GetLogger() => LoggerProvider?.Get(RequestId, GetTracker());
     }
 }

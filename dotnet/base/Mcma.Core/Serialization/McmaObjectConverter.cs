@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mcma.Core.Logging;
+using Mcma.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Mcma.Core.Serialization
+namespace Mcma.Serialization
 {
     public class McmaObjectConverter : McmaJsonConverter
     {
@@ -28,7 +28,7 @@ namespace Mcma.Core.Serialization
             }
             catch (Exception ex)
             {
-                throw new Exception($"An error occurred reading JSON for an object of type {objectType.Name}. See inner exception for details.", ex);
+                throw new McmaException($"An error occurred reading JSON for an object of type {objectType.Name}. See inner exception for details.", ex);
             }
         }
 

@@ -1,4 +1,4 @@
-namespace Mcma.Core.Logging
+namespace Mcma.Logging
 {
     public abstract class LoggerProvider<T> : ILoggerProvider where T : ILogger
     {
@@ -9,8 +9,8 @@ namespace Mcma.Core.Logging
 
         protected string Source { get; }
 
-        public ILogger Get(McmaTracker tracker = null) => Get(Source, tracker);
+        public ILogger Get(string requestId = null, McmaTracker tracker = null) => Get(Source, requestId, tracker);
 
-        protected abstract T Get(string source, McmaTracker tracker);
+        protected abstract T Get(string source, string requestId, McmaTracker tracker);
     }
 }

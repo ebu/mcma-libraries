@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using Mcma.Core.Utility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Mcma.Core.Serialization
+namespace Mcma.Serialization
 {
     public class McmaExpandoObjectConverter : McmaJsonConverter
     {

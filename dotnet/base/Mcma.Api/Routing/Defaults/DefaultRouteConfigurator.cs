@@ -1,6 +1,6 @@
 
 using System;
-using Mcma.Core;
+using Mcma;
 
 namespace Mcma.Api.Routing.Defaults
 {

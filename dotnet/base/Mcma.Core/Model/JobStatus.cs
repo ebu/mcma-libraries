@@ -1,9 +1,11 @@
 using System;
 
-namespace Mcma.Core
+namespace Mcma
 {
     public class JobStatus
     {
+        public static readonly JobStatus New = new JobStatus(nameof(New));
+
         public static readonly JobStatus Queued = new JobStatus(nameof(Queued));
         
         public static readonly JobStatus Scheduled = new JobStatus(nameof(Scheduled));

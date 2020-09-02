@@ -7,8 +7,8 @@ namespace Mcma.Worker
     {
         string Name { get; }
         
-        bool Accepts(WorkerRequest request);
+        bool Accepts(WorkerRequestContext request);
 
-        Task ExecuteAsync(WorkerRequest request);
+        Task ExecuteAsync(WorkerRequestContext request);
     }
 }

@@ -2,18 +2,16 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mcma.Api.QueryFilters;
 using Mcma.Api.Routes;
 using Mcma.Api.Routing.Defaults.Routes;
-using Mcma.Core;
-using Mcma.Core.Utility;
 using Mcma.Data;
+using Mcma.Utility;
 
 namespace Mcma.Api.Routing.Defaults
 {
     public class DefaultRouteCollectionBuilder<TResource> where TResource : McmaResource
     {
-        public DefaultRouteCollectionBuilder(IDbTableProvider dbTableProvider, string root = null)
+        public DefaultRouteCollectionBuilder(IDocumentDatabaseTableProvider dbTableProvider, string root = null)
         {
             DbTableProvider = dbTableProvider;
 
@@ -25,7 +23,7 @@ namespace Mcma.Api.Routing.Defaults
             
             Routes = new DefaultRouteCollection<TResource>
             {
-                Query = DefaultQueryBuilder.Get<TResource>(DbTableProvider, new InMemoryQueryFilterExpressionProvider(), Root),
+                Query = DefaultQueryBuilder.Get<TResource>(DbTableProvider, Root),
                 Create = DefaultCreateBuilder.Get<TResource>(DbTableProvider, Root),
                 Get = DefaultGetBuilder.Get<TResource>(DbTableProvider, Root),
                 Update = DefaultUpdateBuilder.Get<TResource>(DbTableProvider, Root),
@@ -33,7 +31,7 @@ namespace Mcma.Api.Routing.Defaults
             };
         }
 
-        private IDbTableProvider DbTableProvider { get; }
+        private IDocumentDatabaseTableProvider DbTableProvider { get; }
 
         private string Root { get; }
 

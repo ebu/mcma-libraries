@@ -6,6 +6,6 @@ namespace Mcma.Client
     {
         IAuthProvider Add<T>(AuthTypeRegistration<T> registration);
 
-        Task<IAuthenticator> GetAsync<T>(string authType, T authContext = default(T));
+        Task<IAuthenticator> GetAsync(string authType, object authContext = default);
     }
 }

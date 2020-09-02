@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mcma.Core
+namespace Mcma
 {
     public class Service : McmaResource
     {

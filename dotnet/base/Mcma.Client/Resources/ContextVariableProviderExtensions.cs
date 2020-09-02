@@ -1,5 +1,5 @@
 
-using Mcma.Core.Context;
+using Mcma.Context;
 
 namespace Mcma.Client
 {

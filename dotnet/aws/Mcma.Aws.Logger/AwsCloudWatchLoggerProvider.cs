@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.CloudWatchLogs;
 using Amazon.CloudWatchLogs.Model;
-using Mcma.Core;
-using Mcma.Core.Logging;
-using Mcma.Core.Serialization;
+using Mcma;
+using Mcma.Logging;
+using Mcma.Serialization;
 
 namespace Mcma.Aws.CloudWatch
 {
@@ -140,7 +140,8 @@ namespace Mcma.Aws.CloudWatch
             }
         }
 
-        protected override AwsCloudWatchLogger Get(string source, McmaTracker tracker = null) => new AwsCloudWatchLogger(source, tracker, AddLogEvent);
+        protected override AwsCloudWatchLogger Get(string source, string requestId, McmaTracker tracker) =>
+            new AwsCloudWatchLogger(source, requestId, tracker, AddLogEvent);
 
         public async Task FlushAsync()
         {

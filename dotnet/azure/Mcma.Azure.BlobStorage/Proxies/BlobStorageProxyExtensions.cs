@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using Mcma.Core.Context;
+using Mcma.Context;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 

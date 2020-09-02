@@ -1,6 +1,5 @@
 ﻿using System.Net;
-using Mcma.Core;
-using Mcma.Core.Context;
+using Mcma.Context;
 
 namespace Mcma.Api
 {

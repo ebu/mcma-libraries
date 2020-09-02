@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Mcma.Core;
+using Mcma;
 
 namespace Mcma.Worker
 {
     internal class DelegateJobProfile<TJob> : IJobProfile<TJob> where TJob : Job
     {
-        public DelegateJobProfile(string name, Func<ProcessJobAssignmentHelper<TJob>, Task> handler)
+        public DelegateJobProfile(string name, Func<ProviderCollection, ProcessJobAssignmentHelper<TJob>, WorkerRequestContext, Task> handler)
         {
-            Name = name;
-            Handler = handler;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }
 
         public string Name { get; }
 
-        private Func<ProcessJobAssignmentHelper<TJob>, Task> Handler { get; }
+        private Func<ProviderCollection, ProcessJobAssignmentHelper<TJob>, WorkerRequestContext, Task> Handler { get; }
 
-        public Task ExecuteAsync(ProcessJobAssignmentHelper<TJob> job) => Handler(job);
+        public Task ExecuteAsync(ProviderCollection providerCollection,
+                                 ProcessJobAssignmentHelper<TJob> workerJobHelper,
+                                 WorkerRequestContext requestContext)
+            => Handler(providerCollection, workerJobHelper, requestContext);
     }
 }

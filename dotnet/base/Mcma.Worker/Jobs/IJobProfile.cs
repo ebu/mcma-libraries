@@ -1,5 +1,6 @@
-﻿using System.Threading.Tasks;
-using Mcma.Core;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Mcma;
 
 namespace Mcma.Worker
 {
@@ -7,6 +8,6 @@ namespace Mcma.Worker
     {
         string Name { get; }
 
-        Task ExecuteAsync(ProcessJobAssignmentHelper<TJob> job);
+        Task ExecuteAsync(ProviderCollection providerCollection, ProcessJobAssignmentHelper<TJob> workerJobHelper, WorkerRequestContext requestContext);
     }
 }

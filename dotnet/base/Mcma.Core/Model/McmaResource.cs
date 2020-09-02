@@ -1,6 +1,6 @@
 using System;
 
-namespace Mcma.Core
+namespace Mcma
 {
     public abstract class McmaResource : McmaObject
     {

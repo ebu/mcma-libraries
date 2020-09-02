@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Routing;
-using Newtonsoft.Json.Linq;
-using Mcma.Core.Logging;
-using Mcma.Core.Serialization;
 using Mcma.Api.Routes;
+using Mcma.Logging;
+using Mcma.Serialization;
+using Microsoft.AspNetCore.Routing;
 
 namespace Mcma.Api
 {
@@ -21,10 +20,10 @@ namespace Mcma.Api
 
         private ILoggerProvider LoggerProvider { get; }
 
-        private IDictionary<string, string> GetDefaultResponseHeaders()
+        private static IDictionary<string, string> GetDefaultResponseHeaders()
             => new Dictionary<string, string>
             {
-                ["Date"] = DateTime.UtcNow.ToString(),
+                ["Date"] = DateTime.UtcNow.ToString("R"),
                 ["Content-Type"] = "application/json",
                 ["Access-Control-Allow-Origin"] = "*"
             };
@@ -33,7 +32,7 @@ namespace Mcma.Api
 
         public async Task<McmaApiResponse> HandleRequestAsync(McmaApiRequestContext requestContext)
         {
-            var logger = LoggerProvider?.Get(requestContext.GetTracker()) ?? Logger.System;
+            var logger = LoggerProvider?.Get(requestContext.RequestId, requestContext.GetTracker()) ?? Logger.System;
 
             var request = requestContext.Request;
             var response = requestContext.Response;
@@ -143,7 +142,7 @@ namespace Mcma.Api
                 response.JsonBody = new McmaApiError(response.StatusCode, ex.ToString(), request.Path).ToMcmaJson();
             }
 
-            if ((int)response.StatusCode >= 400)
+            if (response.StatusCode >= 400)
                 logger.Error($"{request.HttpMethod} {request.Path} finished with error status of {response.StatusCode}", request.ToMcmaJson(), response.ToMcmaJson());
 
             return response;

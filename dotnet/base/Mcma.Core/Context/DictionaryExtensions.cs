@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Mcma.Core.Context
+namespace Mcma.Context
 {
     public static class DictionaryExtensions
     {

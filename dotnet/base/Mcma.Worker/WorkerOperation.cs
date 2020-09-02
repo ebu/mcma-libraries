@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Mcma.Core.Logging;
 
 namespace Mcma.Worker
 {
@@ -17,26 +16,25 @@ namespace Mcma.Worker
 
         public Type InputType => typeof(T);
 
-        private bool IsValidRequest(WorkerRequest req)
-            => Name.Equals(req.OperationName, StringComparison.OrdinalIgnoreCase) && req.TryGetInput<T>(out var _);
+        private bool IsValidRequest(WorkerRequestContext reqCtx)
+            => Name.Equals(reqCtx.OperationName, StringComparison.OrdinalIgnoreCase) && reqCtx.TryGetInputAs<T>(out _);
 
-        bool IWorkerOperation.Accepts(WorkerRequest req) => IsValidRequest(req) && Accepts(req);
+        bool IWorkerOperation.Accepts(WorkerRequestContext reqCtx) => IsValidRequest(reqCtx) && Accepts(reqCtx);
 
-        protected virtual bool Accepts(WorkerRequest req) => true;
+        protected virtual bool Accepts(WorkerRequestContext reqCtx) => true;
 
-        Task IWorkerOperation.ExecuteAsync(WorkerRequest request)
+        Task IWorkerOperation.ExecuteAsync(WorkerRequestContext requestContext)
         {
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            if (requestContext == null)
+                throw new ArgumentNullException(nameof(requestContext));
 
-            var input = request.GetInput<T>();
+            var input = requestContext.GetInputAs<T>();
 
-            var logger = ProviderCollection.LoggerProvider.Get(request.Tracker);
-            logger.Debug("Got input of type '" + typeof(T).Name + "' from worker request.");
+            requestContext.Logger?.Debug("Got input of type '" + typeof(T).Name + "' from worker request.");
             
-            return ExecuteAsync(request, input);
+            return ExecuteAsync(requestContext, input);
         }
 
-        protected abstract Task ExecuteAsync(WorkerRequest request, T requestInput);
+        protected abstract Task ExecuteAsync(WorkerRequestContext requestContext, T requestInput);
     }
 }

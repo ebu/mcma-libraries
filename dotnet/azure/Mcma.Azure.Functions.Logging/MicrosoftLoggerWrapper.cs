@@ -1,10 +1,10 @@
-﻿using Mcma.Core;
-using Mcma.Core.Logging;
-using Mcma.Core.Serialization;
+﻿using Mcma;
+using Mcma.Logging;
+using Mcma.Serialization;
 using Microsoft.Extensions.Logging;
 
-using McmaLogger = Mcma.Core.Logging.Logger;
-using McmaLogLevel = Mcma.Core.Logging.LogLevel;
+using McmaLogger = Mcma.Logging.Logger;
+using McmaLogLevel = Mcma.Logging.LogLevel;
 
 using IMicrosoftLogger = Microsoft.Extensions.Logging.ILogger;
 using MicrosoftLogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -13,18 +13,18 @@ namespace Mcma.Azure.Functions.Logging
 {
     public class MicrosoftLoggerWrapper : McmaLogger
     {
-        public MicrosoftLoggerWrapper(IMicrosoftLogger wrappedLogger, string source, McmaTracker tracker)
-            : base(source, tracker)
+        public MicrosoftLoggerWrapper(IMicrosoftLogger wrappedLogger, string source, string requestId, McmaTracker tracker)
+            : base(source, requestId, tracker)
         {
             WrappedLogger = wrappedLogger;
         }
 
         private IMicrosoftLogger WrappedLogger { get; }
 
-        protected override void Log(LogEvent logEvent)
+        protected override void WriteLogEvent(LogEvent logEvent)
             => WrappedLogger.Log(MapLogLevel(logEvent.Level), logEvent.ToMcmaJson().ToString());
 
-        private MicrosoftLogLevel MapLogLevel(int mcmaLogLevel)
+        private static MicrosoftLogLevel MapLogLevel(int mcmaLogLevel)
         {
             if (mcmaLogLevel >= McmaLogLevel.Debug)
                 return MicrosoftLogLevel.Debug;

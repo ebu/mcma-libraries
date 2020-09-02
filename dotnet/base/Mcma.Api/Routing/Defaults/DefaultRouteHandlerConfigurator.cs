@@ -12,7 +12,7 @@ namespace Mcma.Api.Routing.Defaults
 
         private DefaultRouteHandlerBuilder<TResult> HandlerBuilder { get; }
 
-        internal Func<McmaApiRequestContext, Task> OnStarted { get; set; }
+        internal Func<McmaApiRequestContext, Task<bool>> OnStarted { get; set; }
 
         internal Func<McmaApiRequestContext, TResult, Task> OnCompleted { get; set; }
 

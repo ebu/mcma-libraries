@@ -3,8 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using Amazon.Lambda.Core;
 using Newtonsoft.Json;
-using Mcma.Core.Serialization;
-using Mcma.Core.Logging;
+using Mcma.Serialization;
+using Mcma.Logging;
 
 namespace Mcma.Aws.Lambda
 {

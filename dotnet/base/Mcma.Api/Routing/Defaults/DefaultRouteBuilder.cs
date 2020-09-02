@@ -28,7 +28,7 @@ namespace Mcma.Api.Routing.Defaults
             return this;
         }
 
-        public DefaultRouteBuilder<TResult> OnStarted(Func<McmaApiRequestContext, Task> onStarted)
+        public DefaultRouteBuilder<TResult> OnStarted(Func<McmaApiRequestContext, Task<bool>> onStarted)
         {
             DefaultRouteHandlerConfigurator.OnStarted = onStarted; 
             return this;

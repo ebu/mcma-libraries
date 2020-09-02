@@ -15,13 +15,13 @@ namespace Mcma.Client
 
         private ResourceManagerConfig DefaultConfig { get; }
 
-        public ResourceManager Get(HttpClient httpClient, ResourceManagerConfig config = null)
+        public IResourceManager Get(HttpClient httpClient, ResourceManagerConfig config = null)
             => new ResourceManager(httpClient, ConfigOrDefault(config), AuthProvider);
 
-        public ResourceManager Get(ResourceManagerConfig config = null)
+        public IResourceManager Get(ResourceManagerConfig config = null)
             => new ResourceManager(ConfigOrDefault(config), AuthProvider);
 
         private ResourceManagerConfig ConfigOrDefault(ResourceManagerConfig config)
-            => (config ?? DefaultConfig) ?? throw new Exception("Config for resource manager not provided, and there is no default config available");
+            => (config ?? DefaultConfig) ?? throw new McmaException("Config for resource manager not provided, and there is no default config available");
     }
 } 

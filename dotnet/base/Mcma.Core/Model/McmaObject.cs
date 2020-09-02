@@ -1,4 +1,4 @@
-namespace Mcma.Core
+namespace Mcma
 {
     public abstract class McmaObject : McmaExpandoObject
     {

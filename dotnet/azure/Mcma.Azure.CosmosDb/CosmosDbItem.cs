@@ -1,31 +1,28 @@
-using Mcma.Azure.CosmosDb.Json;
-using Mcma.Core;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Mcma.Azure.CosmosDb
 {
-    public class CosmosDbItem<TResource, TPartitionKey> where TResource : McmaResource
+    public class CosmosDbItem<T> where T : class
     {
         public CosmosDbItem()
         {
         }
 
-        public CosmosDbItem(string id, TPartitionKey partitionKey, TResource resource)
+        public CosmosDbItem(string id, T resource)
         {
+            var idParts = id.Split('/');
+
             Id = id;
-            Type = typeof(TResource).Name;
-            PartitionKey = partitionKey;
+            PartitionKey = string.Join("/", idParts.Take(idParts.Length - 1));
             Resource = resource;
         }
 
         [JsonConverter(typeof(IdConverter))]
         public string Id { get; set; }
+        
+        public string PartitionKey { get; set; }
 
-        public string Type { get; set; }
-
-        [JsonConverter(typeof(PartitionKeyConverter))]
-        public TPartitionKey PartitionKey { get; set; }
-
-        public TResource Resource { get; set; }
+        public T Resource { get; set; }
     }
 }

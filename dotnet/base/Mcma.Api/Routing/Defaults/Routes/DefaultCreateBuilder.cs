@@ -1,14 +1,13 @@
 using System;
 using System.Net.Http;
-using Mcma.Core;
-using Mcma.Core.Context;
+using Mcma.Context;
 using Mcma.Data;
 
 namespace Mcma.Api.Routing.Defaults.Routes
 {
     public static class DefaultCreateBuilder
     {
-        public static DefaultRouteBuilder<TResource> Get<TResource>(IDbTableProvider dbTableProvider, string root) where TResource : McmaResource
+        public static DefaultRouteBuilder<TResource> Get<TResource>(IDocumentDatabaseTableProvider dbTableProvider, string root) where TResource : McmaResource
             => 
             new DefaultRouteBuilder<TResource>(
                 HttpMethod.Post,
@@ -19,8 +18,9 @@ namespace Mcma.Api.Routing.Defaults.Routes
                         {
                             // invoke the start handler, if any
                             if (onStarted != null)
-                                await onStarted.Invoke(requestContext);
-
+                                if (!await onStarted(requestContext))
+                                    return;
+                            
                             // ensure the body is set
                             var resource = requestContext.GetRequestBody<TResource>();
                             if (resource == null)
@@ -29,17 +29,18 @@ namespace Mcma.Api.Routing.Defaults.Routes
                                 return;
                             }
 
-                            var id = requestContext.PublicUrlForPath($"{root}/{Guid.NewGuid()}");
-
+                            var resourcePath = $"{root}/{Guid.NewGuid()}";
+                            
                             // initialize the new resource with an ID
-                            resource.OnCreate(id);
+                            resource.OnCreate(requestContext.PublicUrlForPath(resourcePath));
 
                             // put the new object into the table
-                            await dbTableProvider.Get<TResource>(requestContext.TableName()).PutAsync(resource.Id, resource);
+                            var table = await dbTableProvider.GetAsync(requestContext.TableName());
+                            await table.PutAsync(resourcePath, resource);
 
                             // invoke the completion handler (if any) with the newly-created resource
                             if (onCompleted != null)
-                                await onCompleted.Invoke(requestContext, resource);
+                                await onCompleted(requestContext, resource);
 
                             // return a Created status with the id of the resource
                             requestContext.SetResponseResourceCreated(resource);

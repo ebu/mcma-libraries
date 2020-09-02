@@ -1,17 +1,16 @@
 using System;
-using Mcma.Core.Serialization;
 using Newtonsoft.Json.Linq;
 
-namespace Mcma.Core.Logging
+namespace Mcma.Logging
 {
     public class ConsoleLogger : Logger
     {
-        public ConsoleLogger(string source, McmaTracker tracker = null)
-            : base(source, tracker)
+        public ConsoleLogger(string source, string requestId = null, McmaTracker tracker = null)
+            : base(source, requestId, tracker)
         {
         }
 
-        protected override void Log(LogEvent logEvent)
+        protected override void WriteLogEvent(LogEvent logEvent)
         {
             if (logEvent.Level <= 0)
                 return;
@@ -38,8 +37,8 @@ namespace Mcma.Core.Logging
                         logEvent.Level,
                         logEvent.Source,
                         logEvent.Type,
-                        logEvent.TrackerId ?? "(empty)",
-                        logEvent.TrackerLabel ?? "(empty)",
+                        logEvent.Tracker?.Id ?? "(empty)",
+                        logEvent.Tracker?.Label ?? "(empty)",
                         logEvent.Message ?? "(empty)",
                         logEvent.Args != null ? JArray.FromObject(logEvent.Args).ToString() : "(empty)");
 

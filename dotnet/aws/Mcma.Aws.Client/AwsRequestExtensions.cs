@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Mcma.Core.Logging;
+using Mcma.Logging;
 
 namespace Mcma.Aws.Client
 {

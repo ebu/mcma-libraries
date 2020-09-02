@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Mcma.Core;
-using Mcma.Core.Logging;
+using System.Linq;
+using Mcma;
+using Mcma.Logging;
 
 using IMicrosoftLogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -16,23 +17,23 @@ namespace Mcma.Azure.Functions.Logging
 
         private IDictionary<string, IMicrosoftLogger> Loggers { get; } = new Dictionary<string, IMicrosoftLogger>();
 
-        private string GetLoggerKey(string source, McmaTracker tracker)
-            => tracker != null ? $"{source}-{tracker.Id?.Trim()}" : source;
+        private static string GetLoggerKey(string source, string requestId, McmaTracker tracker)
+            => string.Join("-", new[] {source, requestId, tracker.Id?.Trim()}.Where(x => x != null));
 
-        protected override MicrosoftLoggerWrapper Get(string source, McmaTracker tracker)
+        protected override MicrosoftLoggerWrapper Get(string source, string requestId, McmaTracker tracker)
         {
-            var loggerKey = GetLoggerKey(source, tracker);
+            var loggerKey = GetLoggerKey(source, requestId, tracker);
             if (!Loggers.ContainsKey(loggerKey))
                 throw new Exception($"Unable to create logger with key '{loggerKey}' as there is no associated Microsoft.Extensions.Logging.ILogger object to wrap.");
 
-            return new MicrosoftLoggerWrapper(Loggers[loggerKey], source, tracker);
+            return new MicrosoftLoggerWrapper(Loggers[loggerKey], source, requestId, tracker);
         }
 
-        public MicrosoftLoggerWrapper AddLogger(IMicrosoftLogger microsoftLogger, McmaTracker tracker = null)
+        public MicrosoftLoggerWrapper AddLogger(IMicrosoftLogger microsoftLogger, string requestId, McmaTracker tracker = null)
         {
-            Loggers[GetLoggerKey(Source, tracker)] = microsoftLogger;
+            Loggers[GetLoggerKey(Source, requestId, tracker)] = microsoftLogger;
             
-            return Get(Source, tracker);
+            return Get(Source, requestId, tracker);
         }
     }
 }

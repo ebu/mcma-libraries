@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Mcma.Core.Serialization;
+using Mcma.Serialization;
 using Newtonsoft.Json.Linq;
 
 namespace Mcma.Client.AccessTokens

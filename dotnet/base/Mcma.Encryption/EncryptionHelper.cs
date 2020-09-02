@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
-using Mcma.Core.Serialization;
+using Mcma.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

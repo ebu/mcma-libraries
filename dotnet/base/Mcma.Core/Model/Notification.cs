@@ -1,6 +1,6 @@
 using Newtonsoft.Json.Linq;
 
-namespace Mcma.Core
+namespace Mcma
 {
     public class Notification : McmaResource
     {

@@ -45,7 +45,7 @@ namespace Mcma.Client
             }
 
             // throw the exception with the error message we've built
-            throw new Exception(errorMessage);
+            throw new McmaException(errorMessage);
         }
     }
 }

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Mcma.Core;
+using Mcma;
 
 namespace Mcma.Api
 {

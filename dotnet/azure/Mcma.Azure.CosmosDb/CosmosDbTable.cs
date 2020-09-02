@@ -2,158 +2,101 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
-using Mcma.Azure.CosmosDb.FilterExpressions;
-using Mcma.Core;
-using Mcma.Core.Serialization;
-using Mcma.Core.Utility;
+using Mcma.Serialization;
 using Mcma.Data;
+using Mcma.Data.DocumentDatabase.Queries;
 using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json.Linq;
 
 namespace Mcma.Azure.CosmosDb
 {
-    public class CosmosDbTable<TResource, TPartitionKey> : IDbTable<TResource, TPartitionKey> where TResource : McmaResource
+    public class CosmosDbTable : IDocumentDatabaseTable
     {
-        public CosmosDbTable(CosmosClient cosmosClient, string databaseId, string tableName)
+        public CosmosDbTable(Container container, ContainerProperties containerProperties)
         {
-            CosmosClient = cosmosClient;
-            DatabaseId = databaseId;
-            TableName = tableName;
-        }
-
-        private CosmosClient CosmosClient { get; }
-
-        private string DatabaseId { get; }
-
-        private string TableName { get; }
-        
-        private Task<Container> ContainerTask { get; set; }
-
-        private async Task<Container> GetContainerAsync()
-        {
-            if (ContainerTask == null)
-            {
-                Database db = await CosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseId);
-                
-                ContainerTask =
-                    db.CreateContainerIfNotExistsAsync(
-                            new ContainerProperties(
-                                TableName,
-                                $"/{nameof(CosmosDbItem<TResource, TPartitionKey>.PartitionKey).PascalCaseToCamelCase()}"))
-                        .ContinueWith(t => (Container)t.Result);
-            }
+            Container = container;
+            ContainerProperties = containerProperties;
             
-            return await ContainerTask;
+            if (containerProperties.PartitionKeyPath.Split('/').Length > 1)
+                throw new McmaException($"Container {containerProperties.Id} defines a partition key with multiple paths. MCMA only supports partition keys with a single path.");
         }
+        
+        private Container Container { get; }
 
-        private async Task AddQueryResultsAsync(Expression<Func<TResource, bool>> filter, List<TResource> results, string continuationToken = null)
+        private ContainerProperties ContainerProperties { get; }
+
+        private static PartitionKey ParsePartitionKey(string id)
         {
-            var container = await GetContainerAsync();
-
-            // This currently does not work due to issues with camel-case in the V3 Cosmos DB SDK:
-            // https://github.com/Azure/azure-cosmos-dotnet-v3/issues/570
-            // The fix is awaiting release, so once the new version is available on NuGet, we should
-            // be able to put this back
-
-            // var typeName = typeof(TResource).Name;
-            // IQueryable<TResource> query = container.GetItemLinqQueryable<TResource>().Where(x => x.Type == typeName);
-            // if (filter != null)
-            //     query = query.Where(filter);
-                
-            // var queryIterator = query.ToFeedIterator();
-
-            var cosmosDbFilter = new CosmosDbFilter<TResource>(filter);
-
-            var queryDefinition = cosmosDbFilter.ToQueryDefinition();
-
-            var queryIterator = container.GetItemQueryIterator<CosmosDbItem<TResource, TPartitionKey>>(queryDefinition);
-
-            while (queryIterator.HasMoreResults)
+            var lastSlashIndex = id.LastIndexOf('/');
+            return lastSlashIndex > 0 ? new PartitionKey(id.Substring(0, lastSlashIndex)) : PartitionKey.None;
+        }
+        
+        private async Task AddQueryResultsAsync<T>(QueryDefinition queryDefinition, List<T> results) where T : class
+        {
+            var continuationToken = default(string);
+            do
             {
-                var resp = await queryIterator.ReadNextAsync();
-                results.AddRange(resp.Resource.Select(r => r.Resource));
-                continuationToken = resp.ContinuationToken;
+                var queryIterator = Container.GetItemQueryIterator<CosmosDbItem<T>>(queryDefinition);
+                while (queryIterator.HasMoreResults)
+                {
+                    var resp = await queryIterator.ReadNextAsync();
+                    results.AddRange(resp.Resource.Select(r => r.Resource));
+                    continuationToken = resp.ContinuationToken;
+                }
             }
-
-            if (continuationToken != null)
-                await AddQueryResultsAsync(filter, results, continuationToken);
+            while (continuationToken != null);
         }
 
-        public async Task<IEnumerable<TResource>> QueryAsync(Expression<Func<TResource, bool>> filter = null)
+        public async Task<IEnumerable<T>> QueryAsync<T>(Query<T> query) where T : class
         {
-            var results = new List<TResource>();
+            var results = new List<T>();
+            
+            var queryDefinition = CosmosDbQueryDefinitionBuilder.Build(query, ContainerProperties.PartitionKeyPath);
 
-            await AddQueryResultsAsync(filter, results);
+            await AddQueryResultsAsync(queryDefinition, results);
 
             return results;
         }
         
-        public async Task<TResource> GetAsync(string id, TPartitionKey partitionKey)
+        public async Task<T> GetAsync<T>(string id) where T : class
         {
-            var container = await GetContainerAsync();
-
-            var resp = await container.ReadItemStreamAsync(Uri.EscapeDataString(id), GetPartitionKey(partitionKey));
+            var resp = await Container.ReadItemStreamAsync(Uri.EscapeDataString(id), ParsePartitionKey(id));
 
             if (resp.StatusCode == HttpStatusCode.NotFound)
-                return default(TResource);
+                return default;
 
             resp.EnsureSuccessStatusCode();
             
-            return await ToItemAsync(resp.Content);
+            return await ToItemAsync<T>(resp.Content);
         }
 
-        public async Task<TResource> PutAsync(string id, TPartitionKey partitionKey, TResource resource)
+        public async Task<T> PutAsync<T>(string id, T resource) where T : class
         {
-            if (resource.Id != id)
-                resource.Id = id;
-            
-            var container = await GetContainerAsync();
+            var item = new CosmosDbItem<T>(id, resource);
 
-            var item = new CosmosDbItem<TResource, TPartitionKey>(id, partitionKey, resource);
-
-            var resp = await container.UpsertItemAsync(item, GetPartitionKey(partitionKey));
+            var resp = await Container.UpsertItemAsync(item, ParsePartitionKey(id));
 
             return resp.Resource?.Resource;
         }
 
-        public async Task DeleteAsync(string id, TPartitionKey partitionKey)
+        public async Task DeleteAsync(string id)
         {
-            var container = await GetContainerAsync();
-
-            await container.DeleteItemAsync<CosmosDbItem<TResource, TPartitionKey>>(Uri.EscapeDataString(id), GetPartitionKey(partitionKey));
+            var resp = await Container.DeleteItemStreamAsync(Uri.EscapeDataString(id), ParsePartitionKey(id));
+            resp.EnsureSuccessStatusCode();
         }
 
-        private PartitionKey GetPartitionKey(TPartitionKey partitionKey)
-        {
-            if (partitionKey == null)
-                return PartitionKey.Null;
-
-            switch (partitionKey)
-            {
-                case Type partitionKeyType:
-                    return new PartitionKey(partitionKeyType.Name);
-                case string partitionKeyStr:
-                    return new PartitionKey(partitionKeyStr);
-                case bool partitionKeyBool:
-                    return new PartitionKey(partitionKeyBool);
-                case double partitionKeyDouble:
-                    return new PartitionKey(partitionKeyDouble);
-                default:
-                    throw new NotSupportedException(
-                        $"Partition key of type ");
-            }
-        }
-
-        private async Task<TResource> ToItemAsync(Stream stream)
+        public IDocumentDatabaseMutex CreateMutex(string mutexName, string mutexHolder, TimeSpan? lockTimeout = null)
+            => new CosmosDbMutex(Container, ContainerProperties.PartitionKeyPath.Split('/').First(), mutexName, mutexHolder, lockTimeout);
+        
+        private static async Task<T> ToItemAsync<T>(Stream stream) where T : class
         {
             string bodyText;
             using (var streamReader = new StreamReader(stream))
                 bodyText = await streamReader.ReadToEndAsync();
 
-            return JToken.Parse(bodyText).ToMcmaObject<CosmosDbItem<TResource, TPartitionKey>>()?.Resource;
+            return JToken.Parse(bodyText).ToMcmaObject<CosmosDbItem<T>>()?.Resource;
         }
     }
 }

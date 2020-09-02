@@ -1,13 +1,12 @@
 using System.Net.Http;
-using Mcma.Core;
-using Mcma.Core.Context;
+using Mcma.Context;
 using Mcma.Data;
 
 namespace Mcma.Api.Routing.Defaults.Routes
 {
     public static class DefaultDeleteBuilder
     {
-        public static DefaultRouteBuilder<TResource> Get<TResource>(IDbTableProvider dbTableProvider, string root) where TResource : McmaResource
+        public static DefaultRouteBuilder<TResource> Get<TResource>(IDocumentDatabaseTableProvider dbTableProvider, string root) where TResource : McmaResource
             => 
             new DefaultRouteBuilder<TResource>(
                 HttpMethod.Delete,
@@ -18,16 +17,17 @@ namespace Mcma.Api.Routing.Defaults.Routes
                         {
                             // invoke the start handler, if any
                             if (onStarted != null)
-                                await onStarted.Invoke(requestContext);
+                                if (!await onStarted(requestContext))
+                                    return;
 
                             // get the table for the resource
-                            var table = dbTableProvider.Get<TResource>(requestContext.TableName());
+                            var table = await dbTableProvider.GetAsync(requestContext.TableName());
 
                             // build id from the root public url and the path
                             var id = requestContext.CurrentRequestPublicUrl();
 
                             // get the resource from the db
-                            var resource = await table.GetAsync(id);
+                            var resource = await table.GetAsync<TResource>(id);
 
                             // if the resource doesn't exist, return a 404
                             if (resource == null)
@@ -41,7 +41,7 @@ namespace Mcma.Api.Routing.Defaults.Routes
 
                             // invoke the completion handler, if any
                             if (onCompleted != null)
-                                await onCompleted.Invoke(requestContext, resource);
+                                await onCompleted(requestContext, resource);
                         }));
     }
 }

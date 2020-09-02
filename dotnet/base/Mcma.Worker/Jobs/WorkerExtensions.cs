@@ -1,5 +1,5 @@
 using System;
-using Mcma.Core;
+using Mcma;
 
 namespace Mcma.Worker
 {

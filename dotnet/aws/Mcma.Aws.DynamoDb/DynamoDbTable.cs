@@ -1,113 +1,192 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
-using Newtonsoft.Json.Linq;
-using Mcma.Core.Serialization;
 using Mcma.Data;
-using Mcma.Core;
-using System.Linq.Expressions;
-using System;
+using Mcma.Data.DocumentDatabase.Queries;
+using Mcma.Serialization;
+using Newtonsoft.Json.Linq;
 
 namespace Mcma.Aws.DynamoDb
 {
-    public class DynamoDbTable<TResource, TPartitionKey> : IDbTable<TResource, TPartitionKey> where TResource : McmaResource
+    public class DynamoDbTable : IDocumentDatabaseTable
     {
-        public DynamoDbTable(string tableName)
+        public DynamoDbTable(IAmazonDynamoDB dynamoDb, DynamoDbTableDescription tableDescription, DynamoDbTableOptions options = null)
         {
-            Table = Table.LoadTable(new AmazonDynamoDBClient(), tableName);
+            TableDescription = tableDescription ?? throw new ArgumentNullException(nameof(tableDescription));
+            Options = options ?? new DynamoDbTableOptions();
+            Table = dynamoDb != null ? Table.LoadTable(dynamoDb, tableDescription.TableName) : throw new ArgumentNullException(nameof(dynamoDb));
         }
+
+        private DynamoDbTableDescription TableDescription { get; }
+
+        private DynamoDbTableOptions Options { get; }
 
         private Table Table { get; }
 
-        private TResource DocumentToResource(Document document)
+        private static (string partitionKey, string sortKey) ParsePartitionAndSortKeys(string id)
+        {
+            var lastSlashIndex = id.LastIndexOf('/');
+            return lastSlashIndex > 0
+                       ? (id.Substring(0, lastSlashIndex), id.Substring(lastSlashIndex + 1))
+                       : (id, id);
+        }
+
+        private static T DocumentToResource<T>(Document document) where T : class
         {
             var docJson = JObject.Parse(document.ToJson());
-            
+
             var resourceJson = docJson["resource"];
 
-            return resourceJson != null ? resourceJson.ToMcmaObject<TResource>() : null;
+            return resourceJson?.ToMcmaObject<T>();
         }
 
-        private Document ResourceToDocument(string id, TPartitionKey partitionKey, TResource resource)
+        private Document ResourceToDocument<T>(string partitionKey, string sortKey, T resource)
         {
-            var jObj = new JObject
+            var resourceJson = resource.ToMcmaJson().RemoveEmptyStrings();
+            
+            var item = new JObject
             {
-                ["resource_type"] = JToken.FromObject(GetPartitionKeyText(partitionKey)),
-                ["resource_id"] = id,
-                ["resource"] = resource.ToMcmaJson()
+                [TableDescription.PartitionKeyName] = partitionKey,
+                [TableDescription.SortKeyName] = sortKey,
+                [nameof(resource)] = resourceJson
             };
 
-            RemoveEmptyStrings(jObj);
+            foreach (var kvp in Options.TopLevelAttributeMappings)
+                item[kvp.Key] = resourceJson.SelectToken(kvp.Value);
 
-            return Document.FromJson(jObj.ToString());
+            return Document.FromJson(item.ToString());
         }
 
-        private Primitive GetRangeKey(TPartitionKey partitionKey) => partitionKey.ToPrimitive(GetPartitionKeyText(partitionKey));
-
-        private string GetPartitionKeyText(TPartitionKey partitionKey)
-            => partitionKey is Type typePartitionKey ? typePartitionKey.Name : partitionKey.ToString();
-
-        private void RemoveEmptyStrings(JToken jToken)
+        private static async Task<IEnumerable<T>> ExecuteScanOrQueryAsync<T>(Func<Search> executeQueryOrScan, int? pageSize, int? pageNumber) where T : class
         {
-            if (jToken != null)
+            var items = new List<T>();
+            var itemsReturned = 0;
+            
+            var search = executeQueryOrScan();
+            do
             {
-                if (jToken.Type == JTokenType.Array)
+                var data = await search.GetNextSetAsync();
+
+                var itemsToAdd = new List<Document>();
+                if (!pageSize.HasValue)
                 {
-                    var array = (JArray)jToken;
-                    for (var i = array.Count; i >= 0; i--)
-                    {
-                        if (array[i].Type == JTokenType.String && array[i].ToString() == string.Empty)
-                            array.RemoveAt(i);
-                        else if (array[i].Type == JTokenType.Object)
-                            RemoveEmptyStrings(array[i]);
-                    }
+                    itemsToAdd.AddRange(data);
                 }
-                else if (jToken.Type == JTokenType.Object)
+                else
                 {
-                    var obj = (JObject)jToken;
-                    foreach (var prop in obj.Properties().ToList())
+                    var startIndex = pageSize.Value * pageNumber.GetValueOrDefault();
+                    var endIndex = startIndex + pageSize.Value;
+
+                    for (var i = 0; i < data.Count; i++)
                     {
-                        if (prop.Value.Type == JTokenType.String && prop.Value.ToString() == string.Empty)
-                            obj.Remove(prop.Name);
-                        else if (prop.Value.Type == JTokenType.Object)
-                            RemoveEmptyStrings(prop.Value);
+                        var currentOverallIndex = itemsReturned + i;
+                        if (currentOverallIndex < startIndex || currentOverallIndex >= endIndex)
+                            continue;
+                        
+                        itemsToAdd.Add(data[i]);
+
+                        if (items.Count + itemsToAdd.Count == pageSize.Value)
+                            break;
                     }
+
+                    items.AddRange(itemsToAdd.Select(DocumentToResource<T>));
+
+                    itemsReturned += data.Count;
                 }
             }
+            while (!search.IsDone && (!pageSize.HasValue || items.Count < pageSize));
+
+            return items;
         }
 
-        public async Task<IEnumerable<TResource>> QueryAsync(Expression<Func<TResource, bool>> filter = null)
+        private async Task<IEnumerable<T>> ExecuteQueryAsync<T>(Query<T> query) where T : class
         {
-            var query = Table.Query(typeof(TResource).Name, new QueryFilter());
+            var queryOpConfig = new QueryOperationConfig
+            {
+                KeyExpression = new Expression
+                {
+                    ExpressionStatement = "#partitionKey = :partitionKey",
+                    ExpressionAttributeNames = new Dictionary<string, string> {["#partitionKey"] = TableDescription.PartitionKeyName},
+                    ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry> {[":partitionKey"] = query.Path}
+                },
+                FilterExpression = DynamoDbFilterExpressionBuilder.Build(query.FilterExpression),
+                ConsistentRead = Options.ConsistentQuery ?? false
+            };
 
-            var documents = await query.GetRemainingAsync();
+            if (!string.IsNullOrWhiteSpace(query.SortBy))
+            {
+                queryOpConfig.IndexName = GetIndexName(query.SortBy);
+                queryOpConfig.BackwardSearch = !query.SortAscending;
+            }
 
-            var results = documents.Select(DocumentToResource);
+            return await ExecuteScanOrQueryAsync<T>(() => Table.Query(queryOpConfig),
+                                                    query.PageSize,
+                                                    query.PageNumber);
+        }
+
+        private async Task<IEnumerable<T>> ExecuteScanAsync<T>(Query<T> query) where T : class
+        {
+            var scanOpConfig = new ScanOperationConfig
+            {
+                FilterExpression = DynamoDbFilterExpressionBuilder.Build(query.FilterExpression),
+                ConsistentRead = Options.ConsistentQuery ?? false
+            };
+
+            if (!string.IsNullOrWhiteSpace(query.SortBy))
+            {
+                if (!query.SortAscending)
+                    throw new McmaException("Scan does not support descending sorts.");
+                scanOpConfig.IndexName = GetIndexName(query.SortBy);
+            }
+
+            return await ExecuteScanOrQueryAsync<T>(() => Table.Scan(scanOpConfig),
+                                                    query.PageSize,
+                                                    query.PageNumber);
+        }
+
+        private string GetIndexName(string sortBy)
+        {
+            var indexName = Options != null && Options.IndexNameMappings.ContainsKey(sortBy) ? Options.IndexNameMappings[sortBy] : sortBy;
             
-            if (filter != null)
-                results = results.Where(filter.Compile());
-                
-            return results.ToList();
+            if (!TableDescription.IndexNames.Contains(indexName))
+                throw new McmaException($"Invalid sortBy '{sortBy}'. A matching index was not found for the table.");
+            
+            return indexName;
         }
 
-        public async Task<TResource> GetAsync(string id, TPartitionKey partitionKey)
+        public async Task<IEnumerable<T>> QueryAsync<T>(Query<T> query) where T : class
         {
-            var document = await Table.GetItemAsync(GetRangeKey(partitionKey), id);
-
-            return document != null ? DocumentToResource(document) : null;
+            return await ExecuteQueryAsync(query);
         }
 
-        public async Task<TResource> PutAsync(string id, TPartitionKey partitionKey, TResource resource)
+        public async Task<T> GetAsync<T>(string id) where T : class
         {
-            await Table.PutItemAsync(ResourceToDocument(id, partitionKey, resource));
+            var (partitionKey, sortKey) = ParsePartitionAndSortKeys(id);
+
+            var document = await Table.GetItemAsync(partitionKey,
+                                                    sortKey,
+                                                    new GetItemOperationConfig {ConsistentRead = Options.ConsistentGet ?? false});
+
+            return document != null ? DocumentToResource<T>(document) : null;
+        }
+
+        public async Task<T> PutAsync<T>(string id, T resource) where T : class
+        {
+            var (partitionKey, sortKey) = ParsePartitionAndSortKeys(id);
+            await Table.PutItemAsync(ResourceToDocument(partitionKey, sortKey, resource));
             return resource;
         }
 
-        public async Task DeleteAsync(string id, TPartitionKey partitionKey)
+        public async Task DeleteAsync(string id)
         {
-            await Table.DeleteItemAsync(GetRangeKey(partitionKey), id);
+            var (partitionKey, sortKey) = ParsePartitionAndSortKeys(id);
+            await Table.DeleteItemAsync(partitionKey, sortKey);
         }
+
+        public IDocumentDatabaseMutex CreateMutex(string mutexName, string mutexHolder, TimeSpan? lockTimeout)
+            => new DynamoDbMutex(Table, TableDescription, mutexName, mutexHolder, lockTimeout);
     }
 }

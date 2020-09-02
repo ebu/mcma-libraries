@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Mcma.Core;
-using Mcma.Core.Serialization;
-using Mcma.Core.Logging;
+using Mcma;
+using Mcma.Serialization;
+using Mcma.Logging;
 using System.Net.Http;
 
 namespace Mcma.Client
 {
-    public class ResourceManager
+    internal class ResourceManager : IResourceManager
     {
         public ResourceManager(ResourceManagerConfig options, IAuthProvider authProvider = null)
             : this(new HttpClient(), options, authProvider)
@@ -79,7 +79,7 @@ namespace Mcma.Client
             }
             catch (Exception error)
             {
-                throw new Exception("ResourceManager: Failed to initialize", error);
+                throw new McmaException("ResourceManager: Failed to initialize", error);
             }
         }
         
@@ -92,7 +92,7 @@ namespace Mcma.Client
 
             var resourceEndpointClients = Services.Where(s => s.HasResourceEndpointClient<T>()).Select(s => s.GetResourceEndpointClient<T>()).ToList();
             if (!resourceEndpointClients.Any())
-                throw new Exception($"There are no available resource endpoints for resource of type '{typeof(T)}'");
+                throw new McmaException($"There are no available resource endpoints for resource of type '{typeof(T)}'");
 
             var results = new List<T>();
             var usedHttpEndpoints = new List<string>();
@@ -167,7 +167,7 @@ namespace Mcma.Client
                 return await resourceEndpoint.PostAsync<T>(resource, tracker: tracker);
 
             if (string.IsNullOrWhiteSpace(resource.Id))
-                throw new Exception($"There is no endpoint available for creating resources of type '{typeof(T).Name}', and the provided resource does not specify an endpoint in its 'id' property.");
+                throw new McmaException($"There is no endpoint available for creating resources of type '{typeof(T).Name}', and the provided resource does not specify an endpoint in its 'id' property.");
 
             var resp = await McmaHttpClient.PostAsJsonAsync(resource.Id, resource, tracker: tracker);
             await resp.ThrowIfFailedAsync();
@@ -177,7 +177,7 @@ namespace Mcma.Client
         public async Task<McmaResource> CreateAsync(Type resourceType, McmaResource resource, McmaTracker tracker = null)
         {
             if (!resourceType.IsInstanceOfType(resource))
-                throw new Exception($"Cannot update resource of type '{resourceType.Name}' with object of type '{resource?.GetType().Name ?? "(null)"}'.");
+                throw new McmaException($"Cannot update resource of type '{resourceType.Name}' with object of type '{resource?.GetType().Name ?? "(null)"}'.");
 
             if (!Services.Any())
                 await InitAsync();
@@ -190,7 +190,7 @@ namespace Mcma.Client
                 return await resourceEndpoint.PostAsync(resourceType, resource, tracker: tracker);
 
             if (string.IsNullOrWhiteSpace(resource.Id))
-                throw new Exception($"There is no endpoint available for creating resources of type '{resourceType.Name}', and the provided resource does not specify an endpoint in its 'id' property.");
+                throw new McmaException($"There is no endpoint available for creating resources of type '{resourceType.Name}', and the provided resource does not specify an endpoint in its 'id' property.");
 
             var resp = await McmaHttpClient.PostAsJsonAsync(resource.Id, resource, tracker: tracker);
             await resp.ThrowIfFailedAsync();
@@ -217,7 +217,7 @@ namespace Mcma.Client
         public async Task<McmaResource> UpdateAsync(Type resourceType, McmaResource resource, McmaTracker tracker = null)
         {
             if (!resourceType.IsInstanceOfType(resource))
-                throw new Exception($"Cannot update resource of type '{resourceType.Name}' with object of type '{resource?.GetType().Name ?? "(null)"}'.");
+                throw new McmaException($"Cannot update resource of type '{resourceType.Name}' with object of type '{resource?.GetType().Name ?? "(null)"}'.");
 
             if (!Services.Any())
                 await InitAsync();

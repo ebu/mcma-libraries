@@ -3,7 +3,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 
-using Mcma.Core.Utility;
+using Mcma.Utility;
 
 namespace Mcma.Aws.Client
 {

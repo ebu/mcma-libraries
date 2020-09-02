@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageVersion>0.9.0</PackageVersion>
+    <PackageVersion>0.12.2-alpha9</PackageVersion>
     <LangVersion>7.1</LangVersion>
     <Title>MCMA Data (.NET)</Title>
     <Description>Library containing interfaces for interacting with databases from MCMA services</Description>

@@ -1,6 +1,6 @@
 using System;
 
-namespace Mcma.Core
+namespace Mcma
 {
     public class JobParameter
     {

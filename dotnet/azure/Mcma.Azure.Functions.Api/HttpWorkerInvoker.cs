@@ -3,8 +3,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Mcma.Api;
 using Mcma.Azure.Client;
-using Mcma.Core.Context;
-using Mcma.Core.Serialization;
+using Mcma.Context;
+using Mcma.Serialization;
 
 namespace Mcma.Azure.Functions.Api
 {

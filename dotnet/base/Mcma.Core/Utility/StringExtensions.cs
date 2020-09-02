@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mcma.Core.Utility
+namespace Mcma.Utility
 {
     public static class StringExtensions
     {
@@ -123,7 +123,7 @@ namespace Mcma.Core.Utility
                 return obj;
 
             // if we reach this point, the type was recognized, but the text could not be parsed
-            throw new Exception($"Failed to parse object of type {type.Name} from text '{textValue}'.");
+            throw new McmaException($"Failed to parse object of type {type.Name} from text '{textValue}'.");
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace Mcma.Core.Utility
                     obj = guidValue;
             }
             else // type not recognized
-                throw new Exception($"Type '{type.Name}' is not parsable from text.");
+                throw new McmaException($"Type '{type.Name}' is not parsable from text.");
 
             return obj != null;
         }

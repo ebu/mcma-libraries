@@ -1,4 +1,4 @@
-﻿namespace Mcma.Core
+﻿namespace Mcma
 {
     public class ResourceEndpoint : McmaObject
     {
@@ -8,6 +8,6 @@
 
         public string AuthType { get; set; }
 
-        public string AuthContext { get; set; }
+        public object AuthContext { get; set; }
     }
 }

@@ -1,44 +1,62 @@
 using System;
-using Mcma.Core;
-using Mcma.Core.Serialization;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Mcma.Serialization;
 using Mcma.Data;
 using Microsoft.Azure.Cosmos;
 
 namespace Mcma.Azure.CosmosDb
 {
-    public class CosmosDbTableProvider : IDbTableProvider, IDisposable
+    public class CosmosDbTableProvider : IDocumentDatabaseTableProvider, IDisposable
     {
         public CosmosDbTableProvider(CosmosDbTableProviderOptions options)
         {
-            Options = options;
+            if (options == null) throw new ArgumentNullException(nameof(options));
 
             CosmosClient =
-                new CosmosClient(
-                    options.Endpoint,
-                    options.Key,
-                    new CosmosClientOptions
-                    {
-                        ApplicationRegion = options.Region,
-                        Serializer = new CosmosJsonDotNetSerializer(McmaJson.DefaultSettings())
-                    });
+                new CosmosClient(options.Endpoint,
+                                 options.Key,
+                                 new CosmosClientOptions
+                                 {
+                                     ApplicationRegion = options.Region,
+                                     Serializer = new CosmosJsonDotNetSerializer(McmaJson.DefaultSettings())
+                                 });
+
+            Database = CosmosClient.GetDatabase(options.DatabaseId);
         }
 
-        private CosmosDbTableProviderOptions Options { get; }
-
         private CosmosClient CosmosClient { get; }
+        
+        private Database Database { get; }
 
-        public IDbTable<TResource, TPartitionKey> Get<TResource, TPartitionKey>(string tableName) where TResource : McmaResource
+        private Dictionary<string, (ContainerProperties containerProperties, Container container)> ContainerProperties { get; } =
+            new Dictionary<string, (ContainerProperties containerProperties, Container container)>();
+        
+        private SemaphoreSlim ContainerPropertiesSemaphore { get; } = new SemaphoreSlim(1, 1);
+
+        public async Task<IDocumentDatabaseTable> GetAsync(string tableName)
         {
-            if (typeof(TPartitionKey) != typeof(Type) &&
-                typeof(TPartitionKey) != typeof(string) &&
-                typeof(TPartitionKey) != typeof(double) &&
-                typeof(TPartitionKey) != typeof(bool))
-                throw new NotSupportedException($"Type of {typeof(TPartitionKey).Name} is not a supported type for Cosmos DB partition keys.");
+            await ContainerPropertiesSemaphore.WaitAsync();
+            
+            ContainerProperties containerProperties;
+            Container container;
+            try
+            {
+                if (!ContainerProperties.ContainsKey(tableName))
+                {
+                    var resp = await Database.GetContainer(tableName).ReadContainerAsync();
+                    ContainerProperties[tableName] = (resp.Resource, resp.Container);
+                }
 
-            return new CosmosDbTable<TResource, TPartitionKey>(
-                CosmosClient,
-                Options.DatabaseId,
-                tableName ?? typeof(TResource).Name);
+                (containerProperties, container) = ContainerProperties[tableName];
+            }
+            finally
+            {
+                ContainerPropertiesSemaphore.Release();
+            }
+            
+            return new CosmosDbTable(container, containerProperties);
         }
 
         public void Dispose() => CosmosClient?.Dispose();

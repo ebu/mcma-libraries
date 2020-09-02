@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Mcma.Core;
-using Mcma.Core.Serialization;
+using Mcma;
+using Mcma.Serialization;
 
 namespace Mcma.Client
 {

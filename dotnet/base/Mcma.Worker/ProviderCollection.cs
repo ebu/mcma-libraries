@@ -1,7 +1,7 @@
 using System;
 using Mcma.Client;
-using Mcma.Core.Context;
-using Mcma.Core.Logging;
+using Mcma.Context;
+using Mcma.Logging;
 using Mcma.Data;
 
 namespace Mcma.Worker
@@ -10,13 +10,13 @@ namespace Mcma.Worker
     {
         private readonly ILoggerProvider _loggerProvider;
         private readonly IResourceManagerProvider _resourceManagerProvider;
-        private readonly IDbTableProvider _dbTableProvider;
+        private readonly IDocumentDatabaseTableProvider _dbTableProvider;
         private readonly IAuthProvider _authProvider;
         private readonly IContextVariableProvider _environmentVariableProvider;
 
         public ProviderCollection(ILoggerProvider loggerProvider,
                                   IResourceManagerProvider resourceManagerProvider,
-                                  IDbTableProvider dbTableProvider,
+                                  IDocumentDatabaseTableProvider dbTableProvider,
                                   IAuthProvider authProvider,
                                   IContextVariableProvider environmentVariableProvider = null)
         {
@@ -33,7 +33,7 @@ namespace Mcma.Worker
         public IResourceManagerProvider ResourceManagerProvider
             => _resourceManagerProvider ?? throw new Exception($"{nameof(ResourceManagerProvider)} not available.");
 
-        public IDbTableProvider DbTableProvider
+        public IDocumentDatabaseTableProvider DbTableProvider
             => _dbTableProvider ?? throw new Exception($"{nameof(DbTableProvider)} not available.");
 
         public IContextVariableProvider EnvironmentVariableProvider

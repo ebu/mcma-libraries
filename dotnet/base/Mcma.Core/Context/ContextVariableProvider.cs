@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Mcma.Core.Context
+namespace Mcma.Context
 {
-    public class ContextVariableProvider : IContextVariableProvider
+    public class ContextVariableProvider : McmaExpandoObject, IContextVariableProvider
     {
         public ContextVariableProvider(IDictionary<string, string> contextVariables)
         {
@@ -18,7 +18,7 @@ namespace Mcma.Core.Context
         public string GetRequiredContextVariable(string key)
             => ContextVariableDictionary.ContainsKey(key)
                 ? ContextVariableDictionary[key]
-                : throw new Exception($"Required context variable with key '{key}' is missing.");
+                : throw new McmaException($"Required context variable with key '{key}' is missing.");
 
         public string GetOptionalContextVariable(string key, string defaultValue = null)
             => ContextVariableDictionary.ContainsKey(key) ? ContextVariableDictionary[key] : defaultValue;

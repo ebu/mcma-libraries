@@ -1,11 +1,11 @@
-using System.Dynamic;
-
-namespace Mcma.Core
+namespace Mcma
 {
     public class JobAssignment : JobBase
     {
         public string Job { get; set; }
 
-        public string JobProcess { get; set; }
+        public McmaTracker Tracker { get; set; }
+
+        public NotificationEndpoint NotificationEndpoint { get; set; }
     }
 }

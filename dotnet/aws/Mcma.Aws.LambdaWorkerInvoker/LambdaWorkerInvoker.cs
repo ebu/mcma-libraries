@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Amazon.Lambda;
 using Amazon.Lambda.Model;
 using Mcma.Api;
-using Mcma.Core.Context;
-using Mcma.Core.Serialization;
+using Mcma.Context;
+using Mcma.Serialization;
 
 namespace Mcma.Aws.Lambda
 {

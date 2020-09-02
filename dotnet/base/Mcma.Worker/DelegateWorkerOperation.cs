@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Mcma.Core.Logging;
+using Mcma.Logging;
 
 namespace Mcma.Worker
 {
@@ -8,8 +8,8 @@ namespace Mcma.Worker
     {
         public DelegateWorkerOperation(ProviderCollection providerCollection,
                                        string name,
-                                       Func<WorkerRequest, T, Task> executeAsync,
-                                       Func<WorkerRequest, bool> accepts = null)
+                                       Func<WorkerRequestContext, T, Task> executeAsync,
+                                       Func<WorkerRequestContext, bool> accepts = null)
             : base(providerCollection)
         {
             Name = name;
@@ -19,12 +19,12 @@ namespace Mcma.Worker
 
         public override string Name { get; }
 
-        private Func<WorkerRequest, T, Task> ExecuteAsyncFunc { get; }
+        private Func<WorkerRequestContext, T, Task> ExecuteAsyncFunc { get; }
 
-        private Func<WorkerRequest, bool> AcceptsFunc { get; }
+        private Func<WorkerRequestContext, bool> AcceptsFunc { get; }
 
-        protected override bool Accepts(WorkerRequest req) => AcceptsFunc(req);
+        protected override bool Accepts(WorkerRequestContext reqCtx) => AcceptsFunc(reqCtx);
 
-        protected override Task ExecuteAsync(WorkerRequest requestContext, T requestInput) => ExecuteAsyncFunc(requestContext, requestInput);
+        protected override Task ExecuteAsync(WorkerRequestContext requestContext, T requestInput) => ExecuteAsyncFunc(requestContext, requestInput);
     }
 }

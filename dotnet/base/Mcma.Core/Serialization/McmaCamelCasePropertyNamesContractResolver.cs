@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json.Serialization;
 
-namespace Mcma.Core.Serialization
+namespace Mcma.Serialization
 {
     public class McmaCamelCasePropertyNamesContractResolver : CamelCasePropertyNamesContractResolver
     {

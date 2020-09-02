@@ -1,4 +1,4 @@
-﻿using Mcma.Core;
+﻿using Mcma;
 
 namespace Mcma.Azure.BlobStorage
 {

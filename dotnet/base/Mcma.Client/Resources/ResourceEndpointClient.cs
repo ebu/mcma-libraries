@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Mcma.Core;
+using Mcma;
 
 namespace Mcma.Client
 {
@@ -13,7 +13,7 @@ namespace Mcma.Client
                                         IAuthProvider authProvider,
                                         ResourceEndpoint resourceEndpoint,
                                         string serviceAuthType,
-                                        string serviceAuthContext)
+                                        object serviceAuthContext)
         {
             HttpClient = httpClient;
             AuthProvider = authProvider;
@@ -21,8 +21,8 @@ namespace Mcma.Client
             HttpEndpoint = resourceEndpoint?.HttpEndpoint ?? throw new ArgumentNullException(nameof(resourceEndpoint));
 
             AuthType = !string.IsNullOrWhiteSpace(resourceEndpoint.AuthType) ? resourceEndpoint.AuthType : serviceAuthType;
-            AuthContext = !string.IsNullOrWhiteSpace(resourceEndpoint.AuthContext) ? resourceEndpoint.AuthContext : serviceAuthContext;
 
+            AuthContext = resourceEndpoint.AuthContext ?? serviceAuthContext;
             HttpClientTask = new Lazy<Task<McmaHttpClient>>(CreateHttpClient);
         }
 
@@ -32,7 +32,7 @@ namespace Mcma.Client
 
         private string AuthType { get; }
 
-        private string AuthContext { get; }
+        private object AuthContext { get; }
 
         public string HttpEndpoint { get; }
 

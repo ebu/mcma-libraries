@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Mcma.Client;
-using Mcma.Core;
-using Mcma.Core.Context;
+using Mcma;
+using Mcma.Context;
 using Mcma.Data;
 
 namespace Mcma.Worker
@@ -23,7 +23,7 @@ namespace Mcma.Worker
         public ProcessJobAssignmentOperation<TJob> AddProfile<TProfile>() where TProfile : IJobProfile<TJob>, new()
             => AddProfile(new TProfile());
 
-        public ProcessJobAssignmentOperation<TJob> AddProfile(string profileName, Func<ProcessJobAssignmentHelper<TJob>, Task> profileHandler)
+        public ProcessJobAssignmentOperation<TJob> AddProfile(string profileName, Func<ProviderCollection, ProcessJobAssignmentHelper<TJob>, WorkerRequestContext, Task> profileHandler)
             => AddProfile(new DelegateJobProfile<TJob>(profileName, profileHandler));
 
         public ProcessJobAssignmentOperation<TJob> AddProfile(IJobProfile<TJob> profile)
@@ -37,50 +37,60 @@ namespace Mcma.Worker
             return this;
         }
 
-        protected override async Task ExecuteAsync(WorkerRequest request, ProcessJobAssignmentRequest requestInput)
+        protected override async Task ExecuteAsync(WorkerRequestContext requestContext, ProcessJobAssignmentRequest requestInput)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (requestContext == null) throw new ArgumentNullException(nameof(requestContext));
             if (requestInput == null) throw new ArgumentNullException(nameof(requestInput));
 
-            var logger = ProviderCollection.LoggerProvider.Get(request.Tracker);
-
-            var helper =
+            var jobAssignmentHelper =
                 new ProcessJobAssignmentHelper<TJob>(
-                    ProviderCollection.DbTableProvider.Get<JobAssignment>(request.TableName()),
-                    ProviderCollection.ResourceManagerProvider.Get(request),
-                    logger,
-                    request,
-                    requestInput.JobAssignmentId);
+                    await ProviderCollection.DbTableProvider.GetAsync(requestContext.TableName()),
+                    ProviderCollection.ResourceManagerProvider.Get(requestContext),
+                    requestContext);
 
             try
             {
-                logger.Debug("Initializing job helper...");
+                requestContext.Logger?.Debug("Initializing job helper...");
 
-                await helper.InitializeAsync();
+                await jobAssignmentHelper.InitializeAsync();
                 
-                logger.Debug("Validating job...");
-                
-                helper.ValidateJob(Profiles.Select(p => p.Name));
-                
-                logger.Debug("Getting handler for profile '" + helper.Profile?.Name + "'...");
+                requestContext.Logger?.Info("Validating job...");
 
-                var profileHandler = Profiles.FirstOrDefault(p => p.Name.Equals(helper.Profile.Name, StringComparison.OrdinalIgnoreCase));
-
-                logger.Debug("Using profile handler of type '" + profileHandler.GetType().Name + "' for profile '" + helper.Profile?.Name + "'...");
+                var matchedProfile = Profiles.FirstOrDefault(p => p.Name.Equals(jobAssignmentHelper.Profile.Name, StringComparison.OrdinalIgnoreCase));
+                if (matchedProfile == null)
+                {
+                    await FailJobAsync(requestContext, jobAssignmentHelper, $"Job profile {jobAssignmentHelper.Profile?.Name} is not supported.");
+                    return;
+                }
                 
-                await profileHandler.ExecuteAsync(helper);
+                jobAssignmentHelper.ValidateJob(Profiles.Select(p => p.Name));
+
+                requestContext.Logger?.Info($"Found handler for job profile '{matchedProfile.Name}'"); 
+                
+                await matchedProfile.ExecuteAsync(ProviderCollection, jobAssignmentHelper, requestContext);
+
+                requestContext.Logger?.Info($"Handler for job profile '{matchedProfile.Name}' completed");
             }
             catch (Exception ex)
             {
-                logger.Error($"An error occurred executing request for operation '{request.OperationName}'", ex);
-                try
+                requestContext.Logger?.Error($"An error occurred executing request for operation '{requestContext.OperationName}'", ex);
+                await FailJobAsync(requestContext, jobAssignmentHelper, ex.Message);
+            }
+        }
+
+        private async Task FailJobAsync(WorkerRequestContext requestContext, ProcessJobAssignmentHelper<TJob> jobAssignmentHelper, string message)
+        {
+            try {
+                await jobAssignmentHelper.FailAsync(new ProblemDetail
                 {
-                    await helper.FailAsync(ex.ToString());
-                }
-                catch (Exception innerEx)
-                {
-                    logger.Error($"An error occurred marking job assignment with ID '{helper.JobAssignmentId}'.", innerEx);
-                }
+                    Type = "uri://mcma.ebu.ch/rfc7807/generic-job-failure",
+                    Title = "Generic job failure",
+                    Detail = message
+                });
+            }
+            catch (Exception innerEx)
+            {
+                requestContext.Logger?.Error("An error occurred marking the job assignment failed.", innerEx);
             }
         }
     }

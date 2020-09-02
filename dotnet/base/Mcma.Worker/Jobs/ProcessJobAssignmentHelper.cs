@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Mcma.Client;
-using Mcma.Core;
-using Mcma.Core.Logging;
+using Mcma.Logging;
 using Mcma.Data;
 
 namespace Mcma.Worker
@@ -12,25 +11,22 @@ namespace Mcma.Worker
     public class ProcessJobAssignmentHelper<T> where T : Job
     {
         public ProcessJobAssignmentHelper(
-            IDbTable<JobAssignment, Type> table,
-            ResourceManager resourceManager,
-            ILogger logger,
-            WorkerRequest workerRequest,
-            string jobAssignmentId)
+            IDocumentDatabaseTable dbTable,
+            IResourceManager resourceManager,
+            WorkerRequestContext requestContext)
         {
-            Table = table;
+            DbTable = dbTable;
             ResourceManager = resourceManager;
-            Logger = logger;
-            Request = workerRequest;
-            JobAssignmentId = jobAssignmentId;
+            RequestContext = requestContext;
+            JobAssignmentId = requestContext.GetInputAs<ProcessJobAssignmentRequest>().JobAssignmentId;
         }
 
-        public IDbTable<JobAssignment, Type> Table { get; }
-        public ResourceManager ResourceManager { get; }
-        public ILogger Logger { get; }
-        public WorkerRequest Request { get; }
-
+        public IDocumentDatabaseTable DbTable { get; }
+        public IResourceManager ResourceManager { get; }
+        public WorkerRequestContext RequestContext { get; }
         public string JobAssignmentId { get; }
+
+        public ILogger Logger => RequestContext.Logger;
         public JobAssignment JobAssignment { get; private set; }
         public T Job { get; private set; }
         public JobProfile Profile { get; private set; }
@@ -39,10 +35,9 @@ namespace Mcma.Worker
 
         public async Task InitializeAsync()
         {
-            await UpdateJobAssignmentStatusAsync(JobStatus.Running);
+            JobAssignment = await UpdateJobAssignmentStatusAsync(JobStatus.Running);
 
             Job = await ResourceManager.ResolveResourceFromFullUrl<T>(JobAssignment.Job);
-
             Profile = await ResourceManager.ResolveResourceFromFullUrl<JobProfile>(Job.JobProfile);
 
             Job.JobOutput = new JobParameterBag();
@@ -50,59 +45,85 @@ namespace Mcma.Worker
 
         public void ValidateJob(IEnumerable<string> supportedProfiles)
         {
-            var supportedJobProfiles = supportedProfiles?.ToArray() ?? new string[0];
-            if (!supportedJobProfiles.Contains(Profile.Name, StringComparer.OrdinalIgnoreCase))
-                throw new Exception($"Job profile '{Profile.Name}' is not supported");
-
-            if (Profile.InputParameters != null)
-            {
-                var missingInputParams =
-                    Profile.InputParameters.Where(p => !Job.JobInput.HasProperty(p.ParameterName)).Select(p => p.ParameterName).ToList();
-                if (missingInputParams.Any())
-                    throw new Exception("One or more required input parameters are missing from the job: " + string.Join(", ", missingInputParams));
-            }
+            if (Profile.InputParameters == null) return;
+            
+            var missingInputParams =
+                Profile.InputParameters.Where(p => !Job.JobInput.HasProperty(p.ParameterName)).Select(p => p.ParameterName).ToList();
+            if (missingInputParams.Any())
+                throw new Exception("One or more required input parameters are missing from the job: " + string.Join(", ", missingInputParams));
         }
 
-        public async Task FailAsync(string error)
-        {
-            await UpdateJobAssignmentStatusAsync(JobStatus.Failed, error);
-        }
-
-        public Task CompleteAsync()
+        public Task<JobAssignment> CompleteAsync()
             => UpdateJobAssignmentAsync(
                 ja =>
                 {
                     ja.Status = JobStatus.Completed;
-                    ja.JobOutput = JobOutput;
+                    ja.JobOutput = Job?.JobOutput;
                 },
                 true);
 
-        public async Task UpdateJobAssignmentAsync(Action<JobAssignment> update, bool sendNotification = false)
-        {
-            JobAssignment = await Table.GetAsync(JobAssignmentId);
-            if (JobAssignment == null)
-                throw new Exception("JobAssignment with id '" + JobAssignmentId + "' not found");
+        public Task<JobAssignment> FailAsync(ProblemDetail error)
+            => UpdateJobAssignmentAsync(
+                   ja =>
+                   {
+                       ja.Status = JobStatus.Failed;
+                       ja.Error = error;
+                       ja.JobOutput = Job?.JobOutput;
+                   },
+                   true);
 
-            update(JobAssignment);
-
-            JobAssignment.DateModified = DateTime.UtcNow;
-            await Table.PutAsync(JobAssignmentId, JobAssignment);
-            
-            if (sendNotification)
-                await SendNotificationAsync();
-        }
-
-        public Task UpdateJobAssignmentOutputAsync()
-            => UpdateJobAssignmentAsync(ja => ja.JobOutput = JobOutput);
-
-        public Task UpdateJobAssignmentStatusAsync(string status, string statusMessage = null)
+        public Task<JobAssignment> CancelAsync()
             => UpdateJobAssignmentAsync(
                 ja =>
                 {
-                    ja.Status = status;
-                    ja.StatusMessage = statusMessage;
+                    ja.Status = JobStatus.Canceled;
+                    ja.JobOutput = Job?.JobOutput;
                 },
                 true);
+
+        public Task<JobAssignment> UpdateJobAssignmentOutputAsync()
+            => UpdateJobAssignmentAsync(ja => ja.JobOutput = JobOutput);
+
+        public Task<JobAssignment> UpdateJobAssignmentStatusAsync(string status)
+            => UpdateJobAssignmentAsync(
+                ja => ja.Status = status,
+                true);
+
+        public async Task<JobAssignment> UpdateJobAssignmentAsync(Action<JobAssignment> update, bool sendNotification = false)
+        {
+            var jobAssignment = await GetJobAssignmentAsync();
+            if (jobAssignment == null)
+                throw new McmaException("JobAssignment with id '" + JobAssignmentId + "' not found");
+
+            update(jobAssignment);
+
+            jobAssignment.DateModified = DateTime.UtcNow;
+            await DbTable.PutAsync(JobAssignmentId, jobAssignment);
+
+            JobAssignment = jobAssignment;
+            
+            if (sendNotification)
+                await SendNotificationAsync();
+
+            return jobAssignment;
+        }
+
+        private async Task<JobAssignment> GetJobAssignmentAsync()
+        {
+            var jobAssignment = await DbTable.GetAsync<JobAssignment>(JobAssignmentId);
+
+            foreach (var delay in new[] {5, 10, 15})
+            {
+                if (jobAssignment != null)
+                    break;
+
+                Logger?.Warn($"Failed to obtain job assignment from database table. Trying again in ${delay} seconds.");
+                await Task.Delay(delay * 1000);
+                jobAssignment = await DbTable.GetAsync<JobAssignment>(JobAssignmentId);
+            }
+            
+            return jobAssignment;
+        }
 
         public async Task SendNotificationAsync()
         {

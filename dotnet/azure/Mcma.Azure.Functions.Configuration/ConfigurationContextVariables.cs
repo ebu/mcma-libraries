@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Mcma.Core.Context;
+using Mcma.Context;
 using Microsoft.Extensions.Configuration;
 
 namespace Mcma.Azure.Functions

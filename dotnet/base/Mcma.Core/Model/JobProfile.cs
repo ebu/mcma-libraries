@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Mcma.Core
+namespace Mcma
 {
     public class JobProfile : McmaResource
     {

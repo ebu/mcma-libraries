@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mcma.Core.Utility;
+using Mcma.Utility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Mcma.Core.Serialization
+namespace Mcma.Serialization
 {
     public abstract class McmaJsonConverter : JsonConverter
     {
@@ -28,7 +28,7 @@ namespace Mcma.Core.Serialization
                 return objectType;
             }
 
-            return objectType ?? throw new Exception($"Unrecognized @type specified in JSON: {typeProperty?.Value?.Value<string>() ?? "<null>"}");
+            return objectType ?? throw new McmaException($"Unrecognized @type specified in JSON: {typeProperty?.Value?.Value<string>() ?? "<null>"}");
         }
 
         protected bool IsMcmaObject(JObject jObj)
