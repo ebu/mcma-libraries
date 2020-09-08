@@ -1,11 +1,11 @@
 {
     "name": "@mcma/encryption",
-    "version": "0.13.1",
+    "version": "0.13.2",
     "description": "Encryption algorithms used in the EBU MCMA framework. Wraps the jsbn library from Tom Wu (http://www-cs-students.stanford.edu/~tjw/jsbn/).",
     "engines": {
         "node": "~10.16.3"
     },
-    "type": "module",
+    "type": "commonjs",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -29,11 +29,11 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-encryption-nodejs#readme",
     "devDependencies": {
-        "@mcma/core": "0.13.1",
+        "@mcma/core": "0.13.2",
         "@types/node": "^13.7.6",
         "jasmine": "^3.4.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.13.1"
+        "@mcma/core": "0.13.2"
     }
 }
