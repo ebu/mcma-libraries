@@ -4,6 +4,7 @@ export interface McmaResourceProperties extends McmaObjectProperties {
     id?: string;
     dateCreated?: Date | string;
     dateModified?: Date | string;
+    custom?: { [key: string]: any };
 }
 
 export function onResourceCreate(resource: McmaResourceProperties, id: string) {
@@ -23,6 +24,7 @@ export abstract class McmaResource extends McmaObject implements McmaResourcePro
     id?: string;
     dateCreated?: Date;
     dateModified?: Date;
+    custom?: { [key: string]: any };
 
     protected constructor(type: string, properties: McmaResourceProperties) {
         super(type, properties);
