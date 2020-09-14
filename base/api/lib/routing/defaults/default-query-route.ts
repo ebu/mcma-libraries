@@ -23,8 +23,9 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
         this.handleRequest = reqCtx => this.defaultHandleRequest(reqCtx);
     }
     
-    addCustomQuery(factory: CustomQueryFactory<T>): void {
+    addCustomQuery(factory: CustomQueryFactory<T>): this {
         this.customQueryFactories.push(factory);
+        return this;
     }
     
     private defaultBuildQuery(requestContext: McmaApiRequestContext): Query<T> | CustomQuery<T> {

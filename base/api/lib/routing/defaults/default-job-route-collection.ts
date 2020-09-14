@@ -20,11 +20,12 @@ export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignm
 
         this.workerInvoker = new WorkerInvoker(invokeWorker);
 
-        this.create.onStarted = reqCtx => this.onJobStarted(reqCtx);
-        this.create.onCompleted = (reqCtx, jobAssignment) => this.onJobCompleted(reqCtx, jobAssignment);
+        this.create.onStarted = reqCtx => this.onJobAssignmentCreationStarted(reqCtx);
+        this.create.onCompleted =
+            (reqCtx, jobAssignment) => this.onJobAssignmentCreationCompleted(reqCtx, jobAssignment);
     }
 
-    async onJobStarted(requestContext: McmaApiRequestContext): Promise<boolean> {
+    async onJobAssignmentCreationStarted(requestContext: McmaApiRequestContext): Promise<boolean> {
         let body = requestContext.getRequestBody();
         if (!body.tracker) {
             body.tracker = new McmaTracker({ id: uuidv4(), label: body["@type"] });
@@ -32,7 +33,7 @@ export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignm
         return true;
     }
 
-    async onJobCompleted(requestContext: McmaApiRequestContext, jobAssignment: JobAssignment)  {
+    async onJobAssignmentCreationCompleted(requestContext: McmaApiRequestContext, jobAssignment: JobAssignment)  {
         await this.workerInvoker.invoke(
             getWorkerFunctionId(requestContext),
             "ProcessJobAssignment",

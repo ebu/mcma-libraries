@@ -3,7 +3,7 @@ import * as AppInsights from "applicationinsights";
 
 import { AppInsightsLogger } from "./app-insights-logger";
 
-AppInsights.setup(process.env["APPINSIGHTS_INSTRUMENTATIONKEY"]);
+AppInsights.setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY);
 AppInsights.start();
 
 export class AppInsightsLoggerProvider implements LoggerProvider {
