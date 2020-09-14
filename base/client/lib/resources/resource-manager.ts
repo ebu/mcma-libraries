@@ -190,7 +190,7 @@ export class ResourceManager {
         }
 
         let http: Http = await this.getResourceEndpointClient(resourceId) || this.httpClient;
-        let response = await http.delete(resourceId);
+        let response = await http.delete<T>(resourceId);
         return response.data;
     };
 

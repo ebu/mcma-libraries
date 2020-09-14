@@ -6,14 +6,26 @@ import { McmaHeaders } from "./headers";
 import { Http } from "./http";
 import { HttpRequestConfig } from "./http-request-config";
 
-
+export type HttpClientConfig = {
+    maxAttempts?: number,
+    retryInterval?: number,
+}
 
 export class HttpClient implements Http {
-    constructor(private authenticator?: Authenticator) {
+    constructor(private authenticator?: Authenticator, private config?: HttpClientConfig) {
         if (authenticator) {
             if (typeof authenticator.sign !== "function") {
                 throw new McmaException("HttpClient: Provided authenticator does not define the required sign() function.");
             }
+        }
+        if (!this.config) {
+            this.config = {}
+        }
+        if (isNaN(this.config.maxAttempts) || this.config.maxAttempts < 1) {
+            this.config.maxAttempts = 3;
+        }
+        if (isNaN(this.config.retryInterval) || this.config.retryInterval < 0) {
+            this.config.retryInterval = 5000;
         }
     }
 
@@ -103,21 +115,31 @@ export class HttpClient implements Http {
         }
 
         // send request using axios
-        try {
-            return await axios(config);
-        } catch (error) {
-            let response;
-            if (error?.response?.data) {
-                response = error.response.data;
-            } else if (error?.response) {
-                response = error.response;
-            } else {
-                response = "none";
+        for (let attempts = 0; attempts < this.config.maxAttempts; attempts++) {
+            try {
+                return await axios(config);
+            } catch (error) {
+                if (attempts < this.config.maxAttempts - 1) {
+                    await Utils.sleep(this.config.retryInterval);
+                } else {
+                    let response;
+                    if (error?.response?.data) {
+                        response = error.response.data;
+                    } else if (error?.response) {
+                        response = error.response;
+                    } else {
+                        response = "none";
+                    }
+
+                    throw new McmaException("HttpClient: " + config.method + " request to " + config.url + " failed!", error, {
+                        config,
+                        response
+                    });
+                }
             }
-            throw new McmaException("HttpClient: " + config.method + " request to " + config.url + " failed!", error, {
-                config,
-                response
-            });
         }
+
+        // Though it never arrives here compiler complains about "TS7030: Not all code paths return a value."
+        throw new McmaException("HttpClient: " + config.method + " request to " + config.url + " failed!");
     };
 }

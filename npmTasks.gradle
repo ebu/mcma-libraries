@@ -75,7 +75,7 @@ task npmPublish(type: Exec) {
     commandLine npmExecutable
     args "publish", "--access", "public", "--registry", "https://registry.npmjs.org"
     doLast {
-        sleep(2000)
+        sleep(3000)
     }
 }
 
