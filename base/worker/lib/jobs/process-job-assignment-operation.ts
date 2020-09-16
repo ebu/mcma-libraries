@@ -1,4 +1,4 @@
-import { getTableName, Job, JobAssignment, McmaException, McmaResourceType, Utils, ProblemDetail } from "@mcma/core";
+import { getTableName, Job, McmaException, McmaResourceType, ProblemDetail, Utils } from "@mcma/core";
 import { ProcessJobAssignmentHelper } from "./process-job-assignment-helper";
 import { ProviderCollection } from "../provider-collection";
 import { WorkerRequest } from "../worker-request";
@@ -47,8 +47,8 @@ export class ProcessJobAssignmentOperation<T extends Job> {
         if (!workerRequest.input) {
             throw new McmaException("request.input is required.");
         }
-        if (!workerRequest.input.jobAssignmentId) {
-            throw new McmaException("request.input does not specify a jobAssignmentId");
+        if (!workerRequest.input.jobAssignmentDatabaseId) {
+            throw new McmaException("request.input does not specify a jobAssignmentDatabaseId");
         }
 
         const dbTable = await providerCollection.dbTableProvider.get(getTableName(workerRequest));

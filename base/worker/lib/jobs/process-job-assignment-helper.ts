@@ -9,14 +9,14 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     private _job: T;
     private _profile: JobProfile;
 
-    public readonly jobAssignmentId: string;
+    public readonly jobAssignmentDatabaseId: string;
 
     constructor(
         public readonly dbTable: DocumentDatabaseTable,
         public readonly resourceManager: ResourceManager,
         public readonly workerRequest: WorkerRequest
     ) {
-        this.jobAssignmentId = workerRequest.input.jobAssignmentId;
+        this.jobAssignmentDatabaseId = workerRequest.input.jobAssignmentDatabaseId;
     }
 
     get logger(): Logger | undefined {
@@ -110,13 +110,13 @@ export class ProcessJobAssignmentHelper<T extends Job> {
 
         let jobAssignment = await this.getJobAssignment();
         if (!jobAssignment) {
-            throw new McmaException("JobAssignment with id '" + this.jobAssignmentId + "' not found.");
+            throw new McmaException("JobAssignment with id '" + this.jobAssignmentDatabaseId + "' not found.");
         }
 
         update(jobAssignment);
 
         jobAssignment.dateModified = new Date();
-        await this.dbTable.put(this.jobAssignmentId, jobAssignment);
+        await this.dbTable.put(this.jobAssignmentDatabaseId, jobAssignment);
 
         this._jobAssignment = jobAssignment;
 
@@ -129,7 +129,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
 
     // Automatic retry as the JobAssignment may not be retrievable yet in case it's attempted to do so immediately (in a few milliseconds) after insertion.
     private async getJobAssignment(): Promise<JobAssignment> {
-        let jobAssignment = await this.dbTable.get<JobAssignment>(this.jobAssignmentId);
+        let jobAssignment = await this.dbTable.get<JobAssignment>(this.jobAssignmentDatabaseId);
 
         for (const timeout of [5, 10, 15]) {
             if (jobAssignment) {
@@ -138,7 +138,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
 
             this.logger?.warn(`Failed to obtain job assignment from DynamoDB table. Trying again in ${timeout} seconds`);
             await Utils.sleep(timeout * 1000);
-            jobAssignment = await this.dbTable.get<JobAssignment>(this.jobAssignmentId);
+            jobAssignment = await this.dbTable.get<JobAssignment>(this.jobAssignmentDatabaseId);
         }
 
         return jobAssignment;
