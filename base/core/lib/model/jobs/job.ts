@@ -5,7 +5,7 @@ import { NotificationEndpoint, NotificationEndpointProperties } from "../notific
 
 export interface JobProperties extends JobBaseProperties {
     parentId?: string;
-    jobProfile: string;
+    jobProfileId: string;
     jobInput?: JobParameterBag;
     timeout?: number;
     deadline?: Date;
@@ -15,7 +15,7 @@ export interface JobProperties extends JobBaseProperties {
 
 export class Job extends JobBase<JobProperties> implements JobProperties {
     parentId?: string;
-    jobProfile: string;
+    jobProfileId: string;
     jobInput?: JobParameterBag;
     timeout?: number;
     deadline?: Date;
@@ -26,7 +26,7 @@ export class Job extends JobBase<JobProperties> implements JobProperties {
         super(type, properties);
 
         this.checkProperty("parentId", "url", false);
-        this.checkProperty("jobProfile", "url", true);
+        this.checkProperty("jobProfileId", "url", true);
         this.checkProperty("jobInput", "object", false);
         this.checkProperty("timeout", "number", false);
         this.checkProperty("deadline", "object", false);

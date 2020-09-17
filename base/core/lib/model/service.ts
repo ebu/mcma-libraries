@@ -7,7 +7,7 @@ export interface ServiceProperties extends McmaResourceProperties {
     authType?: string;
     authContext?: any;
     jobType?: string;
-    jobProfiles?: string[];
+    jobProfileIds?: string[];
 }
 
 export class Service extends McmaResource implements ServiceProperties {
@@ -16,7 +16,7 @@ export class Service extends McmaResource implements ServiceProperties {
     authType?: string;
     authContext?: any;
     jobType?: string;
-    jobProfiles?: string[];
+    jobProfileIds?: string[];
 
     constructor(properties: ServiceProperties) {
         super("Service", properties);
@@ -25,7 +25,7 @@ export class Service extends McmaResource implements ServiceProperties {
         this.checkProperty("resources", "Array", true);
         this.checkProperty("authType", "string", false);
         this.checkProperty("jobType", "string", false);
-        this.checkProperty("jobProfiles", "Array", false);
+        this.checkProperty("jobProfileIds", "Array", false);
 
         if (properties.authContext) {
             if (typeof properties.authContext === "string") {

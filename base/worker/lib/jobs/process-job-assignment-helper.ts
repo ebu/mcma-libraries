@@ -1,4 +1,4 @@
-import { Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, Logger, McmaException, Utils, ProblemDetail, ProblemDetailProperties } from "@mcma/core";
+import { Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, Logger, McmaException, ProblemDetail, ProblemDetailProperties, Utils } from "@mcma/core";
 import { DocumentDatabaseTable } from "@mcma/data";
 import { ResourceManager } from "@mcma/client";
 
@@ -30,7 +30,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     }
     get profile() {
         return this._profile;
-    };
+    }
     get jobInput() {
         return this._job.jobInput;
     }
@@ -41,8 +41,8 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     async initialize() {
         this._jobAssignment = await this.updateJobAssignmentStatus(JobStatus.Running);
 
-        this._job = await this.resourceManager.get<T>(this._jobAssignment.job);
-        this._profile = await this.resourceManager.get<JobProfile>(this._job.jobProfile);
+        this._job = await this.resourceManager.get<T>(this._jobAssignment.jobId);
+        this._profile = await this.resourceManager.get<JobProfile>(this._job.jobProfileId);
 
         this._job.jobInput = new JobParameterBag(this._job.jobInput);
         this._job.jobOutput = new JobParameterBag(this._jobAssignment.jobOutput);
