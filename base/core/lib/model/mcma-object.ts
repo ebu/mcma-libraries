@@ -3,25 +3,20 @@ import { Utils } from "../utils";
 
 export interface McmaObjectProperties {
     ["@type"]?: string;
-
-    [key: string]: any;
 }
 
 export class McmaObject implements McmaObjectProperties {
     ["@type"]: string;
-    
-    [key: string]: any;
 
     constructor(type: string, properties?: McmaObjectProperties) {
-        this["@type"] = type;
-
         if (properties) {
             Object.assign(this, properties);
         }
+        this["@type"] = type;
     }
 
     protected checkProperty(propertyName: string, expectedType: string, required?: boolean) {
-        const propertyValue = this[propertyName];
+        const propertyValue = (<any>this)[propertyName];
         const propertyType = typeof propertyValue;
 
         if (propertyValue === undefined || propertyValue === null) {

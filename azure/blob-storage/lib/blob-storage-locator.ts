@@ -1,6 +1,6 @@
-import { Locator } from "@mcma/core";
+import { Locator, LocatorProperties } from "@mcma/core";
 
-export interface BlobStorageLocatorProperties {
+export interface BlobStorageLocatorProperties extends LocatorProperties {
     storageAccountName: string;
     container: string;
 }

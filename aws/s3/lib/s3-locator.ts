@@ -1,6 +1,6 @@
-import { Locator } from "@mcma/core";
+import { Locator, LocatorProperties } from "@mcma/core";
 
-export interface AwsS3LocatorProperties {
+export interface AwsS3LocatorProperties extends LocatorProperties {
     bucket: string;
     url?: string;
 }
