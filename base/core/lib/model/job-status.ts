@@ -1,5 +1,7 @@
 export enum JobStatus {
     New = "New",
+    Pending = "Pending",
+    Assigned = "Assigned",
     Queued = "Queued",
     Scheduled = "Scheduled",
     Running = "Running",

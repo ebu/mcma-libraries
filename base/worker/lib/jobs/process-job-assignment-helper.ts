@@ -67,6 +67,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         return await this.updateJobAssignment(
             ja => {
                 ja.status = JobStatus.Completed;
+                ja.progress = 100;
                 ja.jobOutput = this._job?.jobOutput;
             },
             true);
@@ -95,7 +96,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         return await this.updateJobAssignment(ja => ja.jobOutput = this._job?.jobOutput);
     }
 
-    async updateJobAssignmentStatus(status: string): Promise<JobAssignment> {
+    async updateJobAssignmentStatus(status: JobStatus): Promise<JobAssignment> {
         return await this.updateJobAssignment(
             ja => {
                 ja.status = status;

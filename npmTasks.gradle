@@ -75,7 +75,22 @@ task npmPublish(type: Exec) {
     commandLine npmExecutable
     args "publish", "--access", "public", "--registry", "https://registry.npmjs.org"
     doLast {
-        sleep(3000)
+        def jsonSlurper = new JsonSlurper()
+        def packageJson = jsonSlurper.parse(file("package.json"))
+        String packageName = packageJson.name + "@" + packageJson.version
+        boolean available = false;
+        while (!available) {
+            try {
+                sleep(5000)
+                exec {
+                    commandLine npmExecutable
+                    args "view", packageName, "--registry", "https://registry.npmjs.org"
+                }
+                available = true
+            } catch (ignored) {
+                println "Package " + packageName + " not yet available"
+            }
+        }
     }
 }
 
