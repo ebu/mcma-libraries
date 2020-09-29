@@ -1,0 +1,47 @@
+{
+    "name": "@mcma/azure-queue-worker-invoker",
+    "version": "0.13.4-beta27",
+    "description": "Invoke MCMA Worker functions on Azure using Azure Queue Storage",
+    "engines": {
+        "node": "~10.16.3"
+    },
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "test": "jasmine"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ebu/mcma-libraries.git"
+    },
+    "keywords": [
+        "ebu",
+        "mcma",
+        "azure",
+        "api",
+        "function"
+    ],
+    "author": "Evan Verney-Fink <evan@triskel-inc.com>",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/ebu/mcma-libraries/issues"
+    },
+    "homepage": "https://github.com/ebu/mcma-libraries/nodejs/azure/api#readme",
+    "dependencies": {
+        "@azure/storage-queue": "12.1.0"
+    },
+    "peerDependencies": {
+        "@mcma/core": "0.13.4-beta27",
+        "@mcma/worker-invoker": "0.13.4-beta27"
+    },
+    "devDependencies": {
+        "@azure/functions": "^1.2.0",
+        "@mcma/core": "0.13.4-beta27",
+        "@mcma/worker-invoker": "0.13.4-beta27",
+        "jasmine": "^3.2.0"
+    }
+}

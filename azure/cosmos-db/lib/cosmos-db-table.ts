@@ -1,10 +1,29 @@
-import { McmaException } from "@mcma/core";
+import { McmaException, Utils } from "@mcma/core";
 import { CustomQuery, Document, DocumentDatabaseMutex, DocumentDatabaseTable, Query, QueryResults, CustomQueryParameters } from "@mcma/data";
 import { Container, ContainerDefinition } from "@azure/cosmos";
+
 import { buildQueryDefinition } from "./build-query-definition";
-import { parsePartitionKey } from "./parse-partition-key";
+import { parsePartitionKeyAndGuid } from "./parse-partition-key-and-guid";
 import { CustomQueryRegistry } from "./cosmos-db-table-provider-options";
 import { CosmosDbMutex } from "./cosmos-db-mutex";
+
+function deserialize(object: any) {
+    let copy: any;
+    if (object) {
+        copy = Array.isArray(object) ? [] : {};
+        for (const key of Object.keys(object)) {
+            const value = object[key];
+            if (Utils.isValidDateString(value)) {
+                copy[key] = new Date(value);
+            } else if (typeof value === "object") {
+                copy[key] = deserialize(value);
+            } else{
+                copy[key] = value;
+            }
+        }
+    }
+    return copy;
+}
 
 export class CosmosDbTable implements DocumentDatabaseTable {
 
@@ -29,7 +48,7 @@ export class CosmosDbTable implements DocumentDatabaseTable {
         const resp = await queryIterator.fetchAll();
 
         return {
-            results: resp.resources.map(x => x.resource),
+            results: resp.resources.map(x => deserialize(x.resource)),
             nextPageStartToken: resp.continuationToken
         };
     }
@@ -51,34 +70,37 @@ export class CosmosDbTable implements DocumentDatabaseTable {
         const resp = await queryIterator.fetchAll();
 
         return {
-            results: resp.resources.map(x => x.resource),
+            results: resp.resources.map(x => deserialize(x.resource)),
             nextPageStartToken: resp.continuationToken
         };
     }
     
     async get<TDocument extends Document = Document>(id: string): Promise<TDocument> {
-        const resp = await this.container.item(encodeURIComponent(id), parsePartitionKey(id)).read();
+        const { partitionKey, guid } = parsePartitionKeyAndGuid(id);
+        const resp = await this.container.item(guid, partitionKey).read();
         if (resp.statusCode === 404) {
             return null;
         }
 
-        return resp.resource.resource;
+        return deserialize(resp.resource.resource);
     }
     
     async put<TDocument extends Document = Document>(id: string, resource: TDocument): Promise<TDocument> {
+        const { partitionKey, guid } = parsePartitionKeyAndGuid(id);
         const item = {
-            id: encodeURIComponent(id),
-            [this.partitionKeyName]: parsePartitionKey(id),
+            id: guid,
+            [this.partitionKeyName]: partitionKey,
             resource
         };
 
         const resp = await this.container.items.upsert(item);
 
-        return resp.resource.resource;
+        return deserialize(resp.resource.resource);
     }
     
     async delete(id: string): Promise<void> {
-        await this.container.item(encodeURIComponent(id), parsePartitionKey(id)).delete();
+        const { partitionKey, guid } = parsePartitionKeyAndGuid(id);
+        await this.container.item(guid, partitionKey).delete();
     }
     
     createMutex(mutexName: string, mutexHolder: string, lockTimeout = 60000): DocumentDatabaseMutex {

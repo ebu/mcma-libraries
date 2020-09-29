@@ -1,7 +1,7 @@
 import { McmaException } from "@mcma/core";
 import { AccessTokenProvider } from "./access-token-provider";
 import { Authenticator } from "../authenticator";
-import { HttpRequestConfig } from "../../http/http-request-config";
+import { HttpRequestConfig } from "../../http";
 import { AccessToken } from "./access-token";
 
 export class AccessTokenAuthenticator<T> implements Authenticator {
@@ -20,8 +20,8 @@ export class AccessTokenAuthenticator<T> implements Authenticator {
     async sign(config: HttpRequestConfig): Promise<void> {
         // check if the access token is expired
         if (this.accessToken && this.accessToken.expiresOn &&
-            (typeof this.accessToken.expiresOn === "number" && Date.now() >= this.accessToken.expiresOn) ||
-            (this.accessToken.expiresOn instanceof Date && Date.now() >= this.accessToken.expiresOn.getTime())) {
+            ((typeof this.accessToken.expiresOn === "number" && Date.now() >= this.accessToken.expiresOn) ||
+             (this.accessToken.expiresOn instanceof Date && Date.now() >= this.accessToken.expiresOn.getTime()))) {
             this.accessToken = null;
         }
 

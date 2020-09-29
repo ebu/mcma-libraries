@@ -1,11 +1,7 @@
 import { AuthenticatorFactory } from "./authenticator-factory";
 import { Authenticator } from "./authenticator";
 import { McmaException } from "@mcma/core";
-
-export interface AuthTypeRegistration<T> {
-    authType: string;
-    authenticatorFactory: AuthenticatorFactory<T>
-}
+import { AuthTypeRegistration } from "./auth-type-registration";
 
 export class AuthProvider {
     registeredAuthTypes: { [key: string]: AuthenticatorFactory<unknown> } = {};
@@ -31,8 +27,12 @@ export class AuthProvider {
         return this;
     }
 
-    get<T>(authType: string, authContext?: T): Authenticator {
+    get<T>(authType: string, authContext?: T | string): Authenticator {
         authType = Object.keys(this.registeredAuthTypes).find((k: string) => k.toLowerCase() === (authType || "").toLowerCase());
+
+        if (typeof authContext === "string") {
+            authContext = JSON.parse(authContext) as T;
+        }
 
         return authType && this.registeredAuthTypes[authType] && this.registeredAuthTypes[authType](authContext);
     }

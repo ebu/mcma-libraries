@@ -9,6 +9,10 @@ interface TableKey {
 
 type TableItem = TableKey & LockData;
 
+function replaceIllegalCharsInMutexName(mutexName: string): string {
+    return mutexName.replace(/\//g, "_");
+}
+
 export class CosmosDbMutex extends DocumentDatabaseMutex {
     private etag: string;
     
@@ -30,11 +34,11 @@ export class CosmosDbMutex extends DocumentDatabaseMutex {
     private generateTableKey(): TableKey {
         return this.partitionKeyName
             ? {
-                id: encodeURIComponent(this.mutexName),
+                id: replaceIllegalCharsInMutexName(this.mutexName),
                 [this.partitionKeyName]: "Mutex"
             }
             : {
-                id: encodeURIComponent(`Mutex-${this.mutexName}`)
+                id: replaceIllegalCharsInMutexName(`Mutex-${this.mutexName}`)
             };
     }
 
@@ -48,8 +52,8 @@ export class CosmosDbMutex extends DocumentDatabaseMutex {
     protected async getLockData(): Promise<LockData> {
         const item =
             this.partitionKeyName
-                ? this.container.item(encodeURIComponent(this.mutexName), "Mutex")
-                : this.container.item(encodeURIComponent(`Mutex-${this.mutexName}`));
+                ? this.container.item(replaceIllegalCharsInMutexName(this.mutexName), "Mutex")
+                : this.container.item(replaceIllegalCharsInMutexName(`Mutex-${this.mutexName}`));
                 
         const itemResponse = await item.read<TableItem>({ consistencyLevel: ConsistencyLevel.Strong });
 
@@ -81,8 +85,8 @@ export class CosmosDbMutex extends DocumentDatabaseMutex {
     protected async deleteLockData(versionId: string): Promise<void> {
         const item =
             this.partitionKeyName
-                ? this.container.item(encodeURIComponent(this.mutexName), "Mutex")
-                : this.container.item(encodeURIComponent(`Mutex-${this.mutexName}`));
+                ? this.container.item(replaceIllegalCharsInMutexName(this.mutexName), "Mutex")
+                : this.container.item(replaceIllegalCharsInMutexName(`Mutex-${this.mutexName}`));
 
         await item.delete<TableItem>({
             accessCondition: {

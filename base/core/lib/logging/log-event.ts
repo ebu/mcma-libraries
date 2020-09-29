@@ -12,8 +12,8 @@ export class LogEvent {
                 public tracker?: McmaTrackerProperties) {
     }
 
-    toString(): string {
-        const logEventEntry: any = {
+    flatten(): { [key: string]: any } {
+        const logEventEntry: { [key: string]: any } = {
             type: this.type,
             level: this.level,
             source: this.source,
@@ -41,6 +41,11 @@ export class LogEvent {
             }
         }
 
+        return logEventEntry;
+    }
+
+    toString(): string {
+        const logEventEntry = this.flatten();
         try {
             return JSON.stringify(logEventEntry, null, 2);
         } catch {

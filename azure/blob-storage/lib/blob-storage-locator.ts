@@ -9,7 +9,7 @@ export abstract class BlobStorageLocator extends Locator implements BlobStorageL
     storageAccountName: string;
     container: string;
 
-    constructor(type: string, properties: BlobStorageLocatorProperties) {
+    protected constructor(type: string, properties: BlobStorageLocatorProperties) {
         super(type, properties);
         this.checkProperty("storageAccountName", "string");
         this.checkProperty("container", "string");

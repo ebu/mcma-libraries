@@ -2,9 +2,9 @@ import { v4 as uuidv4 } from "uuid";
 
 import { JobAssignment, McmaTracker } from "@mcma/core";
 import { DocumentDatabaseTableProvider } from "@mcma/data";
+import { InvokeWorker, WorkerInvoker } from "@mcma/worker-invoker";
 
 import { DefaultRouteCollection } from "./default-route-collection";
-import { InvokeWorker, WorkerInvoker } from "../../worker-invoker";
 import { getWorkerFunctionId, getPublicUrl } from "../../context-variable-provider-ext";
 import { McmaApiRequestContext } from "../../http";
 

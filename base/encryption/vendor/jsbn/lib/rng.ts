@@ -56,14 +56,6 @@ var rng_state;
 var rng_pool;
 var rng_pptr;
 
-if (typeof window === "undefined") {
-    window = {} as any;
-}
-
-if (typeof navigator === "undefined") {
-    navigator = {} as any;
-}
-
 // Mix in a 32-bit integer into the pool
 function rng_seed_int(x) {
     rng_pool[rng_pptr++] ^= x & 255;
@@ -83,7 +75,7 @@ if (rng_pool == null) {
     rng_pool = new Array();
     rng_pptr = 0;
     var t;
-    if (window.crypto && window.crypto.getRandomValues) {
+    if (typeof window !== "undefined" && window.crypto && window.crypto.getRandomValues) {
         // Use webcrypto if available
         var ua = new Uint8Array(32);
         window.crypto.getRandomValues(ua);

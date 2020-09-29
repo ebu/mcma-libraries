@@ -13,6 +13,6 @@ export class BlobStorageFileLocator extends BlobStorageLocator implements BlobSt
     }
 
     get url(): string {
-        return `http://${this.storageAccountName}.blob.core.windows.net/${this.container}/${this.filePath}`;
+        return `https://${this.storageAccountName}.blob.core.windows.net/${this.container}/${this.filePath}`;
     }
 }

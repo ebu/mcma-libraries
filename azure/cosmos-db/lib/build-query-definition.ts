@@ -7,7 +7,7 @@ export function buildQueryDefinition<TDocument extends Document = Document>(quer
     const sqlQuery: SqlQuery = {
         text: "SELECT VALUE root FROM root",
         parameters: [],
-        addParameter: (parameter: any) => {
+        addParameter: function(parameter: any) {
             const paramName = `@p${this.parameters.length}`;
             this.parameters.push(parameter);
             return paramName;
@@ -23,22 +23,24 @@ export function buildQueryDefinition<TDocument extends Document = Document>(quer
     }
     
     function addFilterCriteriaGroup(filterCriteriaGroup: FilterCriteriaGroup): string {
-        return "(" +
-            filterCriteriaGroup.children.map(x => addFilterExpression(x)).join(` ${filterCriteriaGroup.logicalOperator} `) +
-            ")";
+        return filterCriteriaGroup.children.length
+            ? "(" + filterCriteriaGroup.children.map(x => addFilterExpression(x)).join(` ${(filterCriteriaGroup.logicalOperator === "||" ? "or" : "and")} `) + ")"
+            : "";
     }
 
     function addFilterCriteria(filterCriteria: FilterCriteria): string {
         return `root["resource"]["${filterCriteria.propertyName}"] ${filterCriteria.operator} ${sqlQuery.addParameter(filterCriteria.propertyValue)}`;
     }
     
-    const partitionKeyClause = query.path ? `root["${partitionKeyName}"] = @p${sqlQuery.addParameter(query.path)}` : null;
+    const partitionKeyClause = query.path ? `root["${partitionKeyName}"] = ${sqlQuery.addParameter(query.path)}` : null;
     const filterClause = query.filterExpression ? addFilterExpression(query.filterExpression): null;
     
-    if (partitionKeyClause && filterClause) {
-        sqlQuery.text += ` WHERE (${partitionKeyClause}) && (${filterClause})`;
-    } else if (partitionKeyClause || filterClause) {
-        sqlQuery.text += ` WHERE ${partitionKeyClause ?? filterClause}`;
+    if (partitionKeyClause && partitionKeyClause.length && filterClause && filterClause.length) {
+        sqlQuery.text += ` WHERE (${partitionKeyClause}) and (${filterClause})`;
+    } else if (partitionKeyClause && partitionKeyClause.length) {
+        sqlQuery.text += ` WHERE ${partitionKeyClause}`;
+    } else if (filterClause && filterClause.length) {
+        sqlQuery.text += ` WHERE ${partitionKeyClause}`;
     }
     
     if (query.sortBy) {

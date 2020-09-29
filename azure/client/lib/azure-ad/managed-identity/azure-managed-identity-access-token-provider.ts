@@ -1,5 +1,3 @@
-import * as WHATWG_URL from "url";
-
 import { AccessTokenProvider, AccessToken } from "@mcma/client";
 import { ManagedIdentityCredential } from "@azure/identity";
 import { AzureAdAuthContext } from "../azure-ad-auth-context";

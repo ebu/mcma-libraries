@@ -29,7 +29,7 @@ export class McmaApiController {
         try {
             let requestBodyOK = true;
 
-            if (request.body) {
+            if (request.body && typeof request.body === "string") {
                 try {
                     request.body = JSON.parse(request.body, Utils.reviver);
                 } catch (error) {

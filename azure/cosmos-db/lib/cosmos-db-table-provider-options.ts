@@ -1,8 +1,9 @@
-import { ContextVariableProvider } from "@mcma/core";
+import { ContextVariableProvider, EnvironmentVariableProvider } from "@mcma/core";
 import { CustomQuery } from "@mcma/data";
 import { SqlQuerySpec } from "@azure/cosmos";
 
 const Prefix = "CosmosDb";
+const environmentVariableProvider = new EnvironmentVariableProvider();
 
 export type CustomQueryFactory = (customQuery: CustomQuery) => SqlQuerySpec;
 export type CustomQueryRegistry = { [key: string]: CustomQueryFactory };
@@ -12,7 +13,7 @@ export interface CosmosDbTableProviderOptions {
     key: string;
     region: string;
     databaseId: string;
-    customQueries: CustomQueryRegistry;
+    customQueries?: CustomQueryRegistry;
 }
 
 function emptyCosmosDbSettings(): CosmosDbTableProviderOptions {
@@ -20,34 +21,23 @@ function emptyCosmosDbSettings(): CosmosDbTableProviderOptions {
         endpoint: null,
         key: null,
         region: null,
-        databaseId: null,
-        customQueries: {}
+        databaseId: null
     };
 }
 
-export function fillOptionsFromEnvironmentVariables(options: CosmosDbTableProviderOptions): CosmosDbTableProviderOptions {
-    for (let prop of Object.keys(options)) {
-        // @ts-ignore
-        options[prop] = process.env[Prefix + prop];
-    }
-    return options;
+export function fillOptionsFromEnvironmentVariables(options?: CosmosDbTableProviderOptions): CosmosDbTableProviderOptions {
+    return fillOptionsFromContextVariableProvider(environmentVariableProvider, options);
 }
 
 export function fillOptionsFromContextVariableProvider(
-    options: CosmosDbTableProviderOptions,
-    contextVariableProvider: ContextVariableProvider
+    contextVariableProvider: ContextVariableProvider,
+    options?: CosmosDbTableProviderOptions
 ): CosmosDbTableProviderOptions {
+    options = Object.assign(emptyCosmosDbSettings(), options ?? {});
     for (let prop of Object.keys(options)) {
         // @ts-ignore
-        options[prop] = contextVariableProvider.getRequiredContextVariable[Prefix + prop];
+        options[prop] = contextVariableProvider.getRequiredContextVariable(Prefix + prop);
     }
+    options.customQueries = {};
     return options;
-}
-
-export function getOptionsFromEnvironmentVariables(): CosmosDbTableProviderOptions {
-    return fillOptionsFromEnvironmentVariables(emptyCosmosDbSettings());
-}
-
-export function getOptionsFromContextVariableProvider(contextVariableProvider: ContextVariableProvider): CosmosDbTableProviderOptions {
-    return fillOptionsFromContextVariableProvider(emptyCosmosDbSettings(), contextVariableProvider);
 }

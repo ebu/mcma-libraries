@@ -1,15 +1,25 @@
 import { McmaException } from "@mcma/core";
 import { AccessTokenProvider, AccessToken } from "@mcma/client";
-import { UserAgentApplication, Account } from "@azure/msal";
+import { PublicClientApplication, AccountInfo } from "@azure/msal-browser";
 
+import { AzureAdAuthContext } from "./azure-ad-auth-context";
 import { ConfigurationWithTenant } from "./configuration-with-tenant";
-import { AzureAdAuthContext } from "../azure-ad-auth-context";
+
+function requiresInteraction(errorCode: string): boolean {
+    if (!errorCode || !errorCode.length) {
+        return false;
+    }
+
+    return errorCode === "consent_required" ||
+        errorCode === "interaction_required" ||
+        errorCode === "login_required";
+}
 
 export class AzureAdPublicClientAccessTokenProvider implements AccessTokenProvider<AzureAdAuthContext> {
-    private userAgentApplication: UserAgentApplication;
-    private scopePromises: { [key: string]: Promise<any> } = {};
+    private readonly publicClientApplication: PublicClientApplication;
+    private readonly scopePromises: { [key: string]: Promise<any> } = {};
 
-    constructor(options: ConfigurationWithTenant, private userAccount?: Account) {
+    constructor(options: ConfigurationWithTenant, private userAccount?: AccountInfo) {
         if (!options.auth) {
             throw new McmaException("Azure AD public client options must specify an 'auth' object");
         }
@@ -18,26 +28,14 @@ export class AzureAdPublicClientAccessTokenProvider implements AccessTokenProvid
             delete options.tenant;
         }
 
-        this.userAgentApplication = new UserAgentApplication(options);
+        this.publicClientApplication = new PublicClientApplication(options);
         this.scopePromises = {};
     }
-    
-    private requiresInteraction(errorCode: string): boolean {
-        if (!errorCode || !errorCode.length) {
-            return false;
-        }
 
-        return errorCode === "consent_required" ||
-               errorCode === "interaction_required" ||
-               errorCode === "login_required";
-    }
-
-    private resolveAccount(scope: string): Promise<Account> {
-        this.userAccount = this.userAccount || this.userAgentApplication.getAccount();
-
+    private resolveAccount(scope: string): Promise<AccountInfo> {
         return this.userAccount
             ? Promise.resolve(this.userAccount)
-            : this.userAgentApplication.loginPopup({ scopes: [scope] }).then(authResp => authResp.account);
+            : this.publicClientApplication.loginPopup({ scopes: [scope] }).then(authResp => authResp.account);
     }
         
     getAccessToken(authContext: AzureAdAuthContext): Promise<AccessToken> {
@@ -50,15 +48,15 @@ export class AzureAdPublicClientAccessTokenProvider implements AccessTokenProvid
         if (!this.scopePromises[scope]) {
             this.scopePromises[scope] = new Promise((resolve, reject) =>
                 this.resolveAccount(scope)
-                    .then((account: Account) =>
-                        this.userAgentApplication.acquireTokenSilent({ scopes: [scope], account })
+                    .then((account: AccountInfo) =>
+                        this.publicClientApplication.acquireTokenSilent({ scopes: [scope], account })
                             .then(authResp => resolve({
                                 accessToken: authResp.accessToken,
                                 expiresOn: authResp.expiresOn.getTime()
                             }))
                             .catch(error => {
-                                if (this.requiresInteraction(error.errorCode)) {
-                                    this.userAgentApplication.acquireTokenPopup({ scopes: [scope], account })
+                                if (requiresInteraction(error.errorCode)) {
+                                    this.publicClientApplication.acquireTokenPopup({ scopes: [scope] })
                                         .then(authResp => {
                                             this.userAccount = authResp.account;
                                             

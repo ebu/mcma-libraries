@@ -3,8 +3,7 @@ import * as AppInsights from "applicationinsights";
 
 import { AppInsightsLogger } from "./app-insights-logger";
 
-AppInsights.setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY);
-AppInsights.start();
+AppInsights.setup().start();
 
 export class AppInsightsLoggerProvider implements LoggerProvider {
     private readonly appInsightsClient: AppInsights.TelemetryClient;
@@ -15,5 +14,9 @@ export class AppInsightsLoggerProvider implements LoggerProvider {
 
     get(requestId?: string, tracker?: McmaTrackerProperties): Logger {
         return new AppInsightsLogger(this.appInsightsClient, this.source, requestId, tracker);
+    }
+
+    flush(): void {
+        this.appInsightsClient.flush();
     }
 }

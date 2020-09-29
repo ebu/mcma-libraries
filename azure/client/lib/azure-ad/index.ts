@@ -1,3 +1,3 @@
-export * from "./managed-identity";
-export * from "./public-client";
 export * from "./azure-ad-auth-context";
+export * from "./confidential-client";
+export * from "./managed-identity";

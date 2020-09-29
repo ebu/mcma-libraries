@@ -7,7 +7,7 @@ import { CosmosDbTableProviderOptions } from "./cosmos-db-table-provider-options
 export class CosmosDbTableProvider implements DocumentDatabaseTableProvider {
     private cosmosClient: CosmosClient;
     private database: Database;
-    private containers: { [key: string]: { containerDefinition: ContainerDefinition, container: Container } };
+    private containers: { [key: string]: { containerDefinition: ContainerDefinition, container: Container } } = {};
 
     constructor(private options: CosmosDbTableProviderOptions) {
         this.cosmosClient = new CosmosClient({ endpoint: options.endpoint, key: options.key });

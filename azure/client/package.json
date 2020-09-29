@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-client",
-    "version": "0.13.3",
+    "version": "0.13.4-beta27",
     "description": "Authentication for communicating with MCMA services hosted on Azure",
     "engines": {
         "node": "~10.16.3"
@@ -30,19 +30,20 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/azure/client#readme",
     "dependencies": {
-        "@azure/identity": "^1.0.2",
-        "@azure/msal": "^1.2.0",
+        "@azure/identity": "1.1.0",
+        "@azure/msal-common": "1.2.0",
+        "@azure/msal-node": "1.0.0-alpha.5",
         "jsbn": "^1.1.0"
     },
     "peerDependencies": {
-        "@mcma/client": "0.13.3",
-        "@mcma/core": "0.13.3",
-        "@mcma/encryption": "0.13.3"
+        "@mcma/client": "0.13.4-beta27",
+        "@mcma/core": "0.13.4-beta27",
+        "@mcma/encryption": "0.13.4-beta27"
     },
     "devDependencies": {
-        "@mcma/client": "0.13.3",
-        "@mcma/core": "0.13.3",
-        "@mcma/encryption": "0.13.3",
+        "@mcma/client": "0.13.4-beta27",
+        "@mcma/core": "0.13.4-beta27",
+        "@mcma/encryption": "0.13.4-beta27",
         "@types/jsbn": "^1.2.29",
         "@types/node": "^13.7.6",
         "jasmine": "^3.2.0"

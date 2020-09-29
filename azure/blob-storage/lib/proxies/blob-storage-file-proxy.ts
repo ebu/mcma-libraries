@@ -31,6 +31,6 @@ export class BlobStorageFileProxy extends BlobStorageProxy<BlobStorageFileLocato
             permissions: BlobSASPermissions.parse("r"),
             expiresOn: new Date(Date.now() + (validFor || 15 * 60 * 1000))
         }, this.credential);
-        return this.blob.url + sasQueryParams.toString();
+        return this.locator.url + "?" + sasQueryParams.toString();
     }
 }

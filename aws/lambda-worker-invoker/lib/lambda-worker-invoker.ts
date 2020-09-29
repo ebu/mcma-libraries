@@ -1,5 +1,5 @@
 import { Lambda } from "aws-sdk";
-import { WorkerInvoker, WorkerRequestProperties } from "@mcma/api";
+import { WorkerInvoker, WorkerRequestProperties } from "@mcma/worker-invoker";
 
 const lambdaClient = new Lambda({ apiVersion: "2015-03-31" });
 

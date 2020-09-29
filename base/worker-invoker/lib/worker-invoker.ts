@@ -1,13 +1,6 @@
 import { McmaException, McmaTrackerProperties } from "@mcma/core";
-
-export interface WorkerRequestProperties {
-    operationName: string;
-    contextVariables?: { [key: string]: any };
-    input?: { [key: string]: any };
-    tracker?: McmaTrackerProperties;
-}
-
-export type InvokeWorker = (workerFunctionId: string, workerRequest: WorkerRequestProperties) => Promise<void>;
+import { WorkerRequestProperties } from "./worker-request-properties";
+import { InvokeWorker } from "./invoke-worker";
 
 export class WorkerInvoker {
     constructor(private invokeWorker: InvokeWorker) {
