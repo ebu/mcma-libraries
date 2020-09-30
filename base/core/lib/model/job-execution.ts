@@ -1,7 +1,7 @@
 import { JobBase, JobBaseProperties } from "./job-base";
 
 export interface JobExecutionProperties extends JobBaseProperties {
-    jobAssignment?: string;
+    jobAssignmentId?: string;
 
     actualStartDate?: Date | string;
     actualEndDate?: Date | string;
@@ -9,7 +9,7 @@ export interface JobExecutionProperties extends JobBaseProperties {
 }
 
 export class JobExecution extends JobBase<JobExecutionProperties> implements JobExecutionProperties {
-    jobAssignment?: string;
+    jobAssignmentId?: string;
 
     actualStartDate?: Date;
     actualEndDate?: Date;
@@ -18,7 +18,7 @@ export class JobExecution extends JobBase<JobExecutionProperties> implements Job
     constructor(properties: JobExecutionProperties) {
         super("JobExecution", properties);
 
-        this.checkProperty("job", "url", false);
+        this.checkProperty("jobAssignmentId", "url", false);
         this.checkProperty("actualDuration", "number", false);
 
         this.actualStartDate = this.ensureValidDateOrUndefined(this.actualStartDate);

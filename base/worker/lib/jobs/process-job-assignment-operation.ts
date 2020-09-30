@@ -1,4 +1,4 @@
-import { getTableName, Job, JobAssignment, McmaException, McmaResourceType, Utils, ProblemDetail } from "@mcma/core";
+import { getTableName, Job, McmaException, McmaResourceType, ProblemDetail, Utils } from "@mcma/core";
 import { ProcessJobAssignmentHelper } from "./process-job-assignment-helper";
 import { ProviderCollection } from "../provider-collection";
 import { WorkerRequest } from "../worker-request";
@@ -36,7 +36,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
         return this;
     }
 
-    async accepts(providerCollection: ProviderCollection, workerRequest: WorkerRequest, ctx: any): Promise<boolean> {
+    async accepts(providerCollection: ProviderCollection, workerRequest: WorkerRequest): Promise<boolean> {
         return workerRequest.operationName === "ProcessJobAssignment";
     }
 
@@ -47,8 +47,8 @@ export class ProcessJobAssignmentOperation<T extends Job> {
         if (!workerRequest.input) {
             throw new McmaException("request.input is required.");
         }
-        if (!workerRequest.input.jobAssignmentId) {
-            throw new McmaException("request.input does not specify a jobAssignmentId");
+        if (!workerRequest.input.jobAssignmentDatabaseId) {
+            throw new McmaException("request.input does not specify a jobAssignmentDatabaseId");
         }
 
         const dbTable = await providerCollection.dbTableProvider.get(getTableName(workerRequest));
@@ -64,12 +64,12 @@ export class ProcessJobAssignmentOperation<T extends Job> {
             workerRequest.logger?.info("Validating job...");
 
             if (jobAssignmentHelper.job["@type"] !== this.jobType) {
-                throw new McmaException("Job has type '" + jobAssignmentHelper.job["@type"] + "', which does not match expected job type '" + this.jobType + "'.");
+                return await this.failJobWithMessage(jobAssignmentHelper, workerRequest, "Job has type '" + jobAssignmentHelper.job["@type"] + "', which does not match expected job type '" + this.jobType + "'.");
             }
 
             const matchedProfile = this.profiles.find(p => jobAssignmentHelper.profile.name === p.name);
             if (!matchedProfile) {
-                throw new McmaException("Job profile '" + jobAssignmentHelper.profile.name + "' is not supported.");
+                return await this.failJobWithMessage(jobAssignmentHelper, workerRequest, "Job profile '" + jobAssignmentHelper.profile.name + "' is not supported.");
             }
 
             jobAssignmentHelper.validateJob();
@@ -80,17 +80,25 @@ export class ProcessJobAssignmentOperation<T extends Job> {
 
             workerRequest.logger?.info("Handler for job profile '" + jobAssignmentHelper.profile.name + "' completed");
         } catch (e) {
-            workerRequest.logger?.error(e.message);
-            workerRequest.logger?.error(e.toString());
-            try {
-                await jobAssignmentHelper.fail(new ProblemDetail({
-                    type: "uri://mcma.ebu.ch/rfc7807/generic-job-failure",
-                    title: "Generic job failure",
-                    detail: e.message
-                }));
-            } catch (inner) {
-                workerRequest.logger?.error(inner.toString());
-            }
+            await this.failJobOnException(jobAssignmentHelper, workerRequest, e);
+        }
+    }
+
+    private async failJobOnException(jobAssignmentHelper: ProcessJobAssignmentHelper<T>, workerRequest: WorkerRequest, error: any) {
+        workerRequest.logger?.error(error.toString());
+        await this.failJobWithMessage(jobAssignmentHelper, workerRequest, error.message);
+    }
+
+    private async failJobWithMessage(jobAssignmentHelper: ProcessJobAssignmentHelper<T>, workerRequest: WorkerRequest, message: string) {
+        workerRequest.logger?.error(message);
+        try {
+            await jobAssignmentHelper.fail(new ProblemDetail({
+                type: "uri://mcma.ebu.ch/rfc7807/generic-job-failure",
+                title: "Generic job failure",
+                detail: message
+            }));
+        } catch (inner) {
+            workerRequest.logger?.error(inner.toString());
         }
     }
 }

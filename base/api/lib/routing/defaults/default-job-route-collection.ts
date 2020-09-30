@@ -39,7 +39,7 @@ export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignm
             "ProcessJobAssignment",
             requestContext.getAllContextVariables(),
             {
-                jobAssignmentId: jobAssignment.id.replace(getPublicUrl(requestContext), "")
+                jobAssignmentDatabaseId: jobAssignment.id.replace(getPublicUrl(requestContext), "")
             },
             jobAssignment.tracker
         );

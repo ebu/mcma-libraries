@@ -5,6 +5,7 @@ export interface ProblemDetailProperties extends McmaObjectProperties {
     title: string;
     detail?: string;
     instance?: string;
+    [key: string]: any;
 }
 
 export class ProblemDetail extends McmaObject implements ProblemDetailProperties {
@@ -12,8 +13,14 @@ export class ProblemDetail extends McmaObject implements ProblemDetailProperties
     title: string;
     detail?: string;
     instance?: string;
+    [key: string]: any;
 
     constructor(properties?: ProblemDetailProperties) {
         super("ProblemDetail", properties);
+
+        this.checkProperty("type", "string", true);
+        this.checkProperty("title", "string", true);
+        this.checkProperty("detail", "string", false);
+        this.checkProperty("instance", "string", false);
     }
 }

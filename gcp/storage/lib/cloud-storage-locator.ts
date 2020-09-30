@@ -1,6 +1,6 @@
-import { Locator } from "@mcma/core";
+import { Locator, LocatorProperties } from "@mcma/core";
 
-export interface GoogleCloudStorageLocatorProperties {
+export interface GoogleCloudStorageLocatorProperties extends LocatorProperties {
     bucket: string;
 }
 

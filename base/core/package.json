@@ -1,6 +1,6 @@
 {
     "name": "@mcma/core",
-    "version": "0.13.4-beta27",
+    "version": "0.13.10-beta2",
     "description": "Node module with type definitions and helper utils for the EBU MCMA framework",
     "engines": {
         "node": "~10.16.3"
