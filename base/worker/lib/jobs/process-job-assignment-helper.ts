@@ -38,8 +38,10 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         return this._job.jobOutput;
     }
 
-    async initialize() {
-        this._jobAssignment = await this.updateJobAssignmentStatus(JobStatus.Running);
+    async initialize(initialStatus: JobStatus) {
+        if (initialStatus) {
+            this._jobAssignment = await this.updateJobAssignmentStatus(initialStatus);
+        }
 
         this._job = await this.resourceManager.get<T>(this._jobAssignment.jobId);
         this._profile = await this.resourceManager.get<JobProfile>(this._job.jobProfileId);

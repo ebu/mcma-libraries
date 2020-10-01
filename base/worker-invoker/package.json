@@ -30,9 +30,7 @@
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodes/mcma-worker-invoker#readme",
-    "dependencies": {
-        
-    },
+    "dependencies": {},
     "peerDependencies": {
         "@mcma/core": "0.13.10"
     },
