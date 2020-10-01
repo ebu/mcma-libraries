@@ -1,4 +1,4 @@
-import { getTableName, Job, McmaException, McmaResourceType, ProblemDetail, Utils } from "@mcma/core";
+import { getTableName, Job, JobStatus, McmaException, McmaResourceType, ProblemDetail, Utils } from "@mcma/core";
 import { ProcessJobAssignmentHelper } from "./process-job-assignment-helper";
 import { ProviderCollection } from "../provider-collection";
 import { WorkerRequest } from "../worker-request";
@@ -9,7 +9,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
     private readonly jobType: string;
     private profiles: ProcessJobProfile<T>[] = [];
 
-    constructor(jobType: McmaResourceType<T>) {
+    constructor(jobType: McmaResourceType<T>, private readonly initialJobStatus: JobStatus = JobStatus.Running) {
         jobType = Utils.getTypeName(jobType);
         if (!jobType) {
             throw new McmaException("Worker job helper requires a valid job type to be specified.");
@@ -59,7 +59,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
         try {
             workerRequest.logger?.info("Initializing job helper...");
 
-            await jobAssignmentHelper.initialize();
+            await jobAssignmentHelper.initialize(this.initialJobStatus);
 
             workerRequest.logger?.info("Validating job...");
 
