@@ -38,7 +38,8 @@
         "@mcma/core": "0.13.10",
         "@mcma/data": "0.13.10",
         "@mcma/api": "0.13.10",
-        "@mcma/worker-invoker": "0.13.10"
+        "@mcma/worker-invoker": "0.13.10",
+        "@types/aws-lambda": "^8.10.63"
     },
     "devDependencies": {
         "@mcma/api": "0.13.10",
@@ -46,7 +47,7 @@
         "@mcma/core": "0.13.10",
         "@mcma/data": "0.13.10",
         "@mcma/worker-invoker": "0.13.10",
-        "@types/aws-lambda": "^8.10.44",
+        "@types/aws-lambda": "^8.10.63",
         "@types/node": "^13.7.6",
         "@types/uri-templates": "^0.1.30",
         "jasmine": "^3.2.0"

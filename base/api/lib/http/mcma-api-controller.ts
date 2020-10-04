@@ -29,7 +29,7 @@ export class McmaApiController {
         try {
             let requestBodyOK = true;
 
-            if (request.body && typeof request.body === "string") {
+            if (request.body && typeof request.body === "string" && request.headers[Object.keys(request.headers).find(h => h.toLowerCase() === "content-type")]?.toLowerCase() === "application/json") {
                 try {
                     request.body = JSON.parse(request.body, Utils.reviver);
                 } catch (error) {

@@ -1,5 +1,5 @@
-import { McmaApiController, McmaApiRequestContext, McmaApiRequest, McmaApiRouteCollection } from "@mcma/api";
-import { APIGatewayEvent, Context } from "aws-lambda";
+import { McmaApiController, McmaApiRequest, McmaApiRequestContext, McmaApiRouteCollection } from "@mcma/api";
+import { APIGatewayProxyEvent, APIGatewayProxyEventV2, Context } from "aws-lambda";
 import { LoggerProvider } from "@mcma/core";
 
 export class ApiGatewayApiController {
@@ -9,12 +9,12 @@ export class ApiGatewayApiController {
         this.mcmaApiController = new McmaApiController(routes);
     }
 
-    async handleRequest(event: APIGatewayEvent, context: Context) {
+    async handleRequest(event: APIGatewayProxyEvent | APIGatewayProxyEventV2, context: Context) {
         const requestContext = new McmaApiRequestContext(
             new McmaApiRequest({
                 id: context.awsRequestId,
-                path: event.path,
-                httpMethod: event.httpMethod,
+                path: (<APIGatewayProxyEvent>event).path ?? (<APIGatewayProxyEventV2>event).requestContext?.http?.path?.substring((<APIGatewayProxyEventV2>event).requestContext?.http?.path?.indexOf("/", 1)),
+                httpMethod: (<APIGatewayProxyEvent>event).httpMethod ?? (<APIGatewayProxyEventV2>event).requestContext?.http?.method,
                 headers: event.headers,
                 pathVariables: {},
                 queryStringParameters: event.queryStringParameters,
