@@ -1,6 +1,6 @@
 {
     "name": "@mcma/gcp-client",
-    "version": "0.13.12",
+    "version": "0.13.13",
     "description": "Authentication for communicating with MCMA services hosted on Google Cloud Platform",
     "engines": {
         "node": "~10.16.3"
@@ -29,17 +29,15 @@
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/gcp/client#readme",
-    "dependencies": {
-        
-    },
+    "dependencies": {},
     "peerDependencies": {
-        "@mcma/client": "0.13.12",
-        "@mcma/core": "0.13.12"
+        "@mcma/client": "0.13.13",
+        "@mcma/core": "0.13.13"
     },
     "devDependencies": {
-        "@mcma/client": "0.13.12",
-        "@mcma/core": "0.13.12",
-        "@mcma/encryption": "0.13.12",
+        "@mcma/client": "0.13.13",
+        "@mcma/core": "0.13.13",
+        "@mcma/encryption": "0.13.13",
         "@types/node": "^13.7.6",
         "jasmine": "^3.2.0"
     }

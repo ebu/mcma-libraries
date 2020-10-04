@@ -60,6 +60,10 @@ task tsc(type: Exec) {
     dependsOn npmInstall
     inputs.file("tsconfig.json")
     inputs.file("package.json")
+    inputs.dir("lib")
+    inputs.dir("node_modules")
+    outputs.dir("dist")
+
     commandLine tscExecutable
 
     doFirst {
@@ -67,30 +71,54 @@ task tsc(type: Exec) {
     }
 }
 
+def isPackagePublished(String packageName) {
+    def stdout = new ByteArrayOutputStream()
+    def stderr = new ByteArrayOutputStream()
+    try {
+        exec {
+            commandLine npmExecutable
+            args "view", packageName, "--registry", "https://registry.npmjs.org"
+            standardOutput stdout
+            errorOutput stderr
+        }
+    } catch (ignored) {
+    }
+
+    return !stdout.toString().trim().isEmpty()
+}
+
 task npmPublish(type: Exec) {
+    def jsonSlurper = new JsonSlurper()
+    def packageJson = jsonSlurper.parse(file("package.json"))
+    String packageName = packageJson.name + "@" + packageJson.version
+
+    enabled !isPackagePublished(packageName)
+
     dependsOn ":verifyNodeJS"
     dependsOn setVersion
     dependsOn tsc
     inputs.file("package.json")
     commandLine npmExecutable
     args "publish", "--access", "public", "--registry", "https://registry.npmjs.org"
+
     doLast {
-        def jsonSlurper = new JsonSlurper()
-        def packageJson = jsonSlurper.parse(file("package.json"))
-        String packageName = packageJson.name + "@" + packageJson.version
-        boolean available = false;
+        def tempDir = File.createTempDir()
+        boolean available = false
         while (!available) {
             try {
                 sleep(5000)
                 exec {
                     commandLine npmExecutable
-                    args "view", packageName, "--registry", "https://registry.npmjs.org"
+                    args "install", packageName, "--no-save"
+                    workingDir tempDir
                 }
                 available = true
+                println "Package " + packageName + " available"
             } catch (ignored) {
                 println "Package " + packageName + " not yet available"
             }
         }
+        delete tempDir
     }
 }
 
