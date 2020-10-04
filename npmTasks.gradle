@@ -71,29 +71,7 @@ task tsc(type: Exec) {
     }
 }
 
-def isPackagePublished(String packageName) {
-    def stdout = new ByteArrayOutputStream()
-    def stderr = new ByteArrayOutputStream()
-    try {
-        exec {
-            commandLine npmExecutable
-            args "view", packageName, "--registry", "https://registry.npmjs.org"
-            standardOutput stdout
-            errorOutput stderr
-        }
-    } catch (ignored) {
-    }
-
-    return !stdout.toString().trim().isEmpty()
-}
-
 task npmPublish(type: Exec) {
-    def jsonSlurper = new JsonSlurper()
-    def packageJson = jsonSlurper.parse(file("package.json"))
-    String packageName = packageJson.name + "@" + packageJson.version
-
-    enabled !isPackagePublished(packageName)
-
     dependsOn ":verifyNodeJS"
     dependsOn setVersion
     dependsOn tsc
@@ -101,12 +79,33 @@ task npmPublish(type: Exec) {
     commandLine npmExecutable
     args "publish", "--access", "public", "--registry", "https://registry.npmjs.org"
 
+    def jsonSlurper = new JsonSlurper()
+    def packageJson = jsonSlurper.parse(file("package.json"))
+    String packageName = packageJson.name + "@" + packageJson.version
+
+    onlyIf {
+        // check if package is already published
+        def stdout = new ByteArrayOutputStream()
+        def stderr = new ByteArrayOutputStream()
+        try {
+            exec {
+                commandLine npmExecutable
+                args "view", packageName, "--registry", "https://registry.npmjs.org"
+                standardOutput stdout
+                errorOutput stderr
+            }
+        } catch (ignored) {
+        }
+
+        return stdout.toString().trim().isEmpty()
+    }
+
     doLast {
         def tempDir = File.createTempDir()
         boolean available = false
         while (!available) {
             try {
-                sleep(5000)
+                sleep(15000)
                 exec {
                     commandLine npmExecutable
                     args "install", packageName, "--no-save"
