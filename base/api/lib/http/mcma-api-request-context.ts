@@ -1,4 +1,4 @@
-import { ContextVariableProvider, McmaException, McmaTracker, Utils, McmaResource, LoggerProvider, Logger } from "@mcma/core";
+import { ContextVariableProvider, McmaTracker, Utils, McmaResource, LoggerProvider, Logger } from "@mcma/core";
 import { McmaHeaders } from "@mcma/client";
 import { HttpStatusCode } from "./http-statuses";
 import { McmaApiRequest } from "./mcma-api-request";

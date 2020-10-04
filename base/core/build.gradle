@@ -1,1 +1,3 @@
 apply from:  "../../npmTasks.gradle"
+
+npmPublish.enabled = false
