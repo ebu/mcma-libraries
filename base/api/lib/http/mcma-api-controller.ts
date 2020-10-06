@@ -124,7 +124,7 @@ export class McmaApiController {
             response.body = new McmaApiError(response.statusCode, error.message, request.path);
         }
 
-        if (response.body) {
+        if (response.body && response.headers[Object.keys(response.headers).find(h => h.toLowerCase() === "content-type")]?.toLowerCase().startsWith("application/json")) {
             response.body = JSON.stringify(response.body);
         }
     }
