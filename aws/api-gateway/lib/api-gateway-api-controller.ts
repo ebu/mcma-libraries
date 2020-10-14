@@ -1,10 +1,5 @@
-import { McmaApiController, McmaApiRequestContext, McmaApiRequest, McmaApiRouteCollection } from "@mcma/api";
-import {
-    APIGatewayProxyEvent,
-    APIGatewayProxyEventV2,
-    APIGatewayProxyResultV2,
-    Context
-} from "aws-lambda";
+import { McmaApiController, McmaApiRequest, McmaApiRequestContext, McmaApiRouteCollection } from "@mcma/api";
+import { APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from "aws-lambda";
 import { LoggerProvider } from "@mcma/core";
 import { APIGatewayProxyResult } from "aws-lambda/trigger/api-gateway-proxy";
 
@@ -46,10 +41,14 @@ export class ApiGatewayApiController {
 
         await this.mcmaApiController.handleRequest(requestContext);
 
+        const isBase64Encoded = Buffer.isBuffer(requestContext.response.body);
+        const body = isBase64Encoded ? (<Buffer>requestContext.response.body).toString("base64") : requestContext.response.body;
+
         return {
             statusCode: requestContext.response.statusCode,
             headers: requestContext.response.headers,
-            body: requestContext.response.body
+            body,
+            isBase64Encoded
         };
     }
 }

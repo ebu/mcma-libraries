@@ -5,7 +5,7 @@ import { DocumentDatabaseTableProvider } from "@mcma/data";
 import { InvokeWorker, WorkerInvoker } from "@mcma/worker-invoker";
 
 import { DefaultRouteCollection } from "./default-route-collection";
-import { getWorkerFunctionId, getPublicUrl } from "../../context-variable-provider-ext";
+import { getPublicUrl, getWorkerFunctionId } from "../../context-variable-provider-ext";
 import { McmaApiRequestContext } from "../../http";
 
 export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignment> {
@@ -21,8 +21,7 @@ export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignm
         this.workerInvoker = new WorkerInvoker(invokeWorker);
 
         this.create.onStarted = reqCtx => this.onJobAssignmentCreationStarted(reqCtx);
-        this.create.onCompleted =
-            (reqCtx, jobAssignment) => this.onJobAssignmentCreationCompleted(reqCtx, jobAssignment);
+        this.create.onCompleted = (reqCtx, jobAssignment) => this.onJobAssignmentCreationCompleted(reqCtx, jobAssignment);
     }
 
     async onJobAssignmentCreationStarted(requestContext: McmaApiRequestContext): Promise<boolean> {
@@ -33,15 +32,16 @@ export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignm
         return true;
     }
 
-    async onJobAssignmentCreationCompleted(requestContext: McmaApiRequestContext, jobAssignment: JobAssignment)  {
+    async onJobAssignmentCreationCompleted(requestContext: McmaApiRequestContext, jobAssignment: JobAssignment) {
         await this.workerInvoker.invoke(
             getWorkerFunctionId(requestContext),
-            "ProcessJobAssignment",
-            requestContext.getAllContextVariables(),
             {
-                jobAssignmentDatabaseId: jobAssignment.id.replace(getPublicUrl(requestContext), "")
-            },
-            jobAssignment.tracker
+                operationName: "ProcessJobAssignment",
+                input: {
+                    jobAssignmentDatabaseId: jobAssignment.id.replace(getPublicUrl(requestContext), "")
+                },
+                tracker: jobAssignment.tracker
+            }
         );
     }
 }

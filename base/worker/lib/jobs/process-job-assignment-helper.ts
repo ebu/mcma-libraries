@@ -38,9 +38,14 @@ export class ProcessJobAssignmentHelper<T extends Job> {
         return this._job.jobOutput;
     }
 
-    async initialize(initialStatus: JobStatus) {
+    async initialize(initialStatus?: JobStatus) {
         if (initialStatus) {
             this._jobAssignment = await this.updateJobAssignmentStatus(initialStatus);
+        } else {
+            this._jobAssignment = await this.getJobAssignment();
+            if (!this._jobAssignment) {
+                throw new McmaException("JobAssignment with id '" + this.jobAssignmentDatabaseId + "' not found.");
+            }
         }
 
         this._job = await this.resourceManager.get<T>(this._jobAssignment.jobId);

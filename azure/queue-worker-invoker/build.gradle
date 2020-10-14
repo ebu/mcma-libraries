@@ -1,10 +1,6 @@
 apply from:  "../../npmTasks.gradle"
 
-npmInstall.mustRunAfter ":base:api:npmPublish"
-npmInstall.mustRunAfter ":base:api:npmPublishLocal"
-npmInstall.mustRunAfter ":base:client:npmPublish"
-npmInstall.mustRunAfter ":base:client:npmPublishLocal"
 npmInstall.mustRunAfter ":base:core:npmPublish"
 npmInstall.mustRunAfter ":base:core:npmPublishLocal"
-npmInstall.mustRunAfter ":base:data:npmPublish"
-npmInstall.mustRunAfter ":base:data:npmPublishLocal"
+npmInstall.mustRunAfter ":base:worker-invoker:npmPublish"
+npmInstall.mustRunAfter ":base:worker-invoker:npmPublishLocal"
