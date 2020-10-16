@@ -10,7 +10,6 @@ export async function invokeLambdaWorker(workerFunctionId: string, workerRequest
         LogType: "None",
         Payload: JSON.stringify({
             operationName: workerRequest.operationName,
-            contextVariables: workerRequest.contextVariables,
             input: workerRequest.input,
             tracker: workerRequest.tracker,
         })

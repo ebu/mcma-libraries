@@ -12,8 +12,7 @@ function isWorkerOperation(operation: string | OperationFilter | WorkerOperation
 export class Worker {
     private readonly operations: WorkerOperation[];
 
-    constructor(private readonly providerCollection: ProviderCollection) {
-        this.providerCollection = providerCollection;
+    constructor(private readonly providers: ProviderCollection) {
         this.operations = [];
     }
 
@@ -59,7 +58,7 @@ export class Worker {
         let operation: WorkerOperation;
 
         for (const op of this.operations) {
-            if (await op.accepts(this.providerCollection, request, ctx)) {
+            if (await op.accepts(this.providers, request, ctx)) {
                 operation = op;
                 break;
             }
@@ -72,7 +71,7 @@ export class Worker {
         request.logger?.debug("Handling worker operation '" + request.operationName + "'...");
 
         try {
-            await operation.execute(this.providerCollection, request, ctx);
+            await operation.execute(this.providers, request, ctx);
         } catch (e) {
             request.logger?.error(e.message);
             request.logger?.error(e.toString());

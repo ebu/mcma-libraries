@@ -47,14 +47,19 @@ export class ApiGatewayApiController {
         await this.mcmaApiController.handleRequest(requestContext);
 
         let body = requestContext.response.body;
-        if (typeof body === "object") {
+        let isBase64Encoded = false;
+        if (Buffer.isBuffer(body)) {
+            isBase64Encoded = true;
+            body = (<Buffer>body).toString("base64");
+        } else if (typeof body === "object") {
             body = JSON.stringify(body);
         }
 
         return {
             statusCode: requestContext.response.statusCode,
             headers: requestContext.response.headers,
-            body
+            body,
+            isBase64Encoded
         };
     }
 }

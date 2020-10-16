@@ -1,17 +1,11 @@
-import { ContextVariableProvider, Logger, McmaException, McmaTrackerProperties } from "@mcma/core";
+import { Logger, McmaException, McmaTrackerProperties,  } from "@mcma/core";
+import { WorkerRequestProperties } from "./worker-request-properties";
 
-export interface WorkerRequestProperties {
+export class WorkerRequest implements WorkerRequestProperties {
     operationName: string;
-    contextVariables?: { [key: string]: any };
     input?: { [key: string]: any };
     tracker?: McmaTrackerProperties;
-}
-
-export class WorkerRequest extends ContextVariableProvider implements WorkerRequestProperties {
-    private readonly _operationName: string;
-    private readonly _input: { [key: string]: any };
-    private readonly _tracker?: McmaTrackerProperties;
-    private readonly _logger?: Logger;
+    logger?: Logger;
 
     constructor(request: WorkerRequestProperties, logger?: Logger) {
         const operationName = request?.operationName;
@@ -19,17 +13,9 @@ export class WorkerRequest extends ContextVariableProvider implements WorkerRequ
             throw new McmaException("operationName must be a non-empty string.");
         }
 
-        super(request.contextVariables);
-
-        this._operationName = operationName;
-        this._input = request.input;
-        this._tracker = request.tracker;
-        this._logger = logger;
+        this.operationName = operationName;
+        this.input = request.input;
+        this.tracker = request.tracker;
+        this.logger = logger;
     }
-
-    get operationName() { return this._operationName; }
-    get contextVariables() { return this.getAllContextVariables(); }
-    get input() { return this._input; }
-    get tracker() { return this._tracker; }
-    get logger() { return this._logger; }
 }

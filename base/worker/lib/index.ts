@@ -3,6 +3,7 @@ export * from "./operation-handler";
 export * from "./provider-collection";
 export * from "./worker-operation";
 export * from "./worker-request";
+export * from "./worker-request-properties";
 export * from "./worker";
 
 export * from "./jobs";

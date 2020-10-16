@@ -110,6 +110,16 @@ task verifyTsc {
 
 task clean {}
 
+task setNpmRegistryToLocal(type: Exec) {
+    commandLine npmExecutable
+    args "set", "registry", "http://localhost:4873/"
+}
+
+task setNpmRegistryToPublic(type: Exec) {
+    commandLine npmExecutable
+    args "set", "registry", "https://registry.npmjs.org/"
+}
+
 afterEvaluate {
     // avoiding simultaneous connections to npmjs.com
     def prevTask = null

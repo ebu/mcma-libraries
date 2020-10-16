@@ -36,11 +36,11 @@ export class ProcessJobAssignmentOperation<T extends Job> {
         return this;
     }
 
-    async accepts(providerCollection: ProviderCollection, workerRequest: WorkerRequest): Promise<boolean> {
+    async accepts(providers: ProviderCollection, workerRequest: WorkerRequest): Promise<boolean> {
         return workerRequest.operationName === "ProcessJobAssignment";
     }
 
-    async execute(providerCollection: ProviderCollection, workerRequest: WorkerRequest, ctx?: any) {
+    async execute(providers: ProviderCollection, workerRequest: WorkerRequest, ctx?: any) {
         if (!workerRequest) {
             throw new McmaException("request must be provided");
         }
@@ -51,8 +51,8 @@ export class ProcessJobAssignmentOperation<T extends Job> {
             throw new McmaException("request.input does not specify a jobAssignmentDatabaseId");
         }
 
-        const dbTable = await providerCollection.dbTableProvider.get(getTableName(workerRequest));
-        const resourceManager = providerCollection.resourceManagerProvider.get(workerRequest);
+        const dbTable = await providers.dbTableProvider.get(getTableName(providers.contextVariableProvider));
+        const resourceManager = providers.resourceManagerProvider.get(providers.contextVariableProvider);
 
         const jobAssignmentHelper = new ProcessJobAssignmentHelper<T>(dbTable, resourceManager, workerRequest);
 
@@ -76,7 +76,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
 
             workerRequest.logger?.info("Found handler for job profile '" + jobAssignmentHelper.profile.name + "'");
 
-            await matchedProfile.execute(providerCollection, jobAssignmentHelper, ctx);
+            await matchedProfile.execute(providers, jobAssignmentHelper, ctx);
 
             workerRequest.logger?.info("Handler for job profile '" + jobAssignmentHelper.profile.name + "' completed");
         } catch (e) {

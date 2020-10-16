@@ -1,6 +1,6 @@
-import { McmaException, McmaTrackerProperties } from "@mcma/core";
-import { WorkerRequestProperties } from "./worker-request-properties";
+import { McmaException } from "@mcma/core";
 import { InvokeWorker } from "./invoke-worker";
+import { WorkerRequestProperties } from "./worker-request-properties";
 
 export class WorkerInvoker {
     constructor(private invokeWorker: InvokeWorker) {
@@ -11,27 +11,11 @@ export class WorkerInvoker {
 
     async invoke(
         workerFunctionId: string,
-        operationNameOrRequest: string | WorkerRequestProperties,
-        contextVariables?: { [key: string]: any },
-        input?: any,
-        tracker?: McmaTrackerProperties
+        workerRequest: WorkerRequestProperties
     ): Promise<void> {
         if (!workerFunctionId || typeof workerFunctionId !== "string") {
             throw new McmaException("Invalid worker function id: " + workerFunctionId);
         }
-        let operationName: string;
-        if (typeof operationNameOrRequest !== "string") {
-            operationName = operationNameOrRequest.operationName;
-            contextVariables = operationNameOrRequest.contextVariables;
-            input = operationNameOrRequest.input;
-            tracker = operationNameOrRequest.tracker;
-        } else {
-            operationName = operationNameOrRequest;
-        }
-        if (!operationName) {
-            throw new McmaException("Invalid operation name.");
-        }
-
-        await this.invokeWorker(workerFunctionId, { operationName, contextVariables, input, tracker });
+        await this.invokeWorker(workerFunctionId, workerRequest);
     }
 }
