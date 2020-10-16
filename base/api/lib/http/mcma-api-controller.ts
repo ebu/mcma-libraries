@@ -123,9 +123,5 @@ export class McmaApiController {
             response.headers = getDefaultResponseHeaders();
             response.body = new McmaApiError(response.statusCode, error.message, request.path);
         }
-
-        if (response.body) {
-            response.body = JSON.stringify(response.body);
-        }
     }
 }

@@ -46,10 +46,15 @@ export class ApiGatewayApiController {
 
         await this.mcmaApiController.handleRequest(requestContext);
 
+        let body = requestContext.response.body;
+        if (typeof body === "object") {
+            body = JSON.stringify(body);
+        }
+
         return {
             statusCode: requestContext.response.statusCode,
             headers: requestContext.response.headers,
-            body: requestContext.response.body
+            body
         };
     }
 }

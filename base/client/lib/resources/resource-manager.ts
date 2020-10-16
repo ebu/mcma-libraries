@@ -159,7 +159,7 @@ export class ResourceManager {
                 throw new McmaException("ResourceManager: Resource at '" + resource + "' has illegal type 'Array'");
             }
         } else {
-            throw new McmaException("ResourceManager: Resource has illegal type '" + resolvedType + "'");
+            throw new McmaException("ResourceManager: Resource at '" + resource + "' has illegal type '" + resolvedType + "'");
         }
 
         return resolvedResource;
