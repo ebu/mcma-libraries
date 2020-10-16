@@ -155,3 +155,14 @@ task clean(type: Delete) {
     delete "dist"
     delete "node_modules"
 }
+
+task cleanPackageLocks(type: Delete) {
+    delete "package-lock.json"
+}
+
+task npmAuditFix(type: Exec) {
+    dependsOn ":verifyNodeJS"
+    inputs.file("package.json")
+    commandLine npmExecutable
+    args "audit", "fix"
+}

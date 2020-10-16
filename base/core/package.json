@@ -32,8 +32,8 @@
         "uuid": "^7.0.3"
     },
     "devDependencies": {
-        "@types/node": "^13.7.1",
-        "@types/uuid": "^7.0.3",
+        "@types/node": "^13.13.26",
+        "@types/uuid": "^7.0.4",
         "jasmine": "^3.4.0"
     }
 }

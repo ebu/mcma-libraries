@@ -35,7 +35,7 @@
         "@mcma/core": "0.13.16"
     },
     "devDependencies": {
-        "@mcma/core": "0.13.16",
+        "@mcma/core": "^0.13.16",
         "@types/node": "^13.7.4",
         "jasmine": "^3.3.1"
     }
