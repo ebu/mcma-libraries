@@ -1,5 +1,5 @@
-import { McmaResource, getTableName } from "@mcma/core";
-import { DocumentDatabaseTableProvider } from "@mcma/data";
+import { McmaResource } from "@mcma/core";
+import { DocumentDatabaseTableProvider, getTableName } from "@mcma/data";
 
 import { McmaApiRequestContext } from "../../http";
 import { McmaApiRoute } from "../route";
@@ -24,7 +24,7 @@ export class DefaultDeleteRoute<T extends McmaResource> extends McmaApiRoute {
                 return;
             }
         }
-        const table = await this.dbTableProvider.get(getTableName(requestContext));
+        const table = await this.dbTableProvider.get(getTableName(requestContext.environmentVariables));
 
         const resource = await table.get<T>(requestContext.request.path);
         if (!resource) {

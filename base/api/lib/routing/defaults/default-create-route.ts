@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
-import { onResourceCreate, McmaResource, getTableName } from "@mcma/core";
-import { DocumentDatabaseTableProvider } from "@mcma/data";
+import { onResourceCreate, McmaResource } from "@mcma/core";
+import { DocumentDatabaseTableProvider, getTableName } from "@mcma/data";
 
-import { getPublicUrl } from "../../context-variable-provider-ext";
+import { getPublicUrl } from "../../environment-variables-ext";
 import { McmaApiRequestContext } from "../../http";
 import { McmaApiRoute } from "../route";
 
@@ -35,9 +35,9 @@ export class DefaultCreateRoute<T extends McmaResource> extends McmaApiRoute {
 
         const resourcePath = this.root + "/" + uuidv4();
 
-        onResourceCreate(resource, getPublicUrl(requestContext) + resourcePath);
+        onResourceCreate(resource, getPublicUrl(requestContext.environmentVariables) + resourcePath);
 
-        const dbTable = await this.dbTableProvider.get(getTableName(requestContext));
+        const dbTable = await this.dbTableProvider.get(getTableName(requestContext.environmentVariables));
 
         await dbTable.put<T>(resourcePath, resource);
 

@@ -2,10 +2,10 @@ import { v4 as uuidv4 } from "uuid";
 
 import { JobAssignment, McmaTracker } from "@mcma/core";
 import { DocumentDatabaseTableProvider } from "@mcma/data";
-import { InvokeWorker, WorkerInvoker } from "@mcma/worker-invoker";
+import { getWorkerFunctionId, InvokeWorker, WorkerInvoker } from "@mcma/worker-invoker";
 
 import { DefaultRouteCollection } from "./default-route-collection";
-import { getPublicUrl, getWorkerFunctionId } from "../../context-variable-provider-ext";
+import { getPublicUrl, } from "../../environment-variables-ext";
 import { McmaApiRequestContext } from "../../http";
 
 export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignment> {
@@ -34,11 +34,11 @@ export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignm
 
     async onJobAssignmentCreationCompleted(requestContext: McmaApiRequestContext, jobAssignment: JobAssignment) {
         await this.workerInvoker.invoke(
-            getWorkerFunctionId(requestContext),
+            getWorkerFunctionId(requestContext.environmentVariables),
             {
                 operationName: "ProcessJobAssignment",
                 input: {
-                    jobAssignmentDatabaseId: jobAssignment.id.replace(getPublicUrl(requestContext), "")
+                    jobAssignmentDatabaseId: jobAssignment.id.replace(getPublicUrl(requestContext.environmentVariables), "")
                 },
                 tracker: jobAssignment.tracker
             }
