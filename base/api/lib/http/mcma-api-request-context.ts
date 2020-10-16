@@ -1,14 +1,13 @@
-import { ContextVariableProvider, McmaTracker, Utils, McmaResource, LoggerProvider, Logger } from "@mcma/core";
+import { EnvironmentVariables, Logger, LoggerProvider, McmaResource, McmaTracker, Utils } from "@mcma/core";
 import { McmaHeaders } from "@mcma/client";
 import { HttpStatusCode } from "./http-statuses";
 import { McmaApiRequest } from "./mcma-api-request";
 import { McmaApiResponse } from "./mcma-api-response";
 
-export class McmaApiRequestContext extends ContextVariableProvider {
+export class McmaApiRequestContext {
     public readonly response = new McmaApiResponse();
 
-    constructor(public readonly request: McmaApiRequest, contextVariables: { [key: string]: any }, private loggerProvider?: LoggerProvider) {
-        super(contextVariables);
+    constructor(public readonly request: McmaApiRequest, private loggerProvider: LoggerProvider, public readonly environmentVariables: EnvironmentVariables) {
     }
 
     hasRequestBody() {

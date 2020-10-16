@@ -8,7 +8,6 @@ export async function invokePubSubTriggeredWorker(workerFunctionId: string, work
 
     const body = Buffer.from(JSON.stringify({
         operationName: workerRequest.operationName,
-        contextVariables: workerRequest.contextVariables,
         input: workerRequest.input,
         tracker: workerRequest.tracker,
     }), "utf8");

@@ -1,5 +1,5 @@
-import { McmaResource, getTableName } from "@mcma/core";
-import { DocumentDatabaseTableProvider, Query, CustomQuery, isCustomQuery, QueryResults, getFilterExpressionFromKeyValuePairs } from "@mcma/data";
+import { McmaResource } from "@mcma/core";
+import { CustomQuery, DocumentDatabaseTableProvider, getFilterExpressionFromKeyValuePairs, getTableName, isCustomQuery, Query, QueryResults } from "@mcma/data";
 
 import { McmaApiRequestContext } from "../../http";
 import { McmaApiRoute } from "../route";
@@ -14,29 +14,29 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
     public buildQuery: (requestContext: McmaApiRequestContext) => Query<T> | CustomQuery<T>;
     public onCompleted: (requestContext: McmaApiRequestContext, queryResults: QueryResults<T>) => Promise<void>;
     public handleRequest: (requestContext: McmaApiRequestContext) => Promise<void>;
-    
+
     private customQueryFactories: CustomQueryFactory<T>[] = [];
-    
+
     constructor(private dbTableProvider: DocumentDatabaseTableProvider, public readonly root: string) {
         super("GET", root, requestContext => this.handleRequest(requestContext));
         this.buildQuery = reqCtx => this.defaultBuildQuery(reqCtx);
         this.handleRequest = reqCtx => this.defaultHandleRequest(reqCtx);
     }
-    
+
     addCustomQuery(factory: CustomQueryFactory<T>): this {
         this.customQueryFactories.push(factory);
         return this;
     }
-    
+
     private defaultBuildQuery(requestContext: McmaApiRequestContext): Query<T> | CustomQuery<T> {
         const customQueryFactory = this.customQueryFactories.find(x => x.isMatch(requestContext));
         return customQueryFactory?.create(requestContext) ?? this.buildStandardQuery(requestContext);
     }
-    
+
     private buildStandardQuery(requestContext: McmaApiRequestContext): Query<T> {
         const path = requestContext.request.path;
         const queryParams = requestContext.request.queryStringParameters;
-        
+
         let pageSize;
         if (queryParams.pageSize) {
             pageSize = parseInt(queryParams.pageSize);
@@ -45,27 +45,27 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
             }
             delete queryParams.pageSize;
         }
-        
+
         let pageStartToken;
         if (queryParams.pageStartToken) {
             pageStartToken = queryParams.pageStartToken;
             delete queryParams.pageStartToken;
         }
-        
+
         let sortBy;
         if (queryParams.sortBy) {
             sortBy = queryParams.sortBy;
             delete queryParams.sortBy;
         }
-        
+
         let sortAscending = true;
         if (queryParams.sortAscending) {
             sortAscending = queryParams.sortAscending.toLowerCase() !== "false";
             delete queryParams.sortAscending;
         }
-        
+
         const filterExpression = getFilterExpressionFromKeyValuePairs<T>(queryParams);
-        
+
         return {
             path,
             filterExpression,
@@ -75,7 +75,7 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
             sortAscending
         };
     }
-    
+
     private async defaultHandleRequest(requestContext: McmaApiRequestContext): Promise<void> {
         if (this.onStarted) {
             const continueRequest = await this.onStarted(requestContext);
@@ -84,7 +84,7 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
             }
         }
 
-        const table = await this.dbTableProvider.get(getTableName(requestContext));
+        const table = await this.dbTableProvider.get(getTableName(requestContext.environmentVariables));
 
         const query = this.buildQuery(requestContext);
 

@@ -1,9 +1,6 @@
-import { ContextVariableProvider, EnvironmentVariableProvider } from "@mcma/core";
+import { EnvironmentVariables } from "@mcma/core";
 import { CustomQuery } from "@mcma/data";
 import { SqlQuerySpec } from "@azure/cosmos";
-
-const Prefix = "CosmosDb";
-const environmentVariableProvider = new EnvironmentVariableProvider();
 
 export type CustomQueryFactory = (customQuery: CustomQuery) => SqlQuerySpec;
 export type CustomQueryRegistry = { [key: string]: CustomQueryFactory };
@@ -25,19 +22,14 @@ function emptyCosmosDbSettings(): CosmosDbTableProviderOptions {
     };
 }
 
-export function fillOptionsFromEnvironmentVariables(options?: CosmosDbTableProviderOptions): CosmosDbTableProviderOptions {
-    return fillOptionsFromContextVariableProvider(environmentVariableProvider, options);
-}
-
-export function fillOptionsFromContextVariableProvider(
-    contextVariableProvider: ContextVariableProvider,
-    options?: CosmosDbTableProviderOptions
+export function fillOptionsFromEnvironmentVariables(
+    options: CosmosDbTableProviderOptions = emptyCosmosDbSettings(),
+    environmentVariables: EnvironmentVariables = EnvironmentVariables.getInstance()
 ): CosmosDbTableProviderOptions {
-    options = Object.assign(emptyCosmosDbSettings(), options ?? {});
-    for (let prop of Object.keys(options)) {
-        // @ts-ignore
-        options[prop] = contextVariableProvider.getRequiredContextVariable(Prefix + prop);
-    }
+    options.endpoint = environmentVariables.get("CosmosDbEndpoint");
+    options.key = environmentVariables.get("CosmosDbKey");
+    options.region = environmentVariables.get("CosmosDbRegion");
+    options.databaseId = environmentVariables.get("CosmosDbDatabaseId");
     options.customQueries = {};
     return options;
 }

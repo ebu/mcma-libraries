@@ -1,4 +1,5 @@
-import { getTableName, Job, JobStatus, McmaException, McmaResourceType, ProblemDetail, Utils } from "@mcma/core";
+import { EnvironmentVariables, Job, JobStatus, McmaException, McmaResourceType, ProblemDetail, Utils } from "@mcma/core";
+import { getTableName } from "@mcma/data";
 import { ProcessJobAssignmentHelper } from "./process-job-assignment-helper";
 import { ProviderCollection } from "../provider-collection";
 import { WorkerRequest } from "../worker-request";
@@ -9,7 +10,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
     private readonly jobType: string;
     private profiles: ProcessJobProfile<T>[] = [];
 
-    constructor(jobType: McmaResourceType<T>, private readonly initialJobStatus: JobStatus = JobStatus.Running) {
+    constructor(jobType: McmaResourceType<T>, private readonly initialJobStatus: JobStatus = JobStatus.Running, private environmentVariables = EnvironmentVariables.getInstance()) {
         jobType = Utils.getTypeName(jobType);
         if (!jobType) {
             throw new McmaException("Worker job helper requires a valid job type to be specified.");
@@ -51,8 +52,8 @@ export class ProcessJobAssignmentOperation<T extends Job> {
             throw new McmaException("request.input does not specify a jobAssignmentDatabaseId");
         }
 
-        const dbTable = await providers.dbTableProvider.get(getTableName(providers.contextVariableProvider));
-        const resourceManager = providers.resourceManagerProvider.get(providers.contextVariableProvider);
+        const dbTable = await providers.dbTableProvider.get(getTableName(this.environmentVariables));
+        const resourceManager = providers.resourceManagerProvider.get(this.environmentVariables);
 
         const jobAssignmentHelper = new ProcessJobAssignmentHelper<T>(dbTable, resourceManager, workerRequest);
 

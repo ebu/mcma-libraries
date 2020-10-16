@@ -81,7 +81,7 @@ task npmPublish(type: Exec) {
 
     def jsonSlurper = new JsonSlurper()
     def packageJson = jsonSlurper.parse(file("package.json"))
-    String packageName = packageJson.name + "@" + packageJson.version
+    String packageName = packageJson.name + "@" + VERSION
 
     onlyIf {
         // check if package is already published
@@ -128,6 +128,27 @@ task npmPublishLocal(type: Exec) {
     inputs.file("package.json")
     commandLine npmExecutable
     args "publish", "--access", "public", "--registry", "http://localhost:4873"
+
+    def jsonSlurper = new JsonSlurper()
+    def packageJson = jsonSlurper.parse(file("package.json"))
+    String packageName = packageJson.name + "@" + VERSION
+
+    onlyIf {
+        // check if package is already published
+        def stdout = new ByteArrayOutputStream()
+        def stderr = new ByteArrayOutputStream()
+        try {
+            exec {
+                commandLine npmExecutable
+                args "view", packageName, "--registry", "http://localhost:4873"
+                standardOutput stdout
+                errorOutput stderr
+            }
+        } catch (ignored) {
+        }
+
+        return stdout.toString().trim().isEmpty()
+    }
 }
 
 task clean(type: Delete) {

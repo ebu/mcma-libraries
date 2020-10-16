@@ -1,8 +1,8 @@
 import { URL } from "url";
 import * as fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import { LoggerProvider, McmaException } from "@mcma/core";
-import { McmaApiController, McmaApiRouteCollection, McmaApiRequestContext, McmaApiRequest } from "@mcma/api";
+import { EnvironmentVariables, LoggerProvider, McmaException } from "@mcma/core";
+import { McmaApiController, McmaApiRequest, McmaApiRequestContext, McmaApiRouteCollection } from "@mcma/api";
 import { HttpRequest } from "@azure/functions";
 
 function getPath(req: HttpRequest): string {
@@ -28,7 +28,7 @@ function getPath(req: HttpRequest): string {
 export class AzureFunctionApiController {
     private apiController: McmaApiController;
 
-    constructor(routes: McmaApiRouteCollection, private loggerProvider?: LoggerProvider) {
+    constructor(routes: McmaApiRouteCollection, private loggerProvider?: LoggerProvider, private environmentVariables: EnvironmentVariables = EnvironmentVariables.getInstance()) {
         this.apiController = new McmaApiController(routes);
     }
 
@@ -43,8 +43,8 @@ export class AzureFunctionApiController {
                 queryStringParameters: req.query,
                 body: req.body
             }),
-            process.env,
-            this.loggerProvider
+            this.loggerProvider,
+            this.environmentVariables
         );
 
         await this.apiController.handleRequest(requestContext);

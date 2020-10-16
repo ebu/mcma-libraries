@@ -1,10 +1,9 @@
-import { ContextVariableProvider, LoggerProvider, McmaException } from "@mcma/core";
+import { LoggerProvider, McmaException } from "@mcma/core";
 import { AuthProvider, ResourceManagerProvider } from "@mcma/client";
 import { DocumentDatabaseTableProvider } from "@mcma/data";
 
 export interface Providers {
     authProvider?: AuthProvider;
-    contextVariableProvider?: ContextVariableProvider;
     dbTableProvider?: DocumentDatabaseTableProvider;
     loggerProvider?: LoggerProvider;
     resourceManagerProvider?: ResourceManagerProvider;
@@ -12,14 +11,12 @@ export interface Providers {
 
 export class ProviderCollection implements Providers {
     private readonly _authProvider: AuthProvider;
-    private readonly _contextVariableProvider: ContextVariableProvider;
     private readonly _dbTableProvider: DocumentDatabaseTableProvider;
     private readonly _loggerProvider: LoggerProvider;
     private readonly _resourceManagerProvider: ResourceManagerProvider;
 
     constructor(providers: Providers) {
         this._authProvider = providers?.authProvider;
-        this._contextVariableProvider = providers?.contextVariableProvider;
         this._dbTableProvider = providers?.dbTableProvider;
         this._loggerProvider = providers?.loggerProvider;
         this._resourceManagerProvider = providers?.resourceManagerProvider;
@@ -30,13 +27,6 @@ export class ProviderCollection implements Providers {
             throw new McmaException("AuthProvider not available");
         }
         return this._authProvider;
-    }
-
-    get contextVariableProvider() {
-        if (!this._contextVariableProvider) {
-            throw new McmaException("ContextVariableProvider not available");
-        }
-        return this._contextVariableProvider;
     }
 
     get dbTableProvider() {

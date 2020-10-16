@@ -1,4 +1,4 @@
-export * from "./context-variable-provider-ext";
+export * from "./environment-variables-ext";
 export * from "./resource-endpoint-client";
 export * from "./resource-manager-config";
 export * from "./resource-manager-provider";

@@ -1,11 +1,6 @@
-import { McmaApiController, McmaApiRequestContext, McmaApiRequest, McmaApiRouteCollection } from "@mcma/api";
-import {
-    APIGatewayProxyEvent,
-    APIGatewayProxyEventV2,
-    APIGatewayProxyResultV2,
-    Context
-} from "aws-lambda";
-import { LoggerProvider } from "@mcma/core";
+import { EnvironmentVariables, LoggerProvider } from "@mcma/core";
+import { McmaApiController, McmaApiRequest, McmaApiRequestContext, McmaApiRouteCollection } from "@mcma/api";
+import { APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from "aws-lambda";
 import { APIGatewayProxyResult } from "aws-lambda/trigger/api-gateway-proxy";
 
 function isAPIGatewayProxyEvent(x: any): x is APIGatewayProxyEvent {
@@ -15,7 +10,7 @@ function isAPIGatewayProxyEvent(x: any): x is APIGatewayProxyEvent {
 export class ApiGatewayApiController {
     private mcmaApiController: McmaApiController;
 
-    constructor(routes: McmaApiRouteCollection, private loggerProvider?: LoggerProvider) {
+    constructor(routes: McmaApiRouteCollection, private loggerProvider?: LoggerProvider, private environmentVariables: EnvironmentVariables = EnvironmentVariables.getInstance()) {
         this.mcmaApiController = new McmaApiController(routes);
     }
 
@@ -40,8 +35,8 @@ export class ApiGatewayApiController {
                 queryStringParameters: event.queryStringParameters,
                 body: event.body
             }),
-            event.stageVariables,
-            this.loggerProvider
+            this.loggerProvider,
+            this.environmentVariables
         );
 
         await this.mcmaApiController.handleRequest(requestContext);

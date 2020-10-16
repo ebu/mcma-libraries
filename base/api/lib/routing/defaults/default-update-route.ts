@@ -1,7 +1,7 @@
-import { onResourceUpsert, McmaResource, getTableName } from "@mcma/core";
-import { DocumentDatabaseTableProvider } from "@mcma/data";
+import { onResourceUpsert, McmaResource } from "@mcma/core";
+import { DocumentDatabaseTableProvider, getTableName } from "@mcma/data";
 
-import { getPublicUrl } from "../../context-variable-provider-ext";
+import { getPublicUrl } from "../../environment-variables-ext";
 import { McmaApiRequestContext } from "../../http";
 import { McmaApiRoute } from "../route";
 
@@ -32,9 +32,9 @@ export class DefaultUpdateRoute<T extends McmaResource> extends McmaApiRoute {
             return;
         }
 
-        onResourceUpsert(resource, getPublicUrl(requestContext) + requestContext.request.path);
+        onResourceUpsert(resource, getPublicUrl(requestContext.environmentVariables) + requestContext.request.path);
 
-        const dbTable = await this.dbTableProvider.get(getTableName(requestContext));
+        const dbTable = await this.dbTableProvider.get(getTableName(requestContext.environmentVariables));
 
         await dbTable.put<T>(requestContext.request.path, resource);
 
