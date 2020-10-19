@@ -12,9 +12,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
     private processing = false;
     private sequenceToken: string = undefined;
 
-    private cloudWatchLogsClient = new CloudWatchLogs();
-
-    constructor(private source: string, private logGroupName: string) {
+    constructor(private source: string, private logGroupName: string, private cloudWatchLogs: CloudWatchLogs = new CloudWatchLogs()) {
         if (typeof source !== "string" || typeof logGroupName !== "string") {
             throw new McmaException("Failed to initialize AwsCloudWatchLoggerProvider with params source: '" + source + "' and logGroupName: '" + logGroupName + "'");
         }
@@ -39,7 +37,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                             nextToken,
                         };
 
-                        const data = await this.cloudWatchLogsClient.describeLogGroups(params).promise();
+                        const data = await this.cloudWatchLogs.describeLogGroups(params).promise();
                         for (const logGroup of data.logGroups) {
                             if (logGroup.logGroupName === this.logGroupName) {
                                 this.logGroupVerified = true;
@@ -54,7 +52,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                         const params = {
                             logGroupName: this.logGroupName
                         };
-                        await this.cloudWatchLogsClient.createLogGroup(params).promise();
+                        await this.cloudWatchLogs.createLogGroup(params).promise();
                         this.logGroupVerified = true;
                     }
                 }
@@ -64,7 +62,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                         logGroupName: this.logGroupName,
                         logStreamName: this.logStreamName
                     };
-                    await this.cloudWatchLogsClient.createLogStream(params).promise();
+                    await this.cloudWatchLogs.createLogStream(params).promise();
                     this.logStreamCreated = true;
                 }
 
@@ -80,7 +78,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
 
                 this.logEvents = [];
 
-                const data = await this.cloudWatchLogsClient.putLogEvents(params).promise();
+                const data = await this.cloudWatchLogs.putLogEvents(params).promise();
 
                 this.sequenceToken = data.nextSequenceToken;
 
