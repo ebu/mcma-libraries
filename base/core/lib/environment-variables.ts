@@ -9,18 +9,23 @@ export class EnvironmentVariables {
         return this.instance;
     }
 
-    private readonly vars: { [key: string]: string | undefined };
+    private readonly _keys: string[];
+    private readonly _vars: { [key: string]: string | undefined };
 
     constructor(variables?: { [key: string]: string | undefined }) {
         if (!variables) {
             variables = process?.env;
         }
 
-        this.vars = Object.assign({}, variables);
+        this._keys = variables ? Object.keys(variables) : [];
+        this._vars = {};
+        for (const key of this._keys) {
+            this._vars[key.toUpperCase()] = variables[key];
+        }
     }
 
     keys(): string[] {
-        return Object.keys(this.vars);
+        return this._keys;
     }
 
     get(name: string): string {
@@ -28,7 +33,7 @@ export class EnvironmentVariables {
             throw new McmaException("Invalid name specified.");
         }
 
-        const value = this.vars[name];
+        const value = this._vars[name.toUpperCase()];
 
         if (value !== undefined) {
             return value;
@@ -42,7 +47,7 @@ export class EnvironmentVariables {
             throw new McmaException("Invalid name specified.");
         }
 
-        const value = this.vars[name];
+        const value = this._vars[name.toUpperCase()];
 
         if (value !== undefined) {
             return value;
