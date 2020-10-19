@@ -4,5 +4,5 @@ export class McmaApiResponse {
     public headers: {
         [key: string]: string;
     } = {};
-    public body: any = null;
+    public body: any;
 }
