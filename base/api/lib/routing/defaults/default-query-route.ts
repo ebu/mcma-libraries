@@ -30,50 +30,7 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
 
     private defaultBuildQuery(requestContext: McmaApiRequestContext): Query<T> | CustomQuery<T> {
         const customQueryFactory = this.customQueryFactories.find(x => x.isMatch(requestContext));
-        return customQueryFactory?.create(requestContext) ?? this.buildStandardQuery(requestContext);
-    }
-
-    private buildStandardQuery(requestContext: McmaApiRequestContext): Query<T> {
-        const path = requestContext.request.path;
-        const queryParams = requestContext.request.queryStringParameters;
-
-        let pageSize;
-        if (queryParams.pageSize) {
-            pageSize = parseInt(queryParams.pageSize);
-            if (isNaN(pageSize)) {
-                pageSize = undefined;
-            }
-            delete queryParams.pageSize;
-        }
-
-        let pageStartToken;
-        if (queryParams.pageStartToken) {
-            pageStartToken = queryParams.pageStartToken;
-            delete queryParams.pageStartToken;
-        }
-
-        let sortBy;
-        if (queryParams.sortBy) {
-            sortBy = queryParams.sortBy;
-            delete queryParams.sortBy;
-        }
-
-        let sortAscending = true;
-        if (queryParams.sortAscending) {
-            sortAscending = queryParams.sortAscending.toLowerCase() !== "false";
-            delete queryParams.sortAscending;
-        }
-
-        const filterExpression = getFilterExpressionFromKeyValuePairs<T>(queryParams);
-
-        return {
-            path,
-            filterExpression,
-            pageStartToken,
-            pageSize,
-            sortBy,
-            sortAscending
-        };
+        return customQueryFactory?.create(requestContext) ?? buildStandardQuery<T>(requestContext);
     }
 
     private async defaultHandleRequest(requestContext: McmaApiRequestContext): Promise<void> {
@@ -84,7 +41,7 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
             }
         }
 
-        const table = await this.dbTableProvider.get(getTableName(requestContext.environmentVariables));
+        const table = await this.dbTableProvider.get(getTableName(requestContext.configVariables));
 
         const query = this.buildQuery(requestContext);
 
@@ -95,4 +52,47 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
 
         requestContext.setResponseBody(queryResults);
     }
+}
+
+export function buildStandardQuery<T>(requestContext: McmaApiRequestContext, defaultSortAscending: boolean = true): Query<T> {
+    const path = requestContext.request.path;
+    const queryParams = requestContext.request.queryStringParameters;
+
+    let pageSize;
+    if (queryParams.pageSize) {
+        pageSize = parseInt(queryParams.pageSize);
+        if (isNaN(pageSize)) {
+            pageSize = undefined;
+        }
+        delete queryParams.pageSize;
+    }
+
+    let pageStartToken;
+    if (queryParams.pageStartToken) {
+        pageStartToken = queryParams.pageStartToken;
+        delete queryParams.pageStartToken;
+    }
+
+    let sortBy;
+    if (queryParams.sortBy) {
+        sortBy = queryParams.sortBy;
+        delete queryParams.sortBy;
+    }
+
+    let sortAscending = defaultSortAscending;
+    if (queryParams.sortAscending) {
+        sortAscending = queryParams.sortAscending.toLowerCase() === "true";
+        delete queryParams.sortAscending;
+    }
+
+    const filterExpression = getFilterExpressionFromKeyValuePairs<T>(queryParams);
+
+    return {
+        path,
+        filterExpression,
+        pageStartToken,
+        pageSize,
+        sortBy,
+        sortAscending
+    };
 }

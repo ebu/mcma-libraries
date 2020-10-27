@@ -1,4 +1,4 @@
-import { EnvironmentVariables } from "@mcma/core";
+import { ConfigVariables } from "@mcma/core";
 import { CustomQuery } from "@mcma/data";
 import { SqlQuerySpec } from "@azure/cosmos";
 
@@ -22,14 +22,14 @@ function emptyCosmosDbSettings(): CosmosDbTableProviderOptions {
     };
 }
 
-export function fillOptionsFromEnvironmentVariables(
+export function fillOptionsFromConfigVariables(
     options: CosmosDbTableProviderOptions = emptyCosmosDbSettings(),
-    environmentVariables: EnvironmentVariables = EnvironmentVariables.getInstance()
+    configVariables: ConfigVariables = ConfigVariables.getInstance()
 ): CosmosDbTableProviderOptions {
-    options.endpoint = environmentVariables.get("CosmosDbEndpoint");
-    options.key = environmentVariables.get("CosmosDbKey");
-    options.region = environmentVariables.get("CosmosDbRegion");
-    options.databaseId = environmentVariables.get("CosmosDbDatabaseId");
+    options.endpoint = configVariables.get("CosmosDbEndpoint");
+    options.key = configVariables.get("CosmosDbKey");
+    options.region = configVariables.get("CosmosDbRegion");
+    options.databaseId = configVariables.get("CosmosDbDatabaseId");
     options.customQueries = {};
     return options;
 }

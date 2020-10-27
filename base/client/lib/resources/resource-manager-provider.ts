@@ -1,20 +1,20 @@
-import { EnvironmentVariables, McmaException } from "@mcma/core";
+import { ConfigVariables, McmaException } from "@mcma/core";
 
 import { AuthProvider } from "../auth";
 import { ResourceManagerConfig } from "./resource-manager-config";
 import { ResourceManager } from "./resource-manager";
-import { getResourceManagerConfig } from "./environment-variables-ext";
+import { getResourceManagerConfig } from "./config-variables-ext";
 
 export class ResourceManagerProvider {
     constructor(private authProvider: AuthProvider, private defaultConfig?: ResourceManagerConfig) {
     }
 
-    get(config?: ResourceManagerConfig | EnvironmentVariables) {
+    get(config?: ResourceManagerConfig | ConfigVariables) {
         config = config || this.defaultConfig;
         if (!config) {
-            config = EnvironmentVariables.getInstance();
+            config = ConfigVariables.getInstance();
         }
-        if (config instanceof EnvironmentVariables) {
+        if (config instanceof ConfigVariables) {
             config = getResourceManagerConfig(config);
         }
         if (!config) {

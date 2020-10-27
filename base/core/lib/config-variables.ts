@@ -1,10 +1,10 @@
 import { McmaException } from "./mcma-exception";
 
-export class EnvironmentVariables {
-    private static instance: EnvironmentVariables;
-    static getInstance(): EnvironmentVariables {
+export class ConfigVariables {
+    private static instance: ConfigVariables;
+    static getInstance(): ConfigVariables {
         if (!this.instance) {
-            this.instance = new EnvironmentVariables();
+            this.instance = new ConfigVariables();
         }
         return this.instance;
     }

@@ -1,4 +1,4 @@
-export * from "./environment-variables";
+export * from "./config-variables";
 export * from "./mcma-exception";
 export * from "./utils";
 

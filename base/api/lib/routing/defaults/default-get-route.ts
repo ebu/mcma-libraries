@@ -25,7 +25,7 @@ export class DefaultGetRoute<T extends McmaResource> extends McmaApiRoute {
             }
         }
 
-        const dbTable = await this.dbTableProvider.get(getTableName(requestContext.environmentVariables));
+        const dbTable = await this.dbTableProvider.get(getTableName(requestContext.configVariables));
 
         const resource = await dbTable.get<T>(requestContext.request.path);
         if (this.onCompleted) {

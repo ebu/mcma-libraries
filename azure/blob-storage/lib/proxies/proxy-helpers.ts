@@ -1,5 +1,5 @@
 import { BlobServiceClient } from "@azure/storage-blob";
-import { EnvironmentVariables, McmaException } from "@mcma/core";
+import { ConfigVariables, McmaException } from "@mcma/core";
 import { BlobStorageFileProxy } from "./blob-storage-file-proxy";
 import { BlobStorageFileLocator } from "../blob-storage-file-locator";
 import { BlobStorageFolderProxy } from "./blob-storage-folder-proxy";
@@ -9,44 +9,44 @@ const StorageAccountNameKeySuffix = "StorageAccountName";
 const StorageConnectionStringKeySuffix = "StorageConnectionString";
 
 export function getBlobClient(connectionString: string): BlobServiceClient;
-export function getBlobClient(environmentVariables: EnvironmentVariables, storageAccountName: string): BlobServiceClient;
-export function getBlobClient(connectionStringOrEnvironmentVariables: EnvironmentVariables | string, storageAccountName?: string): BlobServiceClient {
-    if (typeof connectionStringOrEnvironmentVariables === "string") {
-        return BlobServiceClient.fromConnectionString(connectionStringOrEnvironmentVariables);
+export function getBlobClient(configVariables: ConfigVariables, storageAccountName: string): BlobServiceClient;
+export function getBlobClient(connectionStringOrConfigVariables: ConfigVariables | string, storageAccountName?: string): BlobServiceClient {
+    if (typeof connectionStringOrConfigVariables === "string") {
+        return BlobServiceClient.fromConnectionString(connectionStringOrConfigVariables);
     }
 
-    const environmentVariables = connectionStringOrEnvironmentVariables;
+    const configVariables = connectionStringOrConfigVariables;
 
     const accountNameSettingKey =
-        environmentVariables.keys()
+        configVariables.keys()
                             .filter(key => !key.startsWith("APPSETTING_"))
                             .find(key => key.toLowerCase().endsWith(StorageAccountNameKeySuffix.toLowerCase()) &&
-                                         environmentVariables.get(key).toLowerCase() === storageAccountName.toLowerCase());
+                                         configVariables.get(key).toLowerCase() === storageAccountName.toLowerCase());
 
     if (!accountNameSettingKey)
         throw new McmaException(`Storage account '${storageAccountName}' is not configured.`);
 
     return getBlobClient(
-        environmentVariables.get(
+        configVariables.get(
             accountNameSettingKey.substr(0, accountNameSettingKey.length - StorageAccountNameKeySuffix.length) + StorageConnectionStringKeySuffix));
 }
 
 export function getFileProxy(locator: BlobStorageFileLocator, connectionString: string): BlobStorageFileProxy;
-export function getFileProxy(locator: BlobStorageFileLocator, environmentVariables: EnvironmentVariables): BlobStorageFileProxy;
-export function getFileProxy(locator: BlobStorageFileLocator, connectionStringOrEnvironmentVariables: EnvironmentVariables | string): BlobStorageFileProxy {
-    if (typeof connectionStringOrEnvironmentVariables === "string") {
-        return new BlobStorageFileProxy(locator, getBlobClient(connectionStringOrEnvironmentVariables));
+export function getFileProxy(locator: BlobStorageFileLocator, configVariables: ConfigVariables): BlobStorageFileProxy;
+export function getFileProxy(locator: BlobStorageFileLocator, connectionStringOrConfigVariables: ConfigVariables | string): BlobStorageFileProxy {
+    if (typeof connectionStringOrConfigVariables === "string") {
+        return new BlobStorageFileProxy(locator, getBlobClient(connectionStringOrConfigVariables));
     } else {
-        return new BlobStorageFileProxy(locator, getBlobClient(connectionStringOrEnvironmentVariables, locator.storageAccountName));
+        return new BlobStorageFileProxy(locator, getBlobClient(connectionStringOrConfigVariables, locator.storageAccountName));
     }
 }
 
 export function getFolderProxy(locator: BlobStorageFolderLocator, connectionString: string): BlobStorageFolderProxy;
-export function getFolderProxy(locator: BlobStorageFolderLocator, environmentVariables: EnvironmentVariables): BlobStorageFolderProxy;
-export function getFolderProxy(locator: BlobStorageFolderLocator, connectionStringOrEnvironmentVariables: EnvironmentVariables | string): BlobStorageFolderProxy {
-    if (typeof connectionStringOrEnvironmentVariables === "string") {
-        return new BlobStorageFolderProxy(locator, getBlobClient(connectionStringOrEnvironmentVariables));
+export function getFolderProxy(locator: BlobStorageFolderLocator, configVariables: ConfigVariables): BlobStorageFolderProxy;
+export function getFolderProxy(locator: BlobStorageFolderLocator, connectionStringOrConfigVariables: ConfigVariables | string): BlobStorageFolderProxy {
+    if (typeof connectionStringOrConfigVariables === "string") {
+        return new BlobStorageFolderProxy(locator, getBlobClient(connectionStringOrConfigVariables));
     } else {
-        return new BlobStorageFolderProxy(locator, getBlobClient(connectionStringOrEnvironmentVariables, locator.storageAccountName));
+        return new BlobStorageFolderProxy(locator, getBlobClient(connectionStringOrConfigVariables, locator.storageAccountName));
     }
 }

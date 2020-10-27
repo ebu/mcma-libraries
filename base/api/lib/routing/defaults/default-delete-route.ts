@@ -24,7 +24,7 @@ export class DefaultDeleteRoute<T extends McmaResource> extends McmaApiRoute {
                 return;
             }
         }
-        const table = await this.dbTableProvider.get(getTableName(requestContext.environmentVariables));
+        const table = await this.dbTableProvider.get(getTableName(requestContext.configVariables));
 
         const resource = await table.get<T>(requestContext.request.path);
         if (!resource) {

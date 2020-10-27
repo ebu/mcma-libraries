@@ -3,7 +3,7 @@ import { v4 as uuid } from "uuid";
 import { Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
 import { Query } from "express-serve-static-core";
-import { EnvironmentVariables, LoggerProvider } from "@mcma/core";
+import { ConfigVariables, LoggerProvider } from "@mcma/core";
 
 function asStringMap(obj: Query | IncomingHttpHeaders): { [key: string]: string } {
     const copy: { [key: string]: string } = {};
@@ -23,7 +23,7 @@ function asStringMap(obj: Query | IncomingHttpHeaders): { [key: string]: string 
 export class HttpFunctionApiController {
     private mcmaApiController: McmaApiController;
 
-    constructor(routes: McmaApiRouteCollection, private loggerProvider?: LoggerProvider, private environmentVariables: EnvironmentVariables = EnvironmentVariables.getInstance()) {
+    constructor(routes: McmaApiRouteCollection, private loggerProvider?: LoggerProvider, private configVariables: ConfigVariables = ConfigVariables.getInstance()) {
         this.mcmaApiController = new McmaApiController(routes);
     }
 
@@ -39,7 +39,7 @@ export class HttpFunctionApiController {
                 body: request.body
             }),
             this.loggerProvider,
-            this.environmentVariables
+            this.configVariables
         );
 
         await this.mcmaApiController.handleRequest(requestContext);
