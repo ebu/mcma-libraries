@@ -15,7 +15,7 @@ import { FirestoreMutex } from "./firestore-mutex";
 import { CustomQueryRegistry } from "./firestore-table-provider-options";
 import { FirestoreMcmaDataConverter } from "./firestore-mcma-data-converter";
 
-async function getNextPageStartToken<TDocument extends Document>(results: QuerySnapshot, sortBy: string) {
+async function getNextPageStartToken(results: QuerySnapshot, sortBy: string) {
     if (!results.docs.length) {
         return undefined;
     }
@@ -51,7 +51,7 @@ export class FirestoreTable implements DocumentDatabaseTable {
     }
 
     async query<TDocument extends Document = Document>(query: Query<TDocument>): Promise<QueryResults<TDocument>> {
-        const firestoreQuery = await buildFirestoreQuery<TDocument>(this.collection(query.path), query);
+        const firestoreQuery = buildFirestoreQuery<TDocument>(this.collection(query.path), query);
 
         const results = await firestoreQuery.get();
         return {
@@ -73,7 +73,7 @@ export class FirestoreTable implements DocumentDatabaseTable {
         const results = await customQuery.firestoreQuery.get();
         return {
             results: results.docs.map(doc => doc.data() as TDocument),
-            nextPageStartToken: await getNextPageStartToken<TDocument>(results, customQuery.sortBy)
+            nextPageStartToken: await getNextPageStartToken(results, customQuery.sortBy)
         };
     }
 

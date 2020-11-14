@@ -160,9 +160,23 @@ task cleanPackageLocks(type: Delete) {
     delete "package-lock.json"
 }
 
+task npmAudit(type: Exec) {
+    dependsOn ":verifyNodeJS"
+    inputs.file("package.json")
+    commandLine npmExecutable
+    args "audit"
+}
+
 task npmAuditFix(type: Exec) {
     dependsOn ":verifyNodeJS"
     inputs.file("package.json")
     commandLine npmExecutable
     args "audit", "fix"
+}
+
+task npmForceAuditFix(type: Exec) {
+    dependsOn ":verifyNodeJS"
+    inputs.file("package.json")
+    commandLine npmExecutable
+    args "audit", "fix", "--force"
 }

@@ -29,9 +29,9 @@ function addFilterToQuery<TDocument>(firestoreQuery: FirestoreQuery<TDocument>, 
         : addFilterCriteriaToQuery(firestoreQuery, filterExpression);
 }
 
-export async function buildFirestoreQuery<TDocument extends Document = Document>(
+export function buildFirestoreQuery<TDocument extends Document = Document>(
     firestoreQuery: FirestoreQuery<TDocument>, query: Query<TDocument>
-): Promise<FirestoreQuery<TDocument>> {
+): FirestoreQuery<TDocument> {
     if (query.filterExpression) {
         firestoreQuery = addFilterToQuery<TDocument>(firestoreQuery, query.filterExpression);
     }
