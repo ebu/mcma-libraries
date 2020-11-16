@@ -1,5 +1,5 @@
 import { McmaException, Utils } from "@mcma/core";
-import { CustomQuery, Document, DocumentDatabaseMutex, DocumentDatabaseTable, Query, QueryResults, CustomQueryParameters } from "@mcma/data";
+import { CustomQuery, CustomQueryParameters, Document, DocumentDatabaseMutex, DocumentDatabaseTable, MutexProperties, Query, QueryResults } from "@mcma/data";
 import { Container, ContainerDefinition } from "@azure/cosmos";
 
 import { buildQueryDefinition } from "./build-query-definition";
@@ -17,7 +17,7 @@ function deserialize(object: any) {
                 copy[key] = new Date(value);
             } else if (typeof value === "object") {
                 copy[key] = deserialize(value);
-            } else{
+            } else {
                 copy[key] = value;
             }
         }
@@ -33,7 +33,7 @@ export class CosmosDbTable implements DocumentDatabaseTable {
         if (containerDefinition.partitionKey.paths.length > 1) {
             throw new McmaException(`Container ${containerDefinition.id} defines a partition key with multiple paths. MCMA only supports partition keys with a single path.`);
         }
-        
+
         this.partitionKeyName = containerDefinition.partitionKey.paths[0].substr(1);
     }
 
@@ -74,7 +74,7 @@ export class CosmosDbTable implements DocumentDatabaseTable {
             nextPageStartToken: resp.continuationToken
         };
     }
-    
+
     async get<TDocument extends Document = Document>(id: string): Promise<TDocument> {
         const { partitionKey, guid } = parsePartitionKeyAndGuid(id);
         const resp = await this.container.item(guid, partitionKey).read();
@@ -84,7 +84,7 @@ export class CosmosDbTable implements DocumentDatabaseTable {
 
         return deserialize(resp.resource.resource);
     }
-    
+
     async put<TDocument extends Document = Document>(id: string, resource: TDocument): Promise<TDocument> {
         const { partitionKey, guid } = parsePartitionKeyAndGuid(id);
         const item = {
@@ -97,13 +97,13 @@ export class CosmosDbTable implements DocumentDatabaseTable {
 
         return deserialize(resp.resource.resource);
     }
-    
+
     async delete(id: string): Promise<void> {
         const { partitionKey, guid } = parsePartitionKeyAndGuid(id);
         await this.container.item(guid, partitionKey).delete();
     }
-    
-    createMutex(mutexName: string, mutexHolder: string, lockTimeout = 60000): DocumentDatabaseMutex {
-        return new CosmosDbMutex(this.container, this.partitionKeyName, mutexName, mutexHolder, lockTimeout);
+
+    createMutex(mutexProperties: MutexProperties): DocumentDatabaseMutex {
+        return new CosmosDbMutex(this.container, this.partitionKeyName, mutexProperties.name, mutexProperties.holder, mutexProperties.lockTimeout, mutexProperties.logger);
     }
 }

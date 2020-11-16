@@ -2,23 +2,19 @@ import { v4 as uuidv4 } from "uuid";
 
 import { JobAssignment, McmaTracker } from "@mcma/core";
 import { DocumentDatabaseTableProvider } from "@mcma/data";
-import { getWorkerFunctionId, InvokeWorker, WorkerInvoker } from "@mcma/worker-invoker";
+import { getWorkerFunctionId, WorkerInvoker } from "@mcma/worker-invoker";
 
 import { DefaultRouteCollection } from "./default-route-collection";
 import { getPublicUrl } from "../../config-variables-ext";
 import { McmaApiRequestContext } from "../../http";
 
 export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignment> {
-    private workerInvoker: WorkerInvoker;
-
     constructor(
         dbTableProvider: DocumentDatabaseTableProvider,
-        invokeWorker: InvokeWorker,
+        private workerInvoker: WorkerInvoker,
         root?: string
     ) {
         super(dbTableProvider, JobAssignment, root);
-
-        this.workerInvoker = new WorkerInvoker(invokeWorker);
 
         this.create.onStarted = reqCtx => this.onJobAssignmentCreationStarted(reqCtx);
         this.create.onCompleted = (reqCtx, jobAssignment) => this.onJobAssignmentCreationCompleted(reqCtx, jobAssignment);

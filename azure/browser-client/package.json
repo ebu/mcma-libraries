@@ -3,7 +3,7 @@
     "version": "0.13.4-beta4",
     "description": "Authentication from the browser for communicating with MCMA services hosted on Azure",
     "engines": {
-        "node": "~10.16.3"
+        "node": "^12.19.0"
     },
     "type": "commonjs",
     "main": "dist/index.js",

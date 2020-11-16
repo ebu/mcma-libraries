@@ -3,6 +3,14 @@ import { CustomQuery, CustomQueryParameters } from "./query/custom-query";
 import { Document } from "./document";
 import { DocumentDatabaseMutex } from "./document-database-mutex";
 import { QueryResults } from "./query/query-results";
+import { Logger } from "@mcma/core";
+
+export interface MutexProperties {
+    name: string
+    holder: string
+    lockTimeout?: number
+    logger?: Logger
+}
 
 export interface DocumentDatabaseTable {
     query<TDocument extends Document = Document>(query: Query<TDocument>): Promise<QueryResults<TDocument>>;
@@ -17,5 +25,5 @@ export interface DocumentDatabaseTable {
 
     delete(id: string): Promise<void>;
 
-    createMutex(mutexName: string, mutexHolder: string, lockTimeout?: number): DocumentDatabaseMutex;
+    createMutex(mutexProperties: MutexProperties): DocumentDatabaseMutex;
 }
