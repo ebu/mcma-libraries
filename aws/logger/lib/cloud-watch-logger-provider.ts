@@ -68,7 +68,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
 
                 const params: CloudWatchLogs.PutLogEventsRequest = {
                     logEvents: this.logEvents.map(le => ({
-                        message: le.toString(),
+                        message: le.toString().substring(0, 262144),
                         timestamp: le.timestamp.getTime()
                     })),
                     logGroupName: this.logGroupName,
