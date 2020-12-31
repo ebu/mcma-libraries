@@ -1,6 +1,6 @@
 {
     "name": "@mcma/google-cloud-client",
-    "version": "0.13.18",
+    "version": "0.13.19",
     "description": "Authentication for communicating with MCMA services hosted on Google Cloud Platform",
     "engines": {
         "node": "^12.19.0"
@@ -33,13 +33,13 @@
         "google-auth-library": "^6.1.1"
     },
     "peerDependencies": {
-        "@mcma/client": "0.13.18",
-        "@mcma/core": "0.13.18"
+        "@mcma/client": "0.13.19",
+        "@mcma/core": "0.13.19"
     },
     "devDependencies": {
-        "@mcma/client": "0.13.18",
-        "@mcma/core": "0.13.18",
-        "@mcma/encryption": "0.13.18",
+        "@mcma/client": "0.13.19",
+        "@mcma/core": "0.13.19",
+        "@mcma/encryption": "0.13.19",
         "@types/node": "^13.7.6",
         "jasmine": "^3.2.0"
     }
