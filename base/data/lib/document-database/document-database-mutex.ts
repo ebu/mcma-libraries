@@ -17,7 +17,7 @@ export abstract class DocumentDatabaseMutex {
     protected constructor(
         public readonly mutexName: string,
         protected readonly mutexHolder: string,
-        protected readonly lockTimeout = 60000,
+        protected readonly lockTimeout = 300000,
         protected readonly logger?: Logger
     ) {
     }
