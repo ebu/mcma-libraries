@@ -1,6 +1,6 @@
 {
     "name": "@mcma/api",
-    "version": "0.13.19",
+    "version": "0.13.20",
     "description": "Node module for building APIs based on the EBU MCMA framework",
     "engines": {
         "node": "^12.19.0"
@@ -37,16 +37,16 @@
         "uuid": "^7.0.3"
     },
     "peerDependencies": {
-        "@mcma/client": "0.13.19",
-        "@mcma/core": "0.13.19",
-        "@mcma/data": "0.13.19",
-        "@mcma/worker-invoker": "0.13.19"
+        "@mcma/client": "0.13.20",
+        "@mcma/core": "0.13.20",
+        "@mcma/data": "0.13.20",
+        "@mcma/worker-invoker": "0.13.20"
     },
     "devDependencies": {
-        "@mcma/client": "0.13.19",
-        "@mcma/core": "0.13.19",
-        "@mcma/data": "0.13.19",
-        "@mcma/worker-invoker": "0.13.19",
+        "@mcma/client": "0.13.20",
+        "@mcma/core": "0.13.20",
+        "@mcma/data": "0.13.20",
+        "@mcma/worker-invoker": "0.13.20",
         "@types/node": "^13.7.4",
         "@types/pluralize": "0.0.29",
         "@types/uuid": "^7.0.3",
