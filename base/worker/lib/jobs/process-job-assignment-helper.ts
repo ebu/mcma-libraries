@@ -22,18 +22,23 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     get logger(): Logger | undefined {
         return this.workerRequest.logger;
     }
+
     get jobAssignment() {
         return this._jobAssignment;
     }
+
     get job() {
         return this._job;
     }
+
     get profile() {
         return this._profile;
     }
+
     get jobInput() {
         return this._job.jobInput;
     }
+
     get jobOutput() {
         return this._job.jobOutput;
     }
@@ -100,7 +105,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
     }
 
     async updateJobAssignmentOutput(): Promise<JobAssignment> {
-        return await this.updateJobAssignment(ja => ja.jobOutput = this._job?.jobOutput);
+        return await this.updateJobAssignment(ja => ja.jobOutput = this._job?.jobOutput, true);
     }
 
     async updateJobAssignmentStatus(status: JobStatus): Promise<JobAssignment> {
@@ -111,7 +116,7 @@ export class ProcessJobAssignmentHelper<T extends Job> {
             true);
     }
 
-    async updateJobAssignment(update: (jobAssigment: JobAssignment) => void, sendNotification = false): Promise<JobAssignment> {
+    async updateJobAssignment(update: (jobAssigment: JobAssignment) => void, sendNotification: boolean = false): Promise<JobAssignment> {
         if (typeof update !== "function") {
             throw new McmaException("update must be a function that modifies the JobAssignment.");
         }
