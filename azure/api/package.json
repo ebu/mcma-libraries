@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-functions-api",
-    "version": "0.13.20",
+    "version": "0.13.21",
     "description": "Build MCMA APIs using Azure Function Apps",
     "engines": {
         "node": "^12.19.0"
@@ -35,19 +35,19 @@
         "uuid": "^7.0.3"
     },
     "peerDependencies": {
-        "@mcma/api": "0.13.20",
-        "@mcma/client": "0.13.20",
-        "@mcma/core": "0.13.20",
-        "@mcma/data": "0.13.20",
-        "@mcma/worker-invoker": "0.13.20"
+        "@mcma/api": "0.13.21",
+        "@mcma/client": "0.13.21",
+        "@mcma/core": "0.13.21",
+        "@mcma/data": "0.13.21",
+        "@mcma/worker-invoker": "0.13.21"
     },
     "devDependencies": {
         "@azure/functions": "^1.2.0",
-        "@mcma/api": "0.13.20",
-        "@mcma/client": "0.13.20",
-        "@mcma/core": "0.13.20",
-        "@mcma/data": "0.13.20",
-        "@mcma/worker-invoker": "0.13.20",
+        "@mcma/api": "0.13.21",
+        "@mcma/client": "0.13.21",
+        "@mcma/core": "0.13.21",
+        "@mcma/data": "0.13.21",
+        "@mcma/worker-invoker": "0.13.21",
         "@types/node": "^13.7.6",
         "@types/uri-templates": "^0.1.30",
         "@types/uuid": "^7.0.3",

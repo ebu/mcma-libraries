@@ -1,6 +1,6 @@
 {
     "name": "@mcma/google-cloud-storage",
-    "version": "0.13.20",
+    "version": "0.13.21",
     "description": "Add Google Cloud Storage to your MCMA services",
     "engines": {
         "node": "^12.19.0"
@@ -35,10 +35,10 @@
         "@google-cloud/storage": "5.1.1"
     },
     "peerDependencies": {
-        "@mcma/core": "0.13.20"
+        "@mcma/core": "0.13.21"
     },
     "devDependencies": {
-        "@mcma/core": "0.13.20",
+        "@mcma/core": "0.13.21",
         "@types/node": "^13.7.6",
         "jasmine": "^3.2.0"
     }

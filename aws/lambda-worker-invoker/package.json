@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-lambda-worker-invoker",
-    "version": "0.13.20",
+    "version": "0.13.21",
     "description": "Node module with code for invoking MCMA workers running as Lambda functions, via the AWS SDK",
     "engines": {
         "node": "^12.19.0"
@@ -34,12 +34,12 @@
         "aws-sdk": "^2.530.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.13.20",
-        "@mcma/worker-invoker": "0.13.20"
+        "@mcma/core": "0.13.21",
+        "@mcma/worker-invoker": "0.13.21"
     },
     "devDependencies": {
-        "@mcma/core": "0.13.20",
-        "@mcma/worker-invoker": "0.13.20",
+        "@mcma/core": "0.13.21",
+        "@mcma/worker-invoker": "0.13.21",
         "@types/node": "^13.7.6",
         "jasmine": "^3.2.0"
     }
