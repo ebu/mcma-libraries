@@ -1,6 +1,8 @@
 import * as CryptoJS from "crypto-js";
+import { Method } from "axios";
 import { HttpRequestConfig } from "@mcma/client";
 import { McmaException } from "@mcma/core";
+
 
 const AWS_SHA_256 = "AWS4-HMAC-SHA256";
 const AWS4_REQUEST = "aws4_request";
@@ -32,11 +34,11 @@ function hmac(secret: string | CryptoJS.WordArray, value: string) {
 
 function buildCanonicalRequest(method: string, pathname: string, queryParams: { [key: string]: string }, headers: { [key: string]: string }, data: any) {
     return method + "\n" +
-        buildCanonicalUri(pathname) + "\n" +
-        buildCanonicalQueryString(queryParams) + "\n" +
-        buildCanonicalHeaders(headers) + "\n" +
-        buildCanonicalSignedHeaders(headers) + "\n" +
-        hexEncode(hash(typeof data === "string" ? data : JSON.stringify(data)));
+           buildCanonicalUri(pathname) + "\n" +
+           buildCanonicalQueryString(queryParams) + "\n" +
+           buildCanonicalHeaders(headers) + "\n" +
+           buildCanonicalSignedHeaders(headers) + "\n" +
+           hexEncode(hash(typeof data === "string" ? data : JSON.stringify(data)));
 }
 
 function hashCanonicalRequest(request: string) {
@@ -97,9 +99,9 @@ function buildCanonicalSignedHeaders(headers: { [key: string]: string }): string
 
 function buildStringToSign(datetime: string, credentialScope: string, hashedCanonicalRequest: string) {
     return AWS_SHA_256 + "\n" +
-        datetime + "\n" +
-        credentialScope + "\n" +
-        hashedCanonicalRequest;
+           datetime + "\n" +
+           credentialScope + "\n" +
+           hashedCanonicalRequest;
 }
 
 function buildCredentialScope(datetime: string, region: string, service: string) {
@@ -212,8 +214,8 @@ export class AwsV4PresignedUrlGenerator {
     constructor(credentials: Credentials) {
         this.credentials = conformCredentials(credentials);
     }
-    
-    generatePresignedUrl = (method: string, requestUrl: string, expires = 300) => {
+
+    generatePresignedUrl(method: Method, requestUrl: string, expires = 300) {
         // parse the url we want to sign so we can work with the query string
         const requestUrlParsed = new URL(requestUrl);
 
@@ -244,7 +246,7 @@ export class AwsV4PresignedUrlGenerator {
 
         // build a mock request to use to generat the signature
         const mockRequest = {
-            method,
+            method: method,
             url: requestUrl,
             params,
             headers

@@ -49,7 +49,7 @@ export class HttpClient implements Http {
         return await this.request<T>(this.prepareRequest("DELETE", urlOrConfig, config));
     };
 
-    private prepareRequest(method: string, urlOrConfig: string | HttpRequestConfig, config?: HttpRequestConfig, body?: any) {
+    private prepareRequest(method: Method, urlOrConfig: string | HttpRequestConfig, config?: HttpRequestConfig, body?: any) {
         let url: string;
         if (typeof urlOrConfig === "string") {
             url = urlOrConfig;
@@ -65,7 +65,7 @@ export class HttpClient implements Http {
         url = url || "";
 
         config = config || {};
-        config.method = <Method>method;
+        config.method = method;
         config.url = url;
         config.data = body;
         config.transformResponse = (data) => {
