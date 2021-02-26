@@ -1,5 +1,5 @@
 import { McmaException, Utils } from "@mcma/core";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosResponse, Method } from "axios";
 
 import { Authenticator } from "../auth";
 import { McmaHeaders } from "./headers";
@@ -65,7 +65,7 @@ export class HttpClient implements Http {
         url = url || "";
 
         config = config || {};
-        config.method = method;
+        config.method = <Method>method;
         config.url = url;
         config.data = body;
         config.transformResponse = (data) => {
