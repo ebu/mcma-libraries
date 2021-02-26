@@ -29,7 +29,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-client-nodejs#readme",
     "dependencies": {
-        "axios": "^0.18.0"
+        "axios": "^0.21.1"
     },
     "peerDependencies": {
         "@mcma/core": "0.13.21"
