@@ -59,7 +59,7 @@ export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignm
         if (jobAssignment.status === JobStatus.Completed ||
             jobAssignment.status === JobStatus.Failed ||
             jobAssignment.status === JobStatus.Canceled) {
-            requestContext.setResponseStatusCode(HttpStatusCode.Conflict, "JobAssignment is already in a final state");
+            requestContext.setResponseError(HttpStatusCode.Conflict, "JobAssignment is already in a final state");
             return;
         }
 

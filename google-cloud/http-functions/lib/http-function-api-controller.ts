@@ -45,7 +45,7 @@ export class HttpFunctionApiController {
         await this.mcmaApiController.handleRequest(requestContext);
 
         response.statusCode = requestContext.response.statusCode;
-        response.statusMessage = requestContext.response.statusMessage;
+        response.statusMessage = requestContext.response.errorMessage;
         
         for (const header in requestContext.response.headers) {
             response.setHeader(header, requestContext.response.headers[header]);
