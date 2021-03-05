@@ -2,7 +2,7 @@ import { types } from "util";
 import { DynamoDB } from "aws-sdk";
 import { DocumentClient, Key } from "aws-sdk/clients/dynamodb";
 import { McmaException, Utils } from "@mcma/core";
-import { DocumentDatabaseTable, Query, Document, DocumentDatabaseMutex, CustomQuery, QueryResults, hasFilterCriteria, CustomQueryParameters } from "@mcma/data";
+import { CustomQuery, CustomQueryParameters, Document, DocumentDatabaseMutex, DocumentDatabaseTable, hasFilterCriteria, MutexProperties, Query, QueryResults } from "@mcma/data";
 
 import { DynamoDbTableOptions } from "./dynamo-db-table-options";
 import { buildFilterExpression } from "./build-filter-expression";
@@ -12,7 +12,7 @@ import { DynamoDbMutex } from "./dynamo-db-mutex";
 function parsePartitionAndSortKeys(id: string): { partitionKey: string, sortKey: string } {
     const lastSlashIndex = id.lastIndexOf("/");
     return lastSlashIndex > 0
-        ? { partitionKey: id.substr(0, lastSlashIndex) , sortKey: id.substr(lastSlashIndex + 1) }
+        ? { partitionKey: id.substr(0, lastSlashIndex), sortKey: id.substr(lastSlashIndex + 1) }
         : { partitionKey: id, sortKey: id };
 }
 
@@ -23,7 +23,7 @@ function keyFromBase64Json(str: string): Key {
     try {
         return JSON.parse(Utils.fromBase64(str));
     } catch (e) {
-        throw new McmaException(`Invalid key '${str}'.`)
+        throw new McmaException(`Invalid key '${str}'.`);
     }
 }
 
@@ -33,7 +33,7 @@ function base64JsonFromKey(key: Key): string {
 
 export class DynamoDbTable implements DocumentDatabaseTable {
     private readonly docClient: DocumentClient;
-    
+
     constructor(
         dynamoDb: DynamoDB,
         private tableDescription: DynamoDbTableDescription,
@@ -70,7 +70,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
                     copy[key] = new Date(value);
                 } else if (typeof value === "object") {
                     copy[key] = this.deserialize(value);
-                } else{
+                } else {
                     copy[key] = value;
                 }
             }
@@ -87,7 +87,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
         let filterExpression: string;
         if (hasFilterCriteria(query.filterExpression)) {
             const dynamoDbExpression = buildFilterExpression(query.filterExpression);
-            
+
             filterExpression = dynamoDbExpression.expressionStatement;
             expressionAttributeNames = Object.assign(expressionAttributeNames, dynamoDbExpression.expressionAttributeNames);
             expressionAttributeValues = Object.assign(expressionAttributeValues, dynamoDbExpression.expressionAttributeValues);
@@ -143,7 +143,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
             nextPageStartToken: base64JsonFromKey(data.LastEvaluatedKey)
         };
     }
-    
+
     async get<TDocument extends Document = Document>(id: string): Promise<TDocument> {
         const { partitionKey, sortKey } = parsePartitionAndSortKeys(id);
         const params: DocumentClient.GetItemInput = {
@@ -156,14 +156,14 @@ export class DynamoDbTable implements DocumentDatabaseTable {
         };
 
         const data = await this.docClient.get(params).promise();
-        
+
         return data?.Item?.resource ? this.deserialize(data.Item.resource) : null;
     }
 
     async put<TDocument extends Document = Document>(id: string, resource: TDocument): Promise<TDocument> {
         const { partitionKey, sortKey } = parsePartitionAndSortKeys(id);
         const serializedResource = this.serialize(resource);
-        
+
         let item = {
             [this.tableDescription.keyNames.partition]: partitionKey,
             [this.tableDescription.keyNames.sort]: sortKey,
@@ -178,7 +178,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
 
         const params: DocumentClient.PutItemInput = {
             TableName: this.tableDescription.tableName,
-            Item: item 
+            Item: item
         };
         try {
             await this.docClient.put(params).promise();
@@ -204,8 +204,8 @@ export class DynamoDbTable implements DocumentDatabaseTable {
             throw new McmaException("Failed to delete resource in DynamoDB table", error);
         }
     }
-    
-    createMutex(mutexName: string, mutexHolder: string, lockTimeout: number = 60000): DocumentDatabaseMutex {
-        return new DynamoDbMutex(this.docClient, this.tableDescription, mutexName, mutexHolder, lockTimeout);
+
+    createMutex(mutexProperties: MutexProperties): DocumentDatabaseMutex {
+        return new DynamoDbMutex(this.docClient, this.tableDescription, mutexProperties.name, mutexProperties.holder, mutexProperties.lockTimeout, mutexProperties.logger);
     }
 }

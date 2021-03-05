@@ -1,19 +1,56 @@
-import { Locator, LocatorProperties } from "@mcma/core";
+import { Locator, LocatorProperties, McmaException } from "@mcma/core";
 
-export interface AwsS3LocatorProperties extends LocatorProperties {
-    bucket: string;
-    url?: string;
+export interface S3LocatorProperties extends LocatorProperties {
+    region?: string;
+    bucket?: string;
+    key?: string;
 }
 
-export abstract class AwsS3Locator extends Locator implements AwsS3LocatorProperties {
+export class S3Locator extends Locator implements S3LocatorProperties {
+    public region: string;
     public bucket: string;
-    public url?: string;
-    
-    public abstract readonly path: string;
-    
-    protected constructor(type: string, properties: AwsS3LocatorProperties) {
-        super(type, properties);
+    public key: string;
 
-        this.checkProperty("bucket", "string", true);
+    constructor(properties: S3LocatorProperties) {
+        super("S3Locator", properties);
+
+        const url = new URL(this.url);
+
+        // checking domain name
+        const parts = url.hostname.split(".");
+        if (parts.length < 3 ||
+            parts[parts.length - 1] !== "com" ||
+            parts[parts.length - 2] !== "amazonaws") {
+            throw new McmaException("Invalid S3 url. Unexpected domain name");
+        }
+
+        // determining region
+        let oldStyle = false;
+
+        if (parts[parts.length - 3].startsWith("s3-")) {
+            this.region = parts[parts.length - 3].substring(3);
+            oldStyle = true;
+        } else if (parts[parts.length - 3] === "s3") {
+            this.region = "us-east-1";
+            oldStyle = true;
+        } else if (parts[parts.length - 4] === "s3") {
+            this.region = parts[parts.length - 3];
+        } else {
+            throw new McmaException("Invalid S3 url. Failed to determine region");
+        }
+
+        // determining bucket and key
+        const pathStyle = parts.length === (oldStyle ? 3 : 4);
+        if (pathStyle) {
+            const pos = url.pathname.indexOf("/", 1);
+            if (pos < 0) {
+                throw new McmaException("Invalid S3 url. Failed to determine bucket");
+            }
+            this.bucket = url.pathname.substring(1, pos);
+            this.key = url.pathname.substring(pos + 1);
+        } else {
+            this.bucket = parts.slice(0, (oldStyle ? 3 : 4)).join(".");
+            this.key = url.pathname.substring(1);
+        }
     }
 }

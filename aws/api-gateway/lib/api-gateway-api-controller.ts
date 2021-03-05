@@ -1,7 +1,6 @@
 import { ConfigVariables, LoggerProvider } from "@mcma/core";
 import { McmaApiController, McmaApiRequest, McmaApiRequestContext, McmaApiRouteCollection } from "@mcma/api";
-import { APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from "aws-lambda";
-import { APIGatewayProxyResult } from "aws-lambda/trigger/api-gateway-proxy";
+import { APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResult, APIGatewayProxyResultV2, Context } from "aws-lambda";
 
 function isAPIGatewayProxyEvent(x: any): x is APIGatewayProxyEvent {
     return !!x.httpMethod;

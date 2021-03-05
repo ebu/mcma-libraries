@@ -1,2 +1,2 @@
 export * from "./proxy-helpers";
-export * from "./interfaces";
+export * from "./blob-storage-proxy";

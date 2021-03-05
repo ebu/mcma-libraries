@@ -18,7 +18,7 @@ export class DynamoDbMutex extends DocumentDatabaseMutex {
         private tableDescription: DynamoDbTableDescription,
         mutexName: string,
         mutexHolder: string,
-        lockTimeout: number = 60000,
+        lockTimeout: number = 300000,
         logger?: Logger
     ) {
         super(mutexName, mutexHolder, lockTimeout, logger);

@@ -1,9 +1,9 @@
 {
     "name": "@mcma/google-cloud-pubsub-worker-invoker",
-    "version": "0.13.17",
+    "version": "0.13.23",
     "description": "Invoke MCMA worker functions hosted on Google Cloud via Cloud Tasks",
     "engines": {
-        "node": "~10.16.3"
+        "node": "^12.19.0"
     },
     "type": "commonjs",
     "main": "dist/index.js",
@@ -36,12 +36,12 @@
         "@google-cloud/pubsub": "2.5.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.13.17",
-        "@mcma/worker-invoker": "0.13.17"
+        "@mcma/core": "0.13.23",
+        "@mcma/worker-invoker": "0.13.23"
     },
     "devDependencies": {
-        "@mcma/core": "0.13.17",
-        "@mcma/worker-invoker": "0.13.17",
+        "@mcma/core": "0.13.23",
+        "@mcma/worker-invoker": "0.13.23",
         "@types/node": "^13.7.6",
         "jasmine": "^3.2.0"
     }

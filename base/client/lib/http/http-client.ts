@@ -1,5 +1,5 @@
 import { McmaException, Utils } from "@mcma/core";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosResponse, Method } from "axios";
 
 import { Authenticator } from "../auth";
 import { McmaHeaders } from "./headers";
@@ -49,7 +49,7 @@ export class HttpClient implements Http {
         return await this.request<T>(this.prepareRequest("DELETE", urlOrConfig, config));
     };
 
-    private prepareRequest(method: string, urlOrConfig: string | HttpRequestConfig, config?: HttpRequestConfig, body?: any) {
+    private prepareRequest(method: Method, urlOrConfig: string | HttpRequestConfig, config?: HttpRequestConfig, body?: any) {
         let url: string;
         if (typeof urlOrConfig === "string") {
             url = urlOrConfig;

@@ -14,7 +14,7 @@ export class FirestoreMutex extends DocumentDatabaseMutex {
         collectionRef: CollectionReference,
         mutexName: string,
         mutexHolder: string,
-        lockTimeout?: number,
+        lockTimeout: number = 300000,
         logger?: Logger
     ) {
         super(mutexName, mutexHolder, lockTimeout, logger);

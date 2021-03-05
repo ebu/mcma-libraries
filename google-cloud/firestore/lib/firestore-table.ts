@@ -1,13 +1,5 @@
 import { McmaException } from "@mcma/core";
-import {
-    CustomQuery,
-    CustomQueryParameters,
-    Document,
-    DocumentDatabaseMutex,
-    DocumentDatabaseTable,
-    Query,
-    QueryResults
-} from "@mcma/data";
+import { CustomQuery, CustomQueryParameters, Document, DocumentDatabaseMutex, DocumentDatabaseTable, MutexProperties, Query, QueryResults } from "@mcma/data";
 import { CollectionReference, DocumentReference, QuerySnapshot } from "@google-cloud/firestore";
 
 import { buildFirestoreQuery } from "./build-firestore-query";
@@ -39,15 +31,15 @@ export class FirestoreTable implements DocumentDatabaseTable {
 
     private collection<TDocument>(path: string): CollectionReference<TDocument> {
         return this.rootCollection
-            .doc("resources")
-            .collection(path)
-            .withConverter(new FirestoreMcmaDataConverter<TDocument>());
+                   .doc("resources")
+                   .collection(path)
+                   .withConverter(new FirestoreMcmaDataConverter<TDocument>());
     }
 
     private doc<TDocument>(id: string): DocumentReference<TDocument> {
         return this.rootCollection
-            .doc("resources" + id)
-            .withConverter(new FirestoreMcmaDataConverter<TDocument>());
+                   .doc("resources" + id)
+                   .withConverter(new FirestoreMcmaDataConverter<TDocument>());
     }
 
     async query<TDocument extends Document = Document>(query: Query<TDocument>): Promise<QueryResults<TDocument>> {
@@ -69,7 +61,7 @@ export class FirestoreTable implements DocumentDatabaseTable {
         }
 
         const customQuery = createCustomQuery(query);
-        
+
         const results = await customQuery.firestoreQuery.get();
         return {
             results: results.docs.map(doc => doc.data() as TDocument),
@@ -91,8 +83,7 @@ export class FirestoreTable implements DocumentDatabaseTable {
         await this.doc(id).delete();
     }
 
-    createMutex(mutexName: string, mutexHolder: string, lockTimeout?: number): DocumentDatabaseMutex {
-        return new FirestoreMutex(this.rootCollection, mutexName, mutexHolder, lockTimeout);
+    createMutex(mutexProperties: MutexProperties): DocumentDatabaseMutex {
+        return new FirestoreMutex(this.rootCollection, mutexProperties.name, mutexProperties.holder, mutexProperties.lockTimeout, mutexProperties.logger);
     }
 }
-

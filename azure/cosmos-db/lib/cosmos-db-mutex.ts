@@ -21,7 +21,7 @@ export class CosmosDbMutex extends DocumentDatabaseMutex {
         private partitionKeyName: string,
         mutexName: string,
         mutexHolder: string,
-        lockTimeout: number = 60000,
+        lockTimeout: number = 300000,
         logger?: Logger
     ) {
         super(mutexName, mutexHolder, lockTimeout, logger);
