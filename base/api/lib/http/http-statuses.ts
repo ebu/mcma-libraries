@@ -186,8 +186,7 @@ export function getStatusError(statusCode: number) {
             return "Not Extended";
         case HttpStatusCode.NetworkAuthenticationRequired:
             return "Network Authentication Required";
-
     }
 
     return "";
-};
+}

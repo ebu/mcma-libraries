@@ -1,4 +1,4 @@
-import { ConfigVariables, Logger, LoggerProvider, McmaResource, McmaTracker, Utils } from "@mcma/core";
+import { ConfigVariables, Logger, LoggerProvider, McmaException, McmaResource, McmaTracker, Utils } from "@mcma/core";
 import { McmaHeaders } from "@mcma/client";
 import { HttpStatusCode } from "./http-statuses";
 import { McmaApiRequest } from "./mcma-api-request";
@@ -18,27 +18,30 @@ export class McmaApiRequestContext {
         return this.request.body;
     }
 
-    setResponseStatusCode(statusCode: number, statusMessage?: string) {
-        this.response.statusCode = statusCode;
-        this.response.statusMessage = statusMessage;
-    }
-
     setResponseBody(body: any) {
         this.response.body = body;
     }
 
-    setResponseBadRequestDueToMissingBody() {
-        this.setResponseStatusCode(HttpStatusCode.BadRequest, "Missing request body.");
-    }
-
     setResponseResourceCreated(resource: McmaResource) {
         this.response.headers["Location"] = resource.id;
-        this.setResponseStatusCode(HttpStatusCode.Created);
-        this.setResponseBody(resource);
+        this.response.statusCode = HttpStatusCode.Created;
+        this.response.body = resource;
+    }
+
+    setResponseError(code: number, message?: string) {
+        if (code < 400 || code > 599) {
+            throw new McmaException("McmaApiRequestContext.setResponseError can only be used to handle 4xx or 5xx errors");
+        }
+        this.response.statusCode = code;
+        this.response.errorMessage = message;
+    }
+
+    setResponseBadRequestDueToMissingBody() {
+        this.setResponseError(HttpStatusCode.BadRequest, "Missing request body.");
     }
 
     setResponseResourceNotFound() {
-        this.setResponseStatusCode(HttpStatusCode.NotFound, "No resource found on path '" + this.request.path + "'.");
+        this.setResponseError(HttpStatusCode.NotFound, "No resource found on path '" + this.request.path + "'.");
     }
 
     getTracker(): McmaTracker | undefined {

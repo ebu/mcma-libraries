@@ -34,7 +34,11 @@ export class McmaApiController {
                     request.body = JSON.parse(request.body, Utils.reviver);
                 } catch (error) {
                     response.statusCode = HttpStatusCode.BadRequest;
-                    response.body = new McmaApiError(response.statusCode, error.message, request.path);
+                    response.body = new McmaApiError({
+                        status: response.statusCode,
+                        message: error.message,
+                        path: request.path
+                    });
                     requestBodyOK = false;
                 }
             }
@@ -65,7 +69,11 @@ export class McmaApiController {
                 if (!pathMatched) {
                     response.statusCode = HttpStatusCode.NotFound;
                     response.headers = getDefaultResponseHeaders();
-                    response.body = new McmaApiError(response.statusCode, "Resource not found on path '" + request.path + "'.", request.path);
+                    response.body = new McmaApiError({
+                        status: response.statusCode,
+                        message: "Resource not found on path '" + request.path + "'.",
+                        path: request.path
+                    });
                 } else if (!methodMatched) {
                     if (!methodsAllowed.includes("OPTIONS")) {
                         if (methodsAllowed) {
@@ -106,11 +114,20 @@ export class McmaApiController {
                         response.statusCode = HttpStatusCode.MethodNotAllowed;
                         response.headers = getDefaultResponseHeaders();
                         response.headers["Allow"] = methodsAllowed;
-                        response.body = new McmaApiError(response.statusCode, "Method '" + request.httpMethod + "' not allowed on path '" + request.path + "'.", request.path);
+                        response.body = new McmaApiError({
+                            status: response.statusCode,
+                            message: "Method '" + request.httpMethod + "' not allowed on path '" + request.path + "'.",
+                            path: request.path
+                        });
                     }
                 } else if ((response.statusCode / 200 << 0) * 200 === 400) {
-                    response.headers = getDefaultResponseHeaders();
-                    response.body = new McmaApiError(response.statusCode, response.statusMessage, request.path);
+                    if (!response.body) {
+                        response.body = new McmaApiError({
+                            status: response.statusCode,
+                            message: response.errorMessage,
+                            path: request.path
+                        });
+                    }
                 } else if (response.statusCode === 0) {
                     response.statusCode = HttpStatusCode.OK;
                 }
@@ -121,7 +138,11 @@ export class McmaApiController {
 
             response.statusCode = HttpStatusCode.InternalServerError;
             response.headers = getDefaultResponseHeaders();
-            response.body = new McmaApiError(response.statusCode, error.message, request.path);
+            response.body = new McmaApiError({
+                status: response.statusCode,
+                message: error.message,
+                path: request.path
+            });
         }
     }
 }
