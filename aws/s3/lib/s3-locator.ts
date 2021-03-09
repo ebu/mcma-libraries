@@ -21,7 +21,16 @@ export class S3Locator extends Locator implements S3LocatorProperties {
         if (parts.length < 3 ||
             parts[parts.length - 1] !== "com" ||
             parts[parts.length - 2] !== "amazonaws") {
-            throw new McmaException("Invalid S3 url. Unexpected domain name");
+
+            // in case it's not a S3 bucket hosted on AWS we assume path style and no region
+            const pos = url.pathname.indexOf("/", 1);
+            if (pos < 0) {
+                throw new McmaException("Invalid S3 url. Failed to determine bucket");
+            }
+            this.region = "";
+            this.bucket = url.pathname.substring(1, pos);
+            this.key = url.pathname.substring(pos + 1);
+            return;
         }
 
         // determining region
