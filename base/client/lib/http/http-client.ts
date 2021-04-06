@@ -106,12 +106,23 @@ export class HttpClient implements Http {
 
         // add tracker header, if a tracker is present
         if (config.tracker) {
+            if (!config.headers) {
+                config.headers = {};
+            }
             config.headers[McmaHeaders.tracker] = Utils.toBase64(JSON.stringify(config.tracker));
             delete config.tracker;
         }
 
-        // storing original headers so we can safely run the authentication signer multiple times
-        const headers = JSON.parse(JSON.stringify(config.headers));
+        // try copying original headers so we can safely run the authentication signer multiple times
+        let headers = config.headers;
+        if (headers) {
+            try {
+                headers = JSON.parse(JSON.stringify(headers));
+            } catch (error) {
+                console.log("HttpClient: Failed to copy headers due to:");
+                console.log(error);
+            }
+        }
 
         // send request using axios
         for (let attempts = 0; attempts < this.config.maxAttempts; attempts++) {
