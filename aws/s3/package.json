@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-s3",
-    "version": "0.13.23",
+    "version": "0.13.24",
     "description": "Node module with code and type definitions for using S3 in an MCMA environment.",
     "engines": {
         "node": "^12.19.0"
@@ -34,10 +34,10 @@
         "aws-sdk": "^2.530.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.13.23"
+        "@mcma/core": "0.13.24"
     },
     "devDependencies": {
-        "@mcma/core": "0.13.23",
+        "@mcma/core": "0.13.24",
         "@types/node": "^13.7.6"
     }
 }

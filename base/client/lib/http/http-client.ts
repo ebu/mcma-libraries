@@ -104,19 +104,35 @@ export class HttpClient implements Http {
             throw new McmaException("HttpClient: Missing url in request config");
         }
 
-        if (this.authenticator) {
-            await this.authenticator.sign(config);
-        }
-
         // add tracker header, if a tracker is present
         if (config.tracker) {
+            if (!config.headers) {
+                config.headers = {};
+            }
             config.headers[McmaHeaders.tracker] = Utils.toBase64(JSON.stringify(config.tracker));
             delete config.tracker;
+        }
+
+        // try copying original headers so we can safely run the authentication signer multiple times
+        let headers = config.headers;
+        if (headers) {
+            try {
+                headers = JSON.parse(JSON.stringify(headers));
+            } catch (error) {
+                console.log("HttpClient: Failed to copy headers due to:");
+                console.log(error);
+            }
         }
 
         // send request using axios
         for (let attempts = 0; attempts < this.config.maxAttempts; attempts++) {
             try {
+                config.headers = headers;
+
+                if (this.authenticator) {
+                    await this.authenticator.sign(config);
+                }
+
                 return await axios(config);
             } catch (error) {
                 if (attempts < this.config.maxAttempts - 1) {
