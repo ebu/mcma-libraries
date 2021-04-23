@@ -86,7 +86,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
     }
 
     private async failJobOnException(jobAssignmentHelper: ProcessJobAssignmentHelper<T>, workerRequest: WorkerRequest, error: any) {
-        workerRequest.logger?.error(error.toString());
+        workerRequest.logger?.error(error);
         await this.failJobWithMessage(jobAssignmentHelper, workerRequest, error.message);
     }
 
@@ -99,7 +99,7 @@ export class ProcessJobAssignmentOperation<T extends Job> {
                 detail: message
             }));
         } catch (inner) {
-            workerRequest.logger?.error(inner.toString());
+            workerRequest.logger?.error(inner);
         }
     }
 }
