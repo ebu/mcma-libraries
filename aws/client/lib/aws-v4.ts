@@ -3,7 +3,6 @@ import { Method } from "axios";
 import { HttpRequestConfig } from "@mcma/client";
 import { McmaException } from "@mcma/core";
 
-
 const AWS_SHA_256 = "AWS4-HMAC-SHA256";
 const AWS4_REQUEST = "aws4_request";
 const AWS4 = "AWS4";

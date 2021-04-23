@@ -1,43 +1,16 @@
 import { AuthTypeRegistration } from "@mcma/client";
 import { AwsV4Authenticator } from "./aws-v4";
-import { Aws, isAwsInstance } from "./aws";
-import { AwsConfig, isAwsConfigInstance } from "./aws-config";
-import { AwsAuthContext, isAwsAuthContext1Instance, isAwsAuthContext2Instance } from "./aws-auth-context";
-import { McmaException } from "@mcma/core";
+import { AwsAuthContext, conformToAwsV4AuthContext } from "./aws-auth-context";
+import { AwsConfig } from "./aws-config";
+import { Aws } from "./aws";
 
-function conformToAwsV4AuthContext(awsConfig?: Aws | AwsConfig | AwsAuthContext): AwsAuthContext {
-    let authContext: AwsAuthContext;
-    if (awsConfig) {
-        // check if this is the global AWS object
-        if (isAwsInstance(awsConfig)) {
-            awsConfig = awsConfig.config;
-        }
-        // check if this is an AWS config object
-        if (isAwsConfigInstance(awsConfig)) {
-            authContext = {
-                accessKey: awsConfig.credentials.accessKeyId,
-                secretKey: awsConfig.credentials.secretAccessKey,
-                sessionToken: awsConfig.credentials.sessionToken,
-                region: awsConfig.region
-            };
-        } else {
-            authContext = awsConfig;
-        }
-    }
-
-    // check that it's valid
-    if (!isAwsAuthContext1Instance(authContext) && !isAwsAuthContext2Instance(authContext)) {
-        throw new McmaException("Invalid AWS config object.");
-    }
-    return authContext;
-}
-
-export function awsV4Auth(awsConfig?: Aws | AwsConfig | AwsAuthContext): AuthTypeRegistration<AwsAuthContext> {
+export function awsV4Auth(baseAuthContext?: Aws | AwsConfig | AwsAuthContext): AuthTypeRegistration<AwsAuthContext> {
+    const baseContextConformed = conformToAwsV4AuthContext(baseAuthContext);
     return {
         authType: "AWS4",
         authenticatorFactory: authContext => {
-            authContext = authContext ?? conformToAwsV4AuthContext(awsConfig);
-            return new AwsV4Authenticator(authContext);
+            const authContextConformed = conformToAwsV4AuthContext(authContext, false);
+            return new AwsV4Authenticator(Object.assign({}, baseContextConformed, authContextConformed));
         }
     };
 }
