@@ -66,27 +66,27 @@ export class ResourceEndpointClient implements Http {
         return { url, config, body };
     }
 
-    async get<T extends any>(urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
+    async get<TResp = any>(urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
         const request = this.prepareRequest(urlOrConfig, config);
         return await this.httpClient.get(request.url, request.config);
     }
 
-    async post<T extends any>(body: T, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
+    async post<TResp = any, TReq = any>(body: TReq, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
         const request = this.prepareRequest(urlOrConfig, config, body);
         return await this.httpClient.post(request.body, request.url, request.config);
     }
 
-    async put<T extends any>(body: T, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
+    async put<TResp = any, TReq = any>(body: TReq, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
         const request = this.prepareRequest(urlOrConfig, config, body);
         return await this.httpClient.put(request.body, request.url, request.config);
     }
 
-    async patch<T extends any>(body: Partial<T>, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
+    async patch<TResp = any, TReq = any>(body: Partial<TReq>, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
         const request = this.prepareRequest(urlOrConfig, config, body);
         return await this.httpClient.patch(request.body, request.url, request.config);
     }
 
-    async delete<T extends any>(urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
+    async delete<TResp = any>(urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
         const request = this.prepareRequest(urlOrConfig, config);
         return await this.httpClient.delete(request.url, request.config);
     }
