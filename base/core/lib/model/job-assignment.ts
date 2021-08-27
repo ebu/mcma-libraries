@@ -10,8 +10,8 @@ export interface JobAssignmentProperties extends JobBaseProperties {
 
 export class JobAssignment extends JobBase<JobAssignmentProperties> implements JobAssignmentProperties {
     jobId: string;
-    tracker?:  McmaTrackerProperties;
-    notificationEndpoint?: NotificationEndpointProperties;
+    tracker?:  McmaTracker;
+    notificationEndpoint?: NotificationEndpoint;
 
     constructor(properties: JobAssignmentProperties) {
         super("JobAssignment", properties);

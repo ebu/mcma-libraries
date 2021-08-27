@@ -8,7 +8,7 @@ export interface JobProperties extends JobBaseProperties {
     jobProfileId: string;
     jobInput?: JobParameterBag;
     timeout?: number;
-    deadline?: Date;
+    deadline?: Date | string;
     tracker?:  McmaTrackerProperties;
     notificationEndpoint?: NotificationEndpointProperties;
 }
@@ -19,21 +19,22 @@ export class Job extends JobBase<JobProperties> implements JobProperties {
     jobInput?: JobParameterBag;
     timeout?: number;
     deadline?: Date;
-    tracker?:  McmaTrackerProperties;
-    notificationEndpoint?: NotificationEndpointProperties;
+    tracker?:  McmaTracker;
+    notificationEndpoint?: NotificationEndpoint;
 
     constructor(type: string, properties: JobProperties) {
         super(type, properties);
 
-        this.checkProperty("parentId", "url", false);
+        this.checkProperty("parentId", "string", false);
         this.checkProperty("jobProfileId", "url", true);
         this.checkProperty("jobInput", "object", false);
         this.checkProperty("timeout", "number", false);
-        this.checkProperty("deadline", "object", false);
         this.checkProperty("tracker", "object", false);
         this.checkProperty("notificationEndpoint", "object", false);
 
         this.jobInput = new JobParameterBag(properties.jobInput);
+
+        this.deadline = this.ensureValidDateOrUndefined(this.deadline);
 
         if (typeof this.notificationEndpoint === "object") {
             this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
