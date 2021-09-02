@@ -1,5 +1,5 @@
 import { Logger, LogEvent, LogLevel, McmaTrackerProperties } from "@mcma/core";
-import { Log, Entry,  } from "@google-cloud/logging";
+import { Log, Entry } from "@google-cloud/logging";
 import { objToStruct } from "@google-cloud/logging/build/src/common";
 
 const CloudLoggingSeverities = {
@@ -21,10 +21,10 @@ function convertToCloudLogSeverity(logLevel: number): string {
         return CloudLoggingSeverities.info;
     }
     if (logLevel >= LogLevel.Warn) {
-            return CloudLoggingSeverities.warning
+        return CloudLoggingSeverities.warning;
     }
     if (logLevel >= LogLevel.Error) {
-            return CloudLoggingSeverities.error
+        return CloudLoggingSeverities.error;
     }
     if (logLevel >= LogLevel.Fatal) {
         return CloudLoggingSeverities.critical;

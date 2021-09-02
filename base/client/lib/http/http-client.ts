@@ -12,7 +12,7 @@ export type HttpClientConfig = {
 }
 
 export class HttpClient implements Http {
-    constructor(private authenticator?: Authenticator, private config?: HttpClientConfig) {
+    constructor(private authenticator?: Authenticator, private readonly config?: HttpClientConfig) {
         if (authenticator) {
             if (typeof authenticator.sign !== "function") {
                 throw new McmaException("HttpClient: Provided authenticator does not define the required sign() function.");
@@ -29,24 +29,24 @@ export class HttpClient implements Http {
         }
     }
 
-    async get<T extends any>(urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
-        return await this.request<T>(this.prepareRequest("GET", urlOrConfig, config));
+    async get<TResp = any>(urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
+        return await this.request<TResp>(this.prepareRequest("GET", urlOrConfig, config));
     };
 
-    async post<T extends any>(body: T, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
-        return await this.request<T>(this.prepareRequest("POST", urlOrConfig, config, body));
+    async post<TResp = any, TReq = any>(body: TReq, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
+        return await this.request<TResp>(this.prepareRequest("POST", urlOrConfig, config, body));
     };
 
-    async put<T extends any>(body: T, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
-        return await this.request<T>(this.prepareRequest("PUT", urlOrConfig, config, body));
+    async put<TResp = any, TReq = any>(body: TReq, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
+        return await this.request<TResp>(this.prepareRequest("PUT", urlOrConfig, config, body));
     };
 
-    async patch<T extends any>(body: Partial<T>, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
-        return await this.request<T>(this.prepareRequest("PATCH", urlOrConfig, config, body));
+    async patch<TResp = any, TReq = any>(body: Partial<TReq>, urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
+        return await this.request<TResp>(this.prepareRequest("PATCH", urlOrConfig, config, body));
     };
 
-    async delete<T extends any>(urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<T>> {
-        return await this.request<T>(this.prepareRequest("DELETE", urlOrConfig, config));
+    async delete<TResp = any>(urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
+        return await this.request<TResp>(this.prepareRequest("DELETE", urlOrConfig, config));
     };
 
     private prepareRequest(method: Method, urlOrConfig: string | HttpRequestConfig, config?: HttpRequestConfig, body?: any) {
@@ -81,7 +81,7 @@ export class HttpClient implements Http {
         return config;
     }
 
-    private async request<T extends any>(config: HttpRequestConfig): Promise<AxiosResponse<T>> {
+    private async request<TResp = any>(config: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
         if (!config) {
             throw new McmaException("HttpClient: Missing configuration for making HTTP request");
         }

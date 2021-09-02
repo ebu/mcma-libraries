@@ -35,9 +35,13 @@ export class FirestoreMutex extends DocumentDatabaseMutex {
         const doc = await this.docRef.get();
         const item = doc.data();
 
+        if (!item) {
+            return undefined;
+        }
+
         // sanity check which removes the record from CosmosDB in case it has incompatible structure. Only possible
         // if modified externally, but this could lead to a situation where the lock would never be acquired.
-        if (item && (!item.mutexHolder || !item.timestamp)) {
+        if (!item.mutexHolder || !item.timestamp) {
             await this.docRef.delete();
             return undefined;
         }

@@ -1,5 +1,6 @@
-import { McmaTrackerProperties } from "../model";
 import * as util from "util";
+import { McmaTrackerProperties } from "../model";
+import { McmaException } from "../mcma-exception";
 
 export class LogEvent {
 
@@ -13,13 +14,21 @@ export class LogEvent {
     }
 
     flatten(): { [key: string]: any } {
+        let message = this.message;
+        if (message instanceof Error) {
+            if (this.message.stack) {
+                message = this.message.stack;
+            } else {
+                message = this.message.toString();
+            }
+        }
         const logEventEntry: { [key: string]: any } = {
             type: this.type,
             level: this.level,
             source: this.source,
             requestId: this.requestId,
             timestamp: this.timestamp,
-            message: this.message,
+            message,
             trackerId: this.tracker?.id,
             trackerLabel: this.tracker?.label,
         };
