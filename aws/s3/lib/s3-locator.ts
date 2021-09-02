@@ -58,7 +58,7 @@ export class S3Locator extends Locator implements S3LocatorProperties {
             this.bucket = url.pathname.substring(1, pos);
             this.key = url.pathname.substring(pos + 1);
         } else {
-            this.bucket = parts.slice(0, (oldStyle ? 3 : 4)).join(".");
+            this.bucket = parts.slice(0, parts.length - (oldStyle ? 3 : 4)).join(".");
             this.key = url.pathname.substring(1);
         }
     }
