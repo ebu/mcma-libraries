@@ -12,7 +12,7 @@ export interface ServiceProperties extends McmaResourceProperties {
 
 export class Service extends McmaResource implements ServiceProperties {
     name: string;
-    resources: ResourceEndpointProperties[];
+    resources: ResourceEndpoint[];
     authType?: string;
     authContext?: any;
     jobType?: string;
