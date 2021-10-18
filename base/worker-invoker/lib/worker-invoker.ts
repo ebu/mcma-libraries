@@ -12,5 +12,5 @@ export abstract class WorkerInvoker {
         await this.invokeWorker(workerFunctionId, workerRequest);
     }
 
-    protected abstract async invokeWorker(workerFunctionId: string, workerRequest: WorkerRequestProperties): Promise<void>;
+    protected abstract invokeWorker(workerFunctionId: string, workerRequest: WorkerRequestProperties): Promise<void>;
 }
