@@ -33,7 +33,7 @@ export class DefaultCreateRoute<T extends McmaResource> extends McmaApiRoute {
             return;
         }
 
-        const resourcePath = this.root + "/" + uuidv4();
+        const resourcePath = requestContext.request.path + "/" + uuidv4();
 
         onResourceCreate(resource, getPublicUrl(requestContext.configVariables) + resourcePath);
 
