@@ -1,4 +1,4 @@
-import { JobParameterBag } from "./job-parameter-bag";
+import { JobParameterBag, JobParameterBagProperties } from "./job-parameter-bag";
 import { McmaResource, McmaResourceProperties } from "./mcma-resource";
 import { ProblemDetail, ProblemDetailProperties } from "./problem-detail";
 import { JobStatus } from "./job-status";
@@ -6,7 +6,7 @@ import { JobStatus } from "./job-status";
 export interface JobBaseProperties extends McmaResourceProperties {
     status?: JobStatus;
     error?: ProblemDetailProperties;
-    jobOutput?: JobParameterBag;
+    jobOutput?: JobParameterBagProperties;
     progress?: number;
 }
 
