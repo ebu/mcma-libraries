@@ -22,17 +22,21 @@ export class McmaApiRequestContext {
         this.response.body = body;
     }
 
+    setResponseStatusCode(statusCode: number) {
+        this.response.statusCode = statusCode;
+    }
+
     setResponseResourceCreated(resource: McmaResource) {
         this.response.headers["Location"] = resource.id;
         this.response.statusCode = HttpStatusCode.Created;
         this.response.body = resource;
     }
 
-    setResponseError(code: number, message?: string) {
-        if (code < 400 || code > 599) {
+    setResponseError(statusCode: number, message?: string) {
+        if (statusCode < 400 || statusCode > 599) {
             throw new McmaException("McmaApiRequestContext.setResponseError can only be used to handle 4xx or 5xx errors");
         }
-        this.response.statusCode = code;
+        this.response.statusCode = statusCode;
         this.response.errorMessage = message;
     }
 
