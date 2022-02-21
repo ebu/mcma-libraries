@@ -16,7 +16,7 @@ function parsePartitionAndSortKeys(id: string): { partitionKey: string, sortKey:
         : { partitionKey: id, sortKey: id };
 }
 
-function keyFromBase64Json(str: string): Key {
+export function keyFromBase64Json(str: string): Key {
     if (!str) {
         return undefined;
     }
@@ -27,7 +27,7 @@ function keyFromBase64Json(str: string): Key {
     }
 }
 
-function base64JsonFromKey(key: Key): string {
+export function base64JsonFromKey(key: Key): string {
     return key ? Utils.toBase64(JSON.stringify(key)) : undefined;
 }
 
