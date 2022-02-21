@@ -1,11 +1,21 @@
 import { McmaResource } from "@mcma/core";
-import { CustomQuery, DocumentDatabaseTableProvider, getFilterExpressionFromKeyValuePairs, getTableName, isCustomQuery, Query, QueryResults } from "@mcma/data";
+import {
+    CustomQuery,
+    DocumentDatabaseTableProvider,
+    getFilterExpressionFromKeyValuePairs,
+    getTableName,
+    isCustomQuery,
+    Query,
+    QueryResults,
+    QuerySortOrder,
+} from "@mcma/data";
 
 import { McmaApiRequestContext } from "../../http";
 import { McmaApiRoute } from "../route";
 
 interface CustomQueryFactory<T> {
     isMatch(requestContext: McmaApiRequestContext): boolean;
+
     create(requestContext: McmaApiRequestContext): CustomQuery<T>;
 }
 
@@ -54,7 +64,7 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
     }
 }
 
-export function buildStandardQuery<T>(requestContext: McmaApiRequestContext, defaultSortAscending: boolean = true): Query<T> {
+export function buildStandardQuery<T>(requestContext: McmaApiRequestContext, defaultSortOrder: QuerySortOrder = QuerySortOrder.Ascending): Query<T> {
     const path = requestContext.request.path;
     const queryParams = requestContext.request.queryStringParameters;
 
@@ -79,10 +89,10 @@ export function buildStandardQuery<T>(requestContext: McmaApiRequestContext, def
         delete queryParams.sortBy;
     }
 
-    let sortAscending = defaultSortAscending;
-    if (queryParams.sortAscending) {
-        sortAscending = queryParams.sortAscending.toLowerCase() === "true";
-        delete queryParams.sortAscending;
+    let sortOrder: QuerySortOrder = defaultSortOrder;
+    if (queryParams.sortOrder) {
+        sortOrder = queryParams.sortOrder.toLowerCase() === QuerySortOrder.Descending ? QuerySortOrder.Descending : QuerySortOrder.Ascending;
+        delete queryParams.sortOrder;
     }
 
     const filterExpression = getFilterExpressionFromKeyValuePairs<T>(queryParams);
@@ -93,6 +103,6 @@ export function buildStandardQuery<T>(requestContext: McmaApiRequestContext, def
         pageStartToken,
         pageSize,
         sortBy,
-        sortAscending
+        sortOrder,
     };
 }

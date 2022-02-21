@@ -1,6 +1,6 @@
 {
     "name": "@mcma/worker-invoker",
-    "version": "0.13.28",
+    "version": "0.13.29",
     "description": "Core classes and types for invoking MCMA Worker functions",
     "engines": {
         "node": "^14.17.0"
@@ -32,10 +32,10 @@
     "homepage": "https://github.com/ebu/mcma-libraries/nodes/mcma-worker-invoker#readme",
     "dependencies": {},
     "peerDependencies": {
-        "@mcma/core": "0.13.28"
+        "@mcma/core": "0.13.29"
     },
     "devDependencies": {
-        "@mcma/core": "0.13.28",
+        "@mcma/core": "0.13.29",
         "@types/node": "^14.17.22"
     }
 }
