@@ -133,7 +133,7 @@ export class HttpClient implements Http {
                     await this.authenticator.sign(config);
                 }
 
-                return await axios(config) as AxiosResponse<T>;
+                return await axios(config) as AxiosResponse<TResp>;
             } catch (error) {
                 if (attempts < this.config.maxAttempts - 1) {
                     await Utils.sleep(this.config.retryInterval);
