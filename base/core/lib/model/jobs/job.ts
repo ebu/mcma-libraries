@@ -1,12 +1,12 @@
 import { JobBase, JobBaseProperties } from "../job-base";
-import { JobParameterBag } from "../job-parameter-bag";
+import { JobParameterBag, JobParameterBagProperties } from "../job-parameter-bag";
 import { McmaTracker, McmaTrackerProperties } from "../mcma-tracker";
 import { NotificationEndpoint, NotificationEndpointProperties } from "../notification-endpoint";
 
 export interface JobProperties extends JobBaseProperties {
     parentId?: string;
     jobProfileId: string;
-    jobInput?: JobParameterBag;
+    jobInput?: JobParameterBagProperties;
     timeout?: number;
     deadline?: Date | string;
     tracker?:  McmaTrackerProperties;

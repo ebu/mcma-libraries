@@ -1,11 +1,11 @@
 import { McmaResource, McmaResourceProperties } from "./mcma-resource";
-import { JobParameter } from "./job-parameter";
+import { JobParameter, JobParameterProperties } from "./job-parameter";
 
 export interface JobProfileProperties extends McmaResourceProperties {
     name: string;
-    inputParameters?: JobParameter[];
-    outputParameters?: JobParameter[];
-    optionalInputParameters?: JobParameter[];
+    inputParameters?: JobParameterProperties[];
+    outputParameters?: JobParameterProperties[];
+    optionalInputParameters?: JobParameterProperties[];
 }
 
 export class JobProfile extends McmaResource implements JobProfileProperties {
@@ -21,6 +21,15 @@ export class JobProfile extends McmaResource implements JobProfileProperties {
         this.checkProperty("inputParameters", "Array", false);
         this.checkProperty("outputParameters", "Array", false);
         this.checkProperty("optionalInputParameters", "Array", false);
-        this.checkProperty("customProperties", "object", false);
+
+        if (Array.isArray(this.inputParameters)) {
+            this.inputParameters = this.inputParameters.map(ip => new JobParameter(ip));
+        }
+        if (Array.isArray(this.optionalInputParameters)) {
+            this.optionalInputParameters = this.optionalInputParameters.map(ip => new JobParameter(ip));
+        }
+        if (Array.isArray(this.outputParameters)) {
+            this.outputParameters = this.outputParameters.map(ip => new JobParameter(ip));
+        }
     }
 }
