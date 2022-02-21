@@ -8,6 +8,9 @@ export async function buildS3Url(bucket: string, key: string, s3OrRegion: S3 | s
     if (typeof s3OrRegion !== "string") {
         const data = await s3OrRegion.getBucketLocation({ Bucket: bucket }).promise();
         region = data.LocationConstraint;
+        if (!region) {
+            region = "us-east-1";
+        }
     } else {
         region = s3OrRegion;
     }
