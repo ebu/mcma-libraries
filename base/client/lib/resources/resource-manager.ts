@@ -12,6 +12,11 @@ type QueryResults<T> = {
     nextPageStartToken: string;
 };
 
+export enum QuerySortOrder {
+    Ascending = "asc",
+    Descending = "desc",
+}
+
 export class ResourceManager {
     private httpClient = new HttpClient();
     private serviceClients: ServiceClient[] = [];
@@ -65,7 +70,7 @@ export class ResourceManager {
         resourceType: McmaResourceType<T>,
         filter?: any,
         sortBy?: string,
-        sortAscending?: boolean
+        sortOrder?: QuerySortOrder,
     ): Promise<T[]> {
         if (typeof resourceType === "function" && resourceType.name) {
             resourceType = resourceType.name;
@@ -83,8 +88,8 @@ export class ResourceManager {
         if (sortBy !== undefined && sortBy !== null) {
             params.sortBy = sortBy;
         }
-        if (sortAscending !== undefined && sortAscending !== null) {
-            params.sortAscending = sortAscending;
+        if (sortOrder !== undefined && sortOrder !== null) {
+            params.sortOrder = sortOrder;
         }
         if (filter) {
             params = Object.assign(params, filter);

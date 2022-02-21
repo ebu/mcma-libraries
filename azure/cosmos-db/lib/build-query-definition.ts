@@ -44,7 +44,7 @@ export function buildQueryDefinition<TDocument extends Document = Document>(quer
     }
     
     if (query.sortBy) {
-        sqlQuery.text += ` ORDER BY root["resource"]["${query.sortBy}"] ${query.sortAscending ? "asc" : "desc"}`;
+        sqlQuery.text += ` ORDER BY root["resource"]["${query.sortBy}"] ${query.sortOrder}`;
     }
     
     return {

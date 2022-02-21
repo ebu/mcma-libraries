@@ -2,7 +2,18 @@ import { types } from "util";
 import { DynamoDB } from "aws-sdk";
 import { DocumentClient, Key } from "aws-sdk/clients/dynamodb";
 import { McmaException, Utils } from "@mcma/core";
-import { CustomQuery, CustomQueryParameters, Document, DocumentDatabaseMutex, DocumentDatabaseTable, hasFilterCriteria, MutexProperties, Query, QueryResults } from "@mcma/data";
+import {
+    CustomQuery,
+    CustomQueryParameters,
+    Document,
+    DocumentDatabaseMutex,
+    DocumentDatabaseTable,
+    hasFilterCriteria,
+    MutexProperties,
+    Query,
+    QueryResults,
+    QuerySortOrder,
+} from "@mcma/data";
 
 import { DynamoDbTableOptions } from "./dynamo-db-table-options";
 import { buildFilterExpression } from "./build-filter-expression";
@@ -109,7 +120,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
             ExpressionAttributeNames: expressionAttributeNames,
             ExpressionAttributeValues: expressionAttributeValues,
             IndexName: indexName,
-            ScanIndexForward: query.sortAscending ?? true,
+            ScanIndexForward: query.sortOrder === QuerySortOrder.Ascending,
             ConsistentRead: this.options?.consistentQuery,
             Limit: query.pageSize,
             ExclusiveStartKey: keyFromBase64Json(query.pageStartToken)
