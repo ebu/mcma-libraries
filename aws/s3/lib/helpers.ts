@@ -16,8 +16,8 @@ export async function buildS3Url(bucket: string, key: string, s3OrRegion: S3 | s
     }
 
     if (bucket.indexOf(".") >= 0) {
-        return `https://s3.${region}.amazonaws.com/${bucket}/${key}`;
+        return encodeURI(`https://s3.${region}.amazonaws.com/${bucket}/${key}`);
     } else {
-        return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+        return encodeURI(`https://${bucket}.s3.${region}.amazonaws.com/${key}`);
     }
 }
