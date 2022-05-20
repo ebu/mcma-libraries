@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-functions-worker",
-    "version": "0.14.3",
+    "version": "0.14.4",
     "description": "Build MCMA Workers using Azure Function Apps",
     "engines": {
         "node": "^14.17.0"
@@ -32,19 +32,19 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/azure/worker#readme",
     "peerDependencies": {
-        "@mcma/core": "0.14.3",
-        "@mcma/client": "0.14.3",
-        "@mcma/data": "0.14.3",
-        "@mcma/worker": "0.14.3",
-        "@mcma/worker-invoker": "0.14.3"
+        "@mcma/core": "0.14.4",
+        "@mcma/client": "0.14.4",
+        "@mcma/data": "0.14.4",
+        "@mcma/worker": "0.14.4",
+        "@mcma/worker-invoker": "0.14.4"
     },
     "devDependencies": {
         "@azure/functions": "^1.2.0",
-        "@mcma/core": "0.14.3",
-        "@mcma/client": "0.14.3",
-        "@mcma/data": "0.14.3",
-        "@mcma/worker": "0.14.3",
-        "@mcma/worker-invoker": "0.14.3",
+        "@mcma/core": "0.14.4",
+        "@mcma/client": "0.14.4",
+        "@mcma/data": "0.14.4",
+        "@mcma/worker": "0.14.4",
+        "@mcma/worker-invoker": "0.14.4",
         "@types/node": "^14.17.22",
         "jasmine": "^3.2.0"
     }
