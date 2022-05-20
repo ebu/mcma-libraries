@@ -9,6 +9,31 @@ function isValidUrl(url: string): boolean {
     }
 }
 
+export interface ParsedUrl {
+    href: string;
+    protocol: string;
+    host: string;
+    hostname: string;
+    port: string;
+    pathname: string;
+    search: string;
+    hash: string;
+}
+
+function parseUrl(href: string): ParsedUrl | null {
+    const match = href.match(/^(https?:)\/\/(([^:\/?#]*)(?::([0-9]+))?)([\/]?[^?#]*)(\?[^#]*|)(#.*|)$/);
+    return match && {
+        href: href ?? "",
+        protocol: match[1] ?? "",
+        host: match[2] ?? "",
+        hostname: match[3] ?? "",
+        port: match[4] ?? "",
+        pathname: match[5] ?? "",
+        search: match[6] ?? "",
+        hash: match[7] ?? ""
+    };
+}
+
 function getTypeName(type: string | object | Function): string {
     if (typeof type === "function") {
         type = type.name;
@@ -25,7 +50,7 @@ function toBase64(text: string): string {
     if (typeof btoa !== "undefined") {
         return btoa(text);
     }
-    
+
     // check for Node.js Buffer class for converting
     if (typeof Buffer !== "undefined" && typeof Buffer.from !== "undefined") {
         return Buffer.from(text).toString("base64");
@@ -40,7 +65,7 @@ function fromBase64(base64Text: string): string {
     if (typeof atob !== "undefined") {
         return atob(base64Text);
     }
-    
+
     // check for Node.js Buffer class for converting
     if (typeof Buffer !== "undefined" && typeof Buffer.from !== "undefined") {
         return Buffer.from(base64Text, "base64").toString();
@@ -70,6 +95,7 @@ function reviver(this: any, key: string, value: any): any {
 
 export const Utils = {
     isValidUrl,
+    parseUrl,
     getTypeName,
     toBase64,
     fromBase64,
