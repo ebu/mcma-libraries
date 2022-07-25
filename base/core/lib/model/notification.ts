@@ -1,4 +1,5 @@
 import { McmaObject, McmaObjectProperties } from "./mcma-object";
+import { Utils } from "../utils";
 
 export interface NotificationProperties extends McmaObjectProperties {
     source?: string;
@@ -12,7 +13,7 @@ export class Notification extends McmaObject implements NotificationProperties {
     constructor(properties: NotificationProperties) {
         super("Notification", properties);
 
-        this.checkProperty("source", "string", false);
-        this.checkProperty("content", "object", true);
+        Utils.checkProperty(this, "source", "string", false);
+        Utils.checkProperty(this, "content", "object", true);
     }
 }

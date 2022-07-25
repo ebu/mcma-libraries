@@ -10,7 +10,7 @@ export class ResourceManagerProvider {
     }
 
     get(config?: ResourceManagerConfig | ConfigVariables) {
-        config = config || this.defaultConfig;
+        config = config ?? this.defaultConfig;
         if (!config) {
             config = ConfigVariables.getInstance();
         }

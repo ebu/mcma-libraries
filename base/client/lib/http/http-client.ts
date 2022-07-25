@@ -1,5 +1,5 @@
 import { McmaException, Utils } from "@mcma/core";
-import axios, { AxiosResponse, Method } from "axios";
+import { default as axios, AxiosResponse, Method, AxiosRequestConfig, AxiosInstance } from "axios";
 
 import { Authenticator } from "../auth";
 import { McmaHeaders } from "./headers";
@@ -9,24 +9,29 @@ import { HttpRequestConfig } from "./http-request-config";
 export type HttpClientConfig = {
     maxAttempts?: number,
     retryInterval?: number,
+    axiosConfig?: AxiosRequestConfig
 }
 
 export class HttpClient implements Http {
+    private client: AxiosInstance;
+
     constructor(private authenticator?: Authenticator, private readonly config?: HttpClientConfig) {
         if (authenticator) {
             if (typeof authenticator.sign !== "function") {
                 throw new McmaException("HttpClient: Provided authenticator does not define the required sign() function.");
             }
         }
-        if (!this.config) {
-            this.config = {}
-        }
+
+        this.config = Object.assign({}, config);
+
         if (isNaN(this.config.maxAttempts) || this.config.maxAttempts < 1) {
             this.config.maxAttempts = 3;
         }
         if (isNaN(this.config.retryInterval) || this.config.retryInterval < 0) {
             this.config.retryInterval = 5000;
         }
+
+        this.client = axios.create(Object.assign({}, this.config.axiosConfig));
     }
 
     async get<TResp = any>(urlOrConfig?: string | HttpRequestConfig, config?: HttpRequestConfig): Promise<AxiosResponse<TResp>> {
@@ -119,8 +124,8 @@ export class HttpClient implements Http {
             try {
                 headers = JSON.parse(JSON.stringify(headers));
             } catch (error) {
-                console.log("HttpClient: Failed to copy headers due to:");
-                console.log(error);
+                console.error("HttpClient: Failed to copy headers due to:");
+                console.error(error);
             }
         }
 
@@ -133,7 +138,7 @@ export class HttpClient implements Http {
                     await this.authenticator.sign(config);
                 }
 
-                return await axios(config) as AxiosResponse<TResp>;
+                return await this.client.request(config) as AxiosResponse<TResp>;
             } catch (error) {
                 if (attempts < this.config.maxAttempts - 1) {
                     await Utils.sleep(this.config.retryInterval);

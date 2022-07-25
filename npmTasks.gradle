@@ -39,6 +39,7 @@ task setVersion {
 
 task npmInstall(type: Exec) {
     dependsOn ":verifyNodeJS"
+    dependsOn setVersion
     inputs.file("package.json")
     outputs.file("package-lock.json")
     outputs.dir("node_modules")
@@ -73,7 +74,6 @@ task tsc(type: Exec) {
 
 task npmPublish(type: Exec) {
     dependsOn ":verifyNodeJS"
-    dependsOn setVersion
     dependsOn tsc
     inputs.file("package.json")
     commandLine npmExecutable

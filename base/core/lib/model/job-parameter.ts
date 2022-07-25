@@ -1,4 +1,5 @@
 import { McmaObject, McmaObjectProperties } from "./mcma-object";
+import { Utils } from "../utils";
 
 export interface JobParameterProperties extends McmaObjectProperties {
     parameterName: string;
@@ -12,7 +13,7 @@ export class JobParameter extends McmaObject implements JobParameterProperties {
     constructor(properties: JobParameterProperties) {
         super("JobParameter", properties);
 
-        this.checkProperty("parameterName", "string");
-        this.checkProperty("parameterType", "string");
+        Utils.checkProperty(this, "parameterName", "string");
+        Utils.checkProperty(this, "parameterType", "string");
     }
 }

@@ -5,6 +5,5 @@ export function getResourceManagerConfig(configVariables: ConfigVariables = Conf
     return {
         servicesUrl: configVariables.get("ServicesUrl"),
         servicesAuthType: configVariables.getOptional("ServicesAuthType"),
-        servicesAuthContext: configVariables.getOptional("ServicesAuthContext"),
     };
 }

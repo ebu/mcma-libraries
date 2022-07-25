@@ -1,6 +1,6 @@
-import { AuthenticatorFactory } from "./authenticator-factory";
+import { Authenticator } from "./authenticator";
 
-export interface AuthTypeRegistration<T> {
+export interface AuthTypeRegistration {
     authType: string;
-    authenticatorFactory: AuthenticatorFactory<T>
+    authenticator: Authenticator;
 }

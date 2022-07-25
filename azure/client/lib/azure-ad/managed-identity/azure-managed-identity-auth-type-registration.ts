@@ -2,10 +2,10 @@ import { AccessTokenAuthenticator, AuthTypeRegistration } from "@mcma/client";
 import { AzureManagedIdentityAccessTokenProvider } from "./azure-managed-identity-access-token-provider";
 import { AzureAdAuthContext } from "../azure-ad-auth-context";
 
-export function azureAdManagedIdentityAuth(): AuthTypeRegistration<AzureAdAuthContext> {
+export function azureAdManagedIdentityAuth(authContext: AzureAdAuthContext): AuthTypeRegistration {
     const tokenProvider = new AzureManagedIdentityAccessTokenProvider();
     return {
         authType: "AzureAD",
-        authenticatorFactory: (authContext: AzureAdAuthContext) => new AccessTokenAuthenticator(tokenProvider, authContext)
+        authenticator: new AccessTokenAuthenticator(tokenProvider, authContext)
     };
 }

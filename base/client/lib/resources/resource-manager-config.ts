@@ -1,5 +1,7 @@
+import { HttpClientConfig } from "../http";
+
 export interface ResourceManagerConfig {
     servicesUrl: string;
     servicesAuthType?: string;
-    servicesAuthContext?: any;
+    httpClientConfig?: HttpClientConfig;
 }

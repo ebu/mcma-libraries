@@ -1,4 +1,5 @@
 import { McmaObject, McmaObjectProperties } from "./mcma-object";
+import { Utils } from "../utils";
 
 export interface McmaResourceProperties extends McmaObjectProperties {
     id?: string;
@@ -29,10 +30,7 @@ export abstract class McmaResource extends McmaObject implements McmaResourcePro
     protected constructor(type: string, properties: McmaResourceProperties) {
         super(type, properties);
 
-        this.dateCreated = this.ensureValidDateOrUndefined(this.dateCreated);
-        this.dateModified = this.ensureValidDateOrUndefined(this.dateModified);
+        this.dateCreated = Utils.ensureValidDateOrUndefined(this.dateCreated);
+        this.dateModified = Utils.ensureValidDateOrUndefined(this.dateModified);
     }
-
-    onCreate = (id: string) => onResourceCreate(this, id);
-    onUpsert = (id: string) => onResourceUpsert(this, id);
 }

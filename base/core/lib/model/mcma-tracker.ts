@@ -1,4 +1,5 @@
 import { McmaObject, McmaObjectProperties } from "./mcma-object";
+import { Utils } from "../utils";
 
 export interface McmaTrackerProperties extends McmaObjectProperties {
     id: string;
@@ -14,8 +15,8 @@ export class McmaTracker extends McmaObject implements McmaTrackerProperties {
     constructor(properties: McmaTrackerProperties) {
         super("McmaTracker", properties);
 
-        this.checkProperty("id", "string", true);
-        this.checkProperty("label", "string", true);
-        this.checkProperty("custom", "object", false);
+        Utils.checkProperty(this, "id", "string", true);
+        Utils.checkProperty(this, "label", "string", true);
+        Utils.checkProperty(this, "custom", "object", false);
     }
 }

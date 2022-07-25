@@ -9,7 +9,7 @@ export class ServiceClient {
 
         for (const resourceEndpoint of service.resources) {
             this.endpointsMap[resourceEndpoint.resourceType] =
-                new ResourceEndpointClient(resourceEndpoint, authProvider, service.authType, service.authContext);
+                new ResourceEndpointClient(resourceEndpoint, authProvider, service.authType);
         }
     }
 

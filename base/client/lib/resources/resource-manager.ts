@@ -38,7 +38,6 @@ export class ResourceManager {
                         resourceType: "Service",
                         httpEndpoint: this.config.servicesUrl,
                         authType: this.config.servicesAuthType,
-                        authContext: this.config.servicesAuthContext
                     })
                 ]
             });
@@ -180,7 +179,7 @@ export class ResourceManager {
         return response.data;
     }
 
-    async delete<T extends McmaResource>(resource: T | string): Promise<T> {
+    async delete<T extends McmaResource>(resource: T | string): Promise<void> {
         let resourceId: string;
         if (typeof resource === "string") {
             resourceId = resource;
@@ -195,8 +194,7 @@ export class ResourceManager {
         }
 
         let http: Http = await this.getResourceEndpointClient(resourceId) || this.httpClient;
-        let response = await http.delete<T>(resourceId);
-        return response.data;
+        await http.delete<T>(resourceId);
     };
 
     async getResourceEndpointClient(url: string): Promise<ResourceEndpointClient | undefined> {

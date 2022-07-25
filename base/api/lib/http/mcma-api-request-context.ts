@@ -33,7 +33,7 @@ export class McmaApiRequestContext {
     }
 
     setResponseError(statusCode: number, message?: string) {
-        if (statusCode < 400 || statusCode > 599) {
+        if (!(statusCode >= 400 && statusCode < 600)) {
             throw new McmaException("McmaApiRequestContext.setResponseError can only be used to handle 4xx or 5xx errors");
         }
         this.response.statusCode = statusCode;

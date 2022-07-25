@@ -4,13 +4,10 @@ import { AwsAuthContext, conformToAwsV4AuthContext } from "./aws-auth-context";
 import { AwsConfig } from "./aws-config";
 import { Aws } from "./aws";
 
-export function awsV4Auth(baseAuthContext?: Aws | AwsConfig | AwsAuthContext): AuthTypeRegistration<AwsAuthContext> {
-    const baseContextConformed = conformToAwsV4AuthContext(baseAuthContext);
+export function awsV4Auth(authContext?: Aws | AwsConfig | AwsAuthContext): AuthTypeRegistration {
+    const authContextConformed = conformToAwsV4AuthContext(authContext);
     return {
         authType: "AWS4",
-        authenticatorFactory: authContext => {
-            const authContextConformed = conformToAwsV4AuthContext(authContext, false);
-            return new AwsV4Authenticator(Object.assign({}, baseContextConformed, authContextConformed));
-        }
+        authenticator: new AwsV4Authenticator(Object.assign({}, authContextConformed)),
     };
 }

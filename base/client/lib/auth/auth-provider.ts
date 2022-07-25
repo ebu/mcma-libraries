@@ -1,39 +1,33 @@
-import { AuthenticatorFactory } from "./authenticator-factory";
 import { Authenticator } from "./authenticator";
 import { McmaException } from "@mcma/core";
 import { AuthTypeRegistration } from "./auth-type-registration";
 
 export class AuthProvider {
-    registeredAuthTypes: { [key: string]: AuthenticatorFactory<unknown> } = {};
+    registeredAuthTypes: { [key: string]: Authenticator } = {};
 
-    add<T>(authTypeRegistration: AuthTypeRegistration<T>): AuthProvider;
-    add<T>(authTypeOrRegistration: string | AuthTypeRegistration<T>, authenticatorFactory?: AuthenticatorFactory<T>): AuthProvider {
+    add<T>(authTypeRegistration: AuthTypeRegistration): AuthProvider;
+    add<T>(authTypeOrRegistration: string | AuthTypeRegistration, authenticator?: Authenticator): AuthProvider {
         let authType: string;
         if (typeof authTypeOrRegistration === "string") {
-            if (Object.keys(this.registeredAuthTypes).find((k: string) => k.toLowerCase() === authTypeOrRegistration)) {
+            if (Object.keys(this.registeredAuthTypes).find((k: string) => k.toLowerCase() === authTypeOrRegistration.toLowerCase())) {
                 throw new McmaException("Auth type '" + authTypeOrRegistration + "' has already been registered.");
             }
-            if (typeof authenticatorFactory !== "function") {
-                throw new McmaException("authenticatorFactory must be a function.");
+            if (typeof authenticator?.sign !== "function") {
+                throw new McmaException("authenticator must have a sign function.");
             }
             authType = authTypeOrRegistration;
         } else {
             authType = authTypeOrRegistration.authType;
-            authenticatorFactory = authTypeOrRegistration.authenticatorFactory;
+            authenticator = authTypeOrRegistration.authenticator;
         }
 
-        this.registeredAuthTypes[authType] = authenticatorFactory;
+        this.registeredAuthTypes[authType] = authenticator;
 
         return this;
     }
 
-    get<T>(authType: string, authContext?: T | string): Authenticator {
+    get(authType: string): Authenticator {
         authType = Object.keys(this.registeredAuthTypes).find((k: string) => k.toLowerCase() === (authType || "").toLowerCase());
-
-        if (typeof authContext === "string") {
-            authContext = JSON.parse(authContext) as T;
-        }
-
-        return authType && this.registeredAuthTypes[authType] && this.registeredAuthTypes[authType](authContext);
+        return authType && this.registeredAuthTypes[authType] && this.registeredAuthTypes[authType];
     }
 }

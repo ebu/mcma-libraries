@@ -68,6 +68,47 @@ function reviver(this: any, key: string, value: any): any {
     return value;
 }
 
+function ensureValidDateOrUndefined(maybeDate: any): Date | undefined {
+    if (maybeDate === undefined || maybeDate === null) {
+        return undefined;
+    }
+    const date = new Date(maybeDate);
+    if (isNaN(date.getTime())) {
+        return undefined;
+    }
+    return date;
+}
+
+function checkProperty(object: any, propertyName: string, expectedType: string, required?: boolean) {
+    const propertyValue = (<any>object)[propertyName];
+    const propertyType = typeof propertyValue;
+
+    if (propertyValue === undefined || propertyValue === null) {
+        if (required) {
+            throw new McmaException("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to be defined", null, object);
+        }
+        return;
+    }
+
+    if (expectedType === "url") {
+        if (propertyType !== "string" || !Utils.isValidUrl(propertyValue)) {
+            throw new McmaException("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have a valid URL", null, object);
+        }
+    } else if (expectedType === "Array") {
+        if (!Array.isArray(propertyValue)) {
+            throw new McmaException("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type Array", null, object);
+        }
+    } else if (expectedType === "object") {
+        if (propertyType !== "object" || Array.isArray(propertyValue)) {
+            throw new McmaException("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type object", null, object);
+        }
+    } else {
+        if (expectedType !== propertyType) {
+            throw new McmaException("Resource of type '" + object["@type"] + "' requires property '" + propertyName + "' to have type " + expectedType, null, object);
+        }
+    }
+}
+
 export const Utils = {
     isValidUrl,
     getTypeName,
@@ -76,4 +117,6 @@ export const Utils = {
     sleep,
     isValidDateString,
     reviver,
+    ensureValidDateOrUndefined,
+    checkProperty,
 };

@@ -1,5 +1,5 @@
 import { getStatusError } from "./http-statuses";
-import { McmaObject, McmaObjectProperties } from "@mcma/core";
+import { McmaObject, McmaObjectProperties, Utils } from "@mcma/core";
 
 export interface McmaApiErrorProperties extends McmaObjectProperties {
     timestamp?: Date,
@@ -19,11 +19,11 @@ export class McmaApiError extends McmaObject implements McmaApiErrorProperties {
     constructor(properties: McmaApiErrorProperties) {
         super("ApiError", properties);
 
-        this.checkProperty("status", "number", true);
-        this.checkProperty("path", "string", true);
-        this.checkProperty("message", "string", false);
+        Utils.checkProperty(this, "status", "number", true);
+        Utils.checkProperty(this, "path", "string", true);
+        Utils.checkProperty(this, "message", "string", false);
 
-        this.timestamp = this.ensureValidDateOrUndefined(this.timestamp);
+        this.timestamp = Utils.ensureValidDateOrUndefined(this.timestamp);
         if (!this.timestamp) {
             this.timestamp = new Date();
         }
