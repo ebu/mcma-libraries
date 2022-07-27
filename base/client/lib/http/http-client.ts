@@ -140,7 +140,8 @@ export class HttpClient implements Http {
 
                 return await this.client.request(config) as AxiosResponse<TResp>;
             } catch (error) {
-                if (attempts < this.config.maxAttempts - 1) {
+                // retrying 404 errors as well as 5xx errors. 404 errors can be caused by eventual consistency issues as a resource might be created but not yet available.
+                if ((error?.response?.status === 404 || error?.response?.status >= 500) && attempts < this.config.maxAttempts - 1) {
                     await Utils.sleep(this.config.retryInterval);
                 } else {
                     let response;

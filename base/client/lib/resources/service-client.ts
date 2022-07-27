@@ -1,15 +1,15 @@
 import { ServiceProperties } from "@mcma/core";
 import { ResourceEndpointClient } from "./resource-endpoint-client";
 import { AuthProvider } from "../auth/auth-provider";
+import { HttpClientConfig } from "../http";
 
 export class ServiceClient {
     private endpointsMap: { [key: string]: ResourceEndpointClient } = {};
 
-    constructor(service: ServiceProperties, authProvider: AuthProvider) {
-
+    constructor(service: ServiceProperties, authProvider: AuthProvider, httpClientConfig?: HttpClientConfig) {
         for (const resourceEndpoint of service.resources) {
             this.endpointsMap[resourceEndpoint.resourceType] =
-                new ResourceEndpointClient(resourceEndpoint, authProvider, service.authType);
+                new ResourceEndpointClient(resourceEndpoint, authProvider, httpClientConfig, service.authType);
         }
     }
 

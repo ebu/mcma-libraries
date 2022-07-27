@@ -42,7 +42,7 @@ export class ResourceManager {
                 ]
             });
 
-            let serviceRegistryClient = new ServiceClient(serviceRegistry, this.authProvider);
+            let serviceRegistryClient = new ServiceClient(serviceRegistry, this.authProvider, this.config.httpClientConfig);
 
             this.serviceClients.push(serviceRegistryClient);
 
@@ -55,7 +55,7 @@ export class ResourceManager {
                     if (service.name === serviceRegistry.name) {
                         this.serviceClients.shift();
                     }
-                    this.serviceClients.push(new ServiceClient(new Service(service), this.authProvider));
+                    this.serviceClients.push(new ServiceClient(new Service(service), this.authProvider, this.config.httpClientConfig));
                 } catch (error) {
                     console.warn("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
                 }

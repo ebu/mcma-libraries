@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 import { McmaException, ResourceEndpointProperties, Utils } from "@mcma/core";
-import { Http, HttpClient, HttpRequestConfig } from "../http";
+import { Http, HttpClient, HttpClientConfig, HttpRequestConfig } from "../http";
 import { AuthProvider } from "../auth";
 
 export class ResourceEndpointClient implements Http {
@@ -9,6 +9,7 @@ export class ResourceEndpointClient implements Http {
     constructor(
         private resourceEndpoint: ResourceEndpointProperties,
         private authProvider: AuthProvider,
+        private httpClientConfig?: HttpClientConfig,
         private serviceAuthType?: string,
     ) {
         if (!resourceEndpoint) {
@@ -30,7 +31,7 @@ export class ResourceEndpointClient implements Http {
                 this.authProvider &&
                 this.authProvider.get(this.resourceEndpoint.authType || this.serviceAuthType);
 
-            this._httpClient = new HttpClient(authenticator);
+            this._httpClient = new HttpClient(authenticator, this.httpClientConfig);
         }
         return this._httpClient;
     }
