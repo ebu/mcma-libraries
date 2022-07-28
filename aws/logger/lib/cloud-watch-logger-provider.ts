@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { CloudWatchLogs } from "aws-sdk";
 import { LogEvent, Logger, LoggerProvider, McmaException, McmaTrackerProperties, Utils } from "@mcma/core";
 import { AwsCloudWatchLogger } from "./cloud-watch-logger";
+import { InputLogEvent } from "aws-sdk/clients/cloudwatchlogs";
 
 export class AwsCloudWatchLoggerProvider implements LoggerProvider {
 
@@ -66,32 +67,72 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                     this.logStreamCreated = true;
                 }
 
-                const params: CloudWatchLogs.PutLogEventsRequest = {
-                    logEvents: this.logEvents.map(le => ({
-                        message: le.toString().substring(0, 262144),
-                        timestamp: le.timestamp.getTime()
-                    })),
-                    logGroupName: this.logGroupName,
-                    logStreamName: this.logStreamName,
-                    sequenceToken: this.sequenceToken
-                };
+                const preparedLogEvents: { message: string, timestamp: number, byteLength: number }[] = [];
 
-                this.logEvents = [];
+                while (this.logEvents.length) {
+                    const logEvent = this.logEvents.shift();
 
-                const data = await this.cloudWatchLogs.putLogEvents(params).promise();
+                    let message = logEvent.toString();
+                    while (message.length) {
+                        const result = byteSubString(message, 262118); // max message byte size
 
-                this.sequenceToken = data.nextSequenceToken;
+                        preparedLogEvents.push({
+                            message: result.text,
+                            timestamp: logEvent.timestamp.getTime(),
+                            byteLength: result.byteLength + 26, // message byte size + log event byte overhead
+                        });
 
-                if (data.rejectedLogEventsInfo) {
-                    console.error("AwsCloudWatchLogger: Some log events rejected");
-                    console.error(data.rejectedLogEventsInfo);
+                        message = message.substring(result.text.length);
+                    }
                 }
+
+                const inputLogEvents: InputLogEvent[] = [];
+                let inputLogEventsByteLength: number = 0;
+
+                while (preparedLogEvents.length) {
+                    const preparedLogEvent = preparedLogEvents.shift();
+
+                    if (inputLogEventsByteLength + preparedLogEvent.byteLength > 1048576) { // max putLogEventsRequestSize
+                        await this.sendLogEvents(inputLogEvents);
+                        inputLogEvents.length = 0;
+                        inputLogEventsByteLength = 0;
+                    }
+
+                    inputLogEvents.push({
+                        message: preparedLogEvent.message,
+                        timestamp: preparedLogEvent.timestamp,
+                    });
+                    inputLogEventsByteLength += preparedLogEvent.byteLength;
+                }
+
+                await this.sendLogEvents(inputLogEvents);
             }
         } catch (error) {
             console.error("AwsCloudWatchLogger: Failed to log to CloudWatchLogs");
             console.error(error);
         } finally {
             this.processing = false;
+        }
+    }
+
+    private async sendLogEvents(logEvents: InputLogEvent[]) {
+        try {
+            const data = await this.cloudWatchLogs.putLogEvents({
+                logEvents: logEvents,
+                logGroupName: this.logGroupName,
+                logStreamName: this.logStreamName,
+                sequenceToken: this.sequenceToken
+            }).promise();
+
+            this.sequenceToken = data.nextSequenceToken;
+
+            if (data.rejectedLogEventsInfo) {
+                console.error("AwsCloudWatchLogger: Some log events rejected");
+                console.error(data.rejectedLogEventsInfo);
+            }
+        } catch (error) {
+            console.error("AwsCloudWatchLogger: Failed to log to CloudWatchLogs");
+            console.error(error);
         }
     }
 
@@ -118,4 +159,32 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
             await Utils.sleep(10);
         }
     }
+}
+
+function byteSubString(str: string, maxLengthInBytes: number): { text: string, byteLength: number } {
+    let length = 0;
+    for (let i = 0; i < str.length; i++) {
+        const codePoint = str.codePointAt(i);
+        const codePointLength = codePointUtf8ByteLength(codePoint);
+        if (length + codePointLength > maxLengthInBytes) {
+            return {
+                text: str.substring(0, i),
+                byteLength: length,
+            };
+        }
+        length += codePointLength;
+    }
+    return {
+        text: str,
+        byteLength: length,
+    };
+}
+
+function codePointUtf8ByteLength(codePoint: number): number {
+    if (codePoint < 0) throw new McmaException(`Invalid codepoint value ${codePoint}`);
+    if (codePoint <= 0x7f) return 1;
+    if (codePoint <= 0x7ff) return 2;
+    if (codePoint <= 0xffff) return 3;
+    if (codePoint <= 0x10ffff) return 4;
+    throw new McmaException(`Invalid codepoint value ${codePoint}`);
 }
