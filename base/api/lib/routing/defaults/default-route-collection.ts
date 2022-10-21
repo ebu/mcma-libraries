@@ -54,6 +54,22 @@ export class DefaultRouteCollection<T extends McmaResource> extends McmaApiRoute
         if (indexToRemove >= 0) {
             this.routes.splice(indexToRemove, 1);
         }
-        this[key] = null;
+        switch (key) {
+            case "query":
+                this.query = null;
+                break;
+            case "create":
+                this.create = null;
+                break;
+            case "get":
+                this.get = null;
+                break;
+            case "update":
+                this.update = null;
+                break;
+            case "delete":
+                this.delete = null;
+                break;
+        }
     }
 }

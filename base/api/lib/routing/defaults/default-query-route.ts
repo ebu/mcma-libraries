@@ -27,7 +27,10 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
 
     private customQueryFactories: CustomQueryFactory<T>[] = [];
 
-    constructor(private dbTableProvider: DocumentDatabaseTableProvider, public readonly root: string) {
+    constructor(
+        private dbTableProvider: DocumentDatabaseTableProvider,
+        public readonly root: string
+    ) {
         super("GET", root, requestContext => this.handleRequest(requestContext));
         this.buildQuery = reqCtx => this.defaultBuildQuery(reqCtx);
         this.handleRequest = reqCtx => this.defaultHandleRequest(reqCtx);
