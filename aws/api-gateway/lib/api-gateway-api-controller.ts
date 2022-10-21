@@ -16,19 +16,11 @@ export class ApiGatewayApiController {
     async handleRequest(event: APIGatewayProxyEventV2, context: Context): Promise<APIGatewayProxyResultV2>
     async handleRequest(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult>
     async handleRequest(event: APIGatewayProxyEvent | APIGatewayProxyEventV2, context: Context): Promise<APIGatewayProxyResult | APIGatewayProxyResultV2> {
-        let httpMethod, path;
-        if (isAPIGatewayProxyEvent(event)) {
-            httpMethod = event.httpMethod;
-            path = event.path;
-        } else {
-            httpMethod = event.requestContext.http.method;
-            path = event.requestContext.http.path.substring(event.requestContext.stage.length + 1);
-        }
         const requestContext = new McmaApiRequestContext(
             new McmaApiRequest({
                 id: context.awsRequestId,
-                path,
-                httpMethod,
+                path: "/" + (event.pathParameters?.proxy ?? ""),
+                httpMethod: isAPIGatewayProxyEvent(event) ? event.httpMethod : event.requestContext.http.method,
                 headers: event.headers,
                 pathVariables: {},
                 queryStringParameters: event.queryStringParameters,
