@@ -1,6 +1,6 @@
 import { Logger, LogEvent, LogLevel, McmaTrackerProperties } from "@mcma/core";
 import { Log, Entry } from "@google-cloud/logging";
-import { objToStruct } from "@google-cloud/logging/build/src/common";
+import { objToStruct } from "@google-cloud/logging/build/src/utils/common";
 
 const CloudLoggingSeverities = {
     debug: "DEBUG",
@@ -56,6 +56,6 @@ export class CloudLoggingLogger extends Logger {
                 } catch {
                 }
             }
-        })
+        });
     }
 }

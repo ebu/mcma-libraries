@@ -18,13 +18,17 @@ export enum QuerySortOrder {
 }
 
 export class ResourceManager {
-    private httpClient = new HttpClient();
+    private readonly httpClient;
     private serviceClients: ServiceClient[] = [];
 
     constructor(private config: ResourceManagerConfig, private authProvider: AuthProvider) {
-        if (!config.servicesUrl) {
-            throw new McmaException("Missing property 'servicesUrl' in ResourceManager config");
+        if (!config.serviceRegistryUrl) {
+            throw new McmaException("Missing property 'serviceRegistryUrl' in ResourceManager config");
         }
+        if (config.serviceRegistryUrl.endsWith("/")) {
+            config.serviceRegistryUrl = config.serviceRegistryUrl.substring(0, config.serviceRegistryUrl.length - 1);
+        }
+        this.httpClient = new HttpClient(authProvider.getDefault(), config.httpClientConfig);
     }
 
     async init(): Promise<void> {
@@ -33,11 +37,15 @@ export class ResourceManager {
 
             let serviceRegistry = new Service({
                 name: "Service Registry",
+                authType: this.config.serviceRegistryAuthType,
                 resources: [
                     new ResourceEndpoint({
                         resourceType: "Service",
-                        httpEndpoint: this.config.servicesUrl,
-                        authType: this.config.servicesAuthType,
+                        httpEndpoint: this.config.serviceRegistryUrl + "/services",
+                    }),
+                    new ResourceEndpoint({
+                        resourceType: "JobProfile",
+                        httpEndpoint: this.config.serviceRegistryUrl +  "/job-profiles",
                     })
                 ]
             });

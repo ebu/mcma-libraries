@@ -3,8 +3,8 @@ import { ConfigVariables, McmaException } from "@mcma/core";
 import { BlobStorageLocator } from "../blob-storage-locator";
 import { BlobStorageProxy } from "./blob-storage-proxy";
 
-const StorageAccountNameKeySuffix = "StorageAccountName";
-const StorageConnectionStringKeySuffix = "StorageConnectionString";
+const StorageAccountNameKeySuffix = "STORAGE_ACCOUNT_NAME";
+const StorageConnectionStringKeySuffix = "STORAGE_CONNECTION_STRING";
 
 export function getBlobClient(connectionString: string): BlobServiceClient;
 export function getBlobClient(configVariables: ConfigVariables, storageAccountName: string): BlobServiceClient;
@@ -26,7 +26,7 @@ export function getBlobClient(connectionStringOrConfigVariables: ConfigVariables
 
     return getBlobClient(
         configVariables.get(
-            accountNameSettingKey.substr(0, accountNameSettingKey.length - StorageAccountNameKeySuffix.length) + StorageConnectionStringKeySuffix));
+            accountNameSettingKey.substring(0, accountNameSettingKey.length - StorageAccountNameKeySuffix.length) + StorageConnectionStringKeySuffix));
 }
 
 export function getProxy(locator: BlobStorageLocator, connectionString: string): BlobStorageProxy;
