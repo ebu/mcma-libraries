@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-logger",
-    "version": "0.15.0-beta2",
+    "version": "0.15.0",
     "description": "Node module with code and type definitions for using AWS Cloudwatch LogGroup logging in a MCMA environment",
     "engines": {
         "node": "^16.0.0"
@@ -35,10 +35,10 @@
         "uuid": "^7.0.3"
     },
     "peerDependencies": {
-        "@mcma/core": "0.15.0-beta2"
+        "@mcma/core": "0.15.0"
     },
     "devDependencies": {
-        "@mcma/core": "0.15.0-beta2",
+        "@mcma/core": "0.15.0",
         "@types/node": "^16.11.60",
         "@types/uuid": "^7.0.3"
     }

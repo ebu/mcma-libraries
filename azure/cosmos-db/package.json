@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-cosmos-db",
-    "version": "0.15.0-beta2",
+    "version": "0.15.0",
     "description": "Add Cosmos DB as a backing data store for your MCMA services",
     "engines": {
         "node": "^16.0.0"
@@ -34,12 +34,12 @@
         "@azure/cosmos": "^3.6.2"
     },
     "peerDependencies": {
-        "@mcma/core": "0.15.0-beta2",
-        "@mcma/data": "0.15.0-beta2"
+        "@mcma/core": "0.15.0",
+        "@mcma/data": "0.15.0"
     },
     "devDependencies": {
-        "@mcma/core": "0.15.0-beta2",
-        "@mcma/data": "0.15.0-beta2",
+        "@mcma/core": "0.15.0",
+        "@mcma/data": "0.15.0",
         "@types/node": "^16.11.60",
         "jasmine": "^3.2.0"
     }
