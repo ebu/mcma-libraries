@@ -30,4 +30,11 @@ export class AuthProvider {
         authType = Object.keys(this.registeredAuthTypes).find((k: string) => k.toLowerCase() === (authType || "").toLowerCase());
         return authType && this.registeredAuthTypes[authType] && this.registeredAuthTypes[authType];
     }
+
+    getDefault(): Authenticator {
+        if (Object.keys(this.registeredAuthTypes).length === 1) {
+            return this.registeredAuthTypes[Object.keys(this.registeredAuthTypes)[0]];
+        }
+        return null;
+    }
 }

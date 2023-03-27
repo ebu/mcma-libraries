@@ -11,11 +11,11 @@ import { DefaultUpdateRoute } from "./default-update-route";
 import { DefaultDeleteRoute } from "./default-delete-route";
 
 export class DefaultRouteCollection<T extends McmaResource> extends McmaApiRouteCollection {
-    public query: DefaultQueryRoute<T>;
-    public create: DefaultCreateRoute<T>;
-    public get: DefaultGetRoute<T>;
-    public update: DefaultUpdateRoute<T>;
-    public delete: DefaultDeleteRoute<T>;
+    public query?: DefaultQueryRoute<T>;
+    public create?: DefaultCreateRoute<T>;
+    public get?: DefaultGetRoute<T>;
+    public update?: DefaultUpdateRoute<T>;
+    public delete?: DefaultDeleteRoute<T>;
 
     constructor(
         dbTableProvider: DocumentDatabaseTableProvider,
@@ -23,7 +23,7 @@ export class DefaultRouteCollection<T extends McmaResource> extends McmaApiRoute
         root?: string
     ) {
         super();
-        
+
         resourceType = Utils.getTypeName(resourceType);
         if (!resourceType) {
             throw new McmaException("Invalid resource type specified for default routes.");
@@ -33,13 +33,13 @@ export class DefaultRouteCollection<T extends McmaResource> extends McmaApiRoute
         if (root[0] !== "/") {
             root = "/" + root;
         }
-        
+
         this.query = new DefaultQueryRoute<T>(dbTableProvider, root);
         this.create = new DefaultCreateRoute<T>(dbTableProvider, root);
         this.get = new DefaultGetRoute<T>(dbTableProvider, root);
         this.update = new DefaultUpdateRoute<T>(dbTableProvider, root);
         this.delete = new DefaultDeleteRoute<T>(dbTableProvider, root);
-        
+
         this.addRoutes([
             this.query,
             this.create,
@@ -48,12 +48,12 @@ export class DefaultRouteCollection<T extends McmaResource> extends McmaApiRoute
             this.delete
         ]);
     }
-    
+
     remove(key: "query" | "create" | "get" | "update" | "delete"): void {
         const indexToRemove = this.routes.indexOf(this[key]);
         if (indexToRemove >= 0) {
             this.routes.splice(indexToRemove, 1);
         }
-        this[key] = null;
+        delete this[key];
     }
 }

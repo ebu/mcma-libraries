@@ -1,4 +1,4 @@
-def requiredVersionNodeJS = "^14.17.4"
+def requiredVersionNodeJS = "^16.0.0"
 def requiredVersionTsc = "^4.0.0"
 
 allprojects {

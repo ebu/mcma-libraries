@@ -26,10 +26,10 @@ export function fillOptionsFromConfigVariables(
     options: CosmosDbTableProviderOptions = emptyCosmosDbSettings(),
     configVariables: ConfigVariables = ConfigVariables.getInstance()
 ): CosmosDbTableProviderOptions {
-    options.endpoint = configVariables.get("CosmosDbEndpoint");
-    options.key = configVariables.get("CosmosDbKey");
-    options.region = configVariables.get("CosmosDbRegion");
-    options.databaseId = configVariables.get("CosmosDbDatabaseId");
+    options.endpoint = configVariables.get("MCMA_COSMOS_DB_ENDPOINT");
+    options.key = configVariables.get("MCMA_COSMOS_DB_KEY");
+    options.region = configVariables.get("MCMA_COSMOS_DB_REGION");
+    options.databaseId = configVariables.get("MCMA_COSMOS_DATABASE_ID");
     options.customQueries = {};
     return options;
 }
