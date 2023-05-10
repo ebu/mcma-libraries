@@ -1,4 +1,6 @@
 import * as CryptoJS from "crypto-js";
+import { AwsCredentialIdentity, Provider } from "@aws-sdk/types";
+import { fromEnv } from "@aws-sdk/credential-providers";
 import { Method } from "axios";
 import { HttpRequestConfig } from "@mcma/client";
 import { McmaException } from "@mcma/core";
@@ -63,7 +65,7 @@ function buildCanonicalQueryString(queryParams: { [key: string]: string }) {
     for (let i = 0; i < sortedQueryParams.length; i++) {
         canonicalQueryString += sortedQueryParams[i] + "=" + fixedEncodeURIComponent(queryParams[sortedQueryParams[i]]) + "&";
     }
-    return canonicalQueryString.substr(0, canonicalQueryString.length - 1);
+    return canonicalQueryString.substring(0, canonicalQueryString.length - 1);
 }
 
 function fixedEncodeURIComponent(str: string) {
@@ -104,11 +106,11 @@ function buildStringToSign(datetime: string, credentialScope: string, hashedCano
 }
 
 function buildCredentialScope(datetime: string, region: string, service: string) {
-    return datetime.substr(0, 8) + "/" + region + "/" + service + "/" + AWS4_REQUEST;
+    return datetime.substring(0, 8) + "/" + region + "/" + service + "/" + AWS4_REQUEST;
 }
 
 function calculateSigningKey(secretKey: string, datetime: string, region: string, service: string): CryptoJS.WordArray {
-    return hmac(hmac(hmac(hmac(AWS4 + secretKey, datetime.substr(0, 8)), region), service), AWS4_REQUEST);
+    return hmac(hmac(hmac(hmac(AWS4 + secretKey, datetime.substring(0, 8)), region), service), AWS4_REQUEST);
 }
 
 function calculateSignature(key: CryptoJS.WordArray, stringToSign: string) {
@@ -119,7 +121,7 @@ function buildAuthorizationHeader(signature: string, credentialScope: string, si
     return AWS_SHA_256 + " Credential=" + credentialScope + ", SignedHeaders=" + signedHeaders + ", Signature=" + signature;
 }
 
-function generateSignature(request: HttpRequestConfig, credentials: ConformedCredentials, datetime: string, credentialScope: string): string {
+function generateSignature(request: HttpRequestConfig, credentials: AwsCredentialIdentity, region: string, serviceName: string, datetime: string, credentialScope: string): string {
     if (!credentials) {
         return "";
     }
@@ -139,7 +141,7 @@ function generateSignature(request: HttpRequestConfig, credentials: ConformedCre
     const canonicalRequest = buildCanonicalRequest(request.method, requestUrl.pathname, queryParams, request.headers, request.data);
     const hashedCanonicalRequest = hashCanonicalRequest(canonicalRequest);
     const stringToSign = buildStringToSign(datetime, credentialScope, hashedCanonicalRequest);
-    const signingKey = calculateSigningKey(credentials.secretKey, datetime, credentials.region, credentials.serviceName);
+    const signingKey = calculateSigningKey(credentials.secretAccessKey, datetime, region, serviceName);
 
     return calculateSignature(signingKey, stringToSign);
 }
@@ -148,30 +150,19 @@ function getAwsDate(): string {
     return new Date().toISOString().replace(/\.\d{3}Z$/, "Z").replace(/[:\-]|\.\d{3}/g, "");
 }
 
-type ConformedCredentials = { accessKey?: string, secretKey?: string, serviceName?: string, region?: string, sessionToken?: string };
-type Credentials = ConformedCredentials & { accessKeyId?: string, secretAccessKey?: string };
-
-function conformCredentials(credentials: Credentials): ConformedCredentials {
-    // check for alternate names for access key & secret key 
-    credentials.accessKey = credentials.accessKey ?? credentials.accessKeyId;
-    credentials.secretKey = credentials.secretKey ?? credentials.secretAccessKey;
-
-    // ensure access key and secret key is set
-    if (!credentials.accessKey || !credentials.secretKey) {
-        throw new McmaException("Failed to conform AWS credentials");
-    }
-
-    // if no service name was provided, we"ll assume this is an API Gateway request
-    credentials.serviceName = credentials.serviceName ?? "execute-api";
-
-    return credentials;
-}
-
 export class AwsV4Authenticator {
-    private readonly credentials: ConformedCredentials;
+    private readonly credentials: AwsCredentialIdentity | Provider<AwsCredentialIdentity>;
+    private readonly region: string;
+    private readonly serviceName: string;
 
-    constructor(credentials: Credentials) {
-        this.credentials = conformCredentials(credentials);
+    constructor(config?: { credentials?: AwsCredentialIdentity | Provider<AwsCredentialIdentity>, region?: string, serviceName?: string }) {
+        this.credentials = config?.credentials ?? fromEnv();
+        this.region = config?.region ?? process.env.AWS_REGION;
+        this.serviceName = config?.serviceName ?? "execute-api";
+
+        if (!this.region) {
+            throw new McmaException("AwsV4Authenticator: AWS_REGION is not set");
+        }
     }
 
     async sign(request: HttpRequestConfig): Promise<void> {
@@ -189,17 +180,19 @@ export class AwsV4Authenticator {
             request.headers[HOST] = requestUrlParsed.host;
         }
 
-        const credentialScope = buildCredentialScope(datetime, this.credentials.region, this.credentials.serviceName);
+        const credentialScope = buildCredentialScope(datetime, this.region, this.serviceName);
         const signedHeaders = buildCanonicalSignedHeaders(request.headers);
 
-        const signature = generateSignature(request, this.credentials, datetime, credentialScope);
+        const credentials = typeof this.credentials === "function" ? await this.credentials() : this.credentials;
+
+        const signature = generateSignature(request, credentials, this.region, this.serviceName, datetime, credentialScope);
 
         // add authorization header with signature
-        request.headers[AUTHORIZATION] = buildAuthorizationHeader(signature, this.credentials.accessKey + "/" + credentialScope, signedHeaders);
+        request.headers[AUTHORIZATION] = buildAuthorizationHeader(signature, credentials.accessKeyId + "/" + credentialScope, signedHeaders);
 
         // add security token (for temporary credentials)
-        if (this.credentials.sessionToken) {
-            request.headers[X_AMZ_SECURITY_TOKEN] = this.credentials.sessionToken;
+        if (credentials.sessionToken) {
+            request.headers[X_AMZ_SECURITY_TOKEN] = credentials.sessionToken;
         }
 
         // need to remove the host header if we"re in the browser as it"s protected and cannot be set
@@ -208,13 +201,21 @@ export class AwsV4Authenticator {
 }
 
 export class AwsV4PresignedUrlGenerator {
-    private readonly credentials: ConformedCredentials;
+    private readonly credentials: AwsCredentialIdentity | Provider<AwsCredentialIdentity>;
+    private readonly region: string;
+    private readonly serviceName: string;
 
-    constructor(credentials: Credentials) {
-        this.credentials = conformCredentials(credentials);
+    constructor(config?: { credentials?: AwsCredentialIdentity | Provider<AwsCredentialIdentity>, region?: string, serviceName?: string }) {
+        this.credentials = config?.credentials ?? fromEnv();
+        this.region = config?.region ?? process.env.AWS_REGION;
+        this.serviceName = config?.serviceName ?? "execute-api";
+
+        if (!this.region) {
+            throw new McmaException("AwsV4Authenticator: AWS_REGION is not set");
+        }
     }
 
-    generatePresignedUrl(method: Method, requestUrl: string, expires = 300) {
+    async generatePresignedUrl(method: Method, requestUrl: string, expires = 300) {
         // parse the url we want to sign so we can work with the query string
         const requestUrlParsed = new URL(requestUrl);
 
@@ -223,19 +224,21 @@ export class AwsV4PresignedUrlGenerator {
         headers[HOST] = requestUrlParsed.host;
 
         const datetime = getAwsDate();
-        const credentialScope = buildCredentialScope(datetime, this.credentials.region, this.credentials.serviceName);
+        const credentialScope = buildCredentialScope(datetime, this.region, this.serviceName);
         const signedHeaders = buildCanonicalSignedHeaders(headers);
+
+        const credentials = typeof this.credentials === "function" ? await this.credentials() : this.credentials;
 
         // add parameters for signing
         requestUrlParsed.searchParams.set(X_AMZ_ALGORITHM_QUERY_PARAM, AWS_SHA_256);
-        requestUrlParsed.searchParams.set(X_AMZ_CREDENTIAL_QUERY_PARAM, this.credentials.accessKey + "/" + credentialScope);
+        requestUrlParsed.searchParams.set(X_AMZ_CREDENTIAL_QUERY_PARAM, credentials.accessKeyId + "/" + credentialScope);
         requestUrlParsed.searchParams.set(X_AMZ_DATE_QUERY_PARAM, datetime);
         requestUrlParsed.searchParams.set(X_AMZ_EXPIRES_QUERY_PARAM, expires.toString());
         requestUrlParsed.searchParams.set(X_AMZ_SIGNEDHEADERS_QUERY_PARAM, signedHeaders);
 
         // not sure if this should be added before or after we generate the signature...
-        if (this.credentials.sessionToken) {
-            requestUrlParsed.searchParams.set(X_AMZ_SECURITY_TOKEN_QUERY_PARAM, this.credentials.sessionToken);
+        if (credentials.sessionToken) {
+            requestUrlParsed.searchParams.set(X_AMZ_SECURITY_TOKEN_QUERY_PARAM, credentials.sessionToken);
         }
 
         let params: { [key: string]: string } = {};
@@ -243,7 +246,7 @@ export class AwsV4PresignedUrlGenerator {
             params[entry[0]] = entry[1];
         }
 
-        // build a mock request to use to generat the signature
+        // build a mock request to use to generate the signature
         const mockRequest = {
             method: method,
             url: requestUrl,
@@ -252,7 +255,7 @@ export class AwsV4PresignedUrlGenerator {
         };
 
         // add the signature to the existing query object
-        requestUrlParsed.searchParams.set(X_AMZ_SIGNATURE_QUERY_PARAM, generateSignature(mockRequest, this.credentials, datetime, credentialScope));
+        requestUrlParsed.searchParams.set(X_AMZ_SIGNATURE_QUERY_PARAM, generateSignature(mockRequest, credentials, this.region, this.serviceName, datetime, credentialScope));
 
         return requestUrlParsed.toString();
     };

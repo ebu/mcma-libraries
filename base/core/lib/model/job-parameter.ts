@@ -11,7 +11,9 @@ export class JobParameter extends McmaObject implements JobParameterProperties {
     parameterType: string;
 
     constructor(properties: JobParameterProperties) {
-        super("JobParameter", properties);
+        super("JobParameter");
+        this.parameterName = properties.parameterName;
+        this.parameterType = properties.parameterType;
 
         Utils.checkProperty(this, "parameterName", "string");
         Utils.checkProperty(this, "parameterType", "string");

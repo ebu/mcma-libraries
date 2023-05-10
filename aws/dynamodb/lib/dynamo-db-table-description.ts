@@ -1,5 +1,4 @@
-import { DynamoDB } from "aws-sdk";
-import { KeySchema } from "aws-sdk/clients/dynamodb";
+import { DescribeTableCommand, DynamoDBClient, KeySchemaElement } from "@aws-sdk/client-dynamodb";
 
 export interface DynamoDbTableDescription {
     tableName: string;
@@ -25,7 +24,7 @@ export interface GlobalSecondaryIndexDescription {
 
 const tableDescriptions: { [key: string]: DynamoDbTableDescription } = {};
 
-function getKeyNames(keySchema: KeySchema): KeyNames {
+function getKeyNames(keySchema: KeySchemaElement[]): KeyNames {
     let partitionKeyName: string;
     let sortKeyName: string;
     for (const key of keySchema) {
@@ -44,12 +43,12 @@ function getKeyNames(keySchema: KeySchema): KeyNames {
     };
 }
 
-export async function getTableDescription(dynamoDb: DynamoDB, tableName: string): Promise<DynamoDbTableDescription> {
+export async function getTableDescription(dynamoDBClient: DynamoDBClient, tableName: string): Promise<DynamoDbTableDescription> {
     if (tableDescriptions[tableName]) {
         return tableDescriptions[tableName];
     }
     
-    const data = await dynamoDb.describeTable({ TableName: tableName }).promise();
+    const data = await dynamoDBClient.send(new DescribeTableCommand({ TableName: tableName }));
     const globalSecondaryIndexes = (data.Table.GlobalSecondaryIndexes ?? []).map(i => ({
         name: i.IndexName,
         keyNames: getKeyNames(i.KeySchema)

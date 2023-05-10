@@ -7,5 +7,5 @@ export enum JobStatus {
     Running = "Running",
     Completed = "Completed",
     Failed = "Failed",
-    Canceled = "Canceled"
+    Canceled = "Canceled",
 }

@@ -7,14 +7,12 @@ import { McmaApiRoute } from "../route";
 export class DefaultDeleteRoute<T extends McmaResource> extends McmaApiRoute {
     public onStarted: (requestContext: McmaApiRequestContext) => Promise<boolean>;
     public onCompleted: (requestContext: McmaApiRequestContext, resource: T) => Promise<void>;
-    public handler: (requestContext: McmaApiRequestContext) => Promise<void>;
-    
+
     constructor(
         private dbTableProvider: DocumentDatabaseTableProvider,
         private root: string
     ) {
-        super("DELETE", root + "/{id}", requestContext => this.handler(requestContext));
-        this.handler = reqCtx => this.defaultHandler(reqCtx);
+        super("DELETE", root + "/{id}", requestContext => this.defaultHandler(requestContext));
     }
     
     private async defaultHandler(requestContext: McmaApiRequestContext): Promise<void> {

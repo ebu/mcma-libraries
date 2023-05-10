@@ -1,4 +1,4 @@
-import { DynamoDB } from "aws-sdk";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DocumentDatabaseTableProvider, DocumentDatabaseTable } from "@mcma/data";
 
 import { DynamoDbTable } from "./dynamo-db-table";
@@ -9,10 +9,10 @@ export class DynamoDbTableProvider implements DocumentDatabaseTableProvider {
     
     constructor(
         private readonly options: DynamoDbTableOptions = {},
-        private readonly dynamoDb = new DynamoDB()) {
+        private readonly dynamoDBClient = new DynamoDBClient({})) {
     }
 
     async get(tableName: string): Promise<DocumentDatabaseTable> {
-        return new DynamoDbTable(this.dynamoDb, await getTableDescription(this.dynamoDb, tableName), this.options);
+        return new DynamoDbTable(this.dynamoDBClient, await getTableDescription(this.dynamoDBClient, tableName), this.options);
     }
 }

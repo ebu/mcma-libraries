@@ -9,14 +9,12 @@ import { McmaApiRoute } from "../route";
 export class DefaultCreateRoute<T extends McmaResource> extends McmaApiRoute {
     public onStarted: (requestContext: McmaApiRequestContext) => Promise<boolean>;
     public onCompleted: (requestContext: McmaApiRequestContext, resource: T) => Promise<void>;
-    public handler: (requestContext: McmaApiRequestContext) => Promise<void>;
-    
+
     constructor(
         private readonly dbTableProvider: DocumentDatabaseTableProvider,
         private readonly root: string
     ) {
-        super("POST", root, requestContext => this.handler(requestContext));
-        this.handler = reqCtx => this.defaultHandler(reqCtx);
+        super("POST", root, requestContext => this.defaultHandler(requestContext));
     }
     
     private async defaultHandler(requestContext: McmaApiRequestContext): Promise<void> {

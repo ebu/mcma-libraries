@@ -22,7 +22,7 @@ function getPath(req: HttpRequest): string {
         throw new McmaException(`Received request for url ${req.url} with unexpected path ${requestUrl.pathname}. Expected path to be prefixed with ${routePrefix}`);
     }
 
-    return requestUrl.pathname.substr(routePrefix.length);
+    return requestUrl.pathname.substring(routePrefix.length);
 }
 
 export class AzureFunctionApiController {

@@ -34,7 +34,7 @@ export class CosmosDbTable implements DocumentDatabaseTable {
             throw new McmaException(`Container ${containerDefinition.id} defines a partition key with multiple paths. MCMA only supports partition keys with a single path.`);
         }
 
-        this.partitionKeyName = containerDefinition.partitionKey.paths[0].substr(1);
+        this.partitionKeyName = containerDefinition.partitionKey.paths[0].substring(1);
     }
 
     async query<TDocument extends Document = Document>(query: Query<TDocument>): Promise<QueryResults<TDocument>> {

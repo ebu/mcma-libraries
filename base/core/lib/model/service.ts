@@ -19,15 +19,18 @@ export class Service extends McmaResource implements ServiceProperties {
 
     constructor(properties: ServiceProperties) {
         super("Service", properties);
+        this.name = properties.name;
+        this.resources = properties.resources?.map(re => new ResourceEndpoint(re));
+        this.authType = properties.authType;
+        this.jobType = properties.jobType;
+        if (Array.isArray(properties.jobProfileIds)) {
+            this.jobProfileIds = [...properties.jobProfileIds];
+        }
 
         Utils.checkProperty(this, "name", "string", true);
         Utils.checkProperty(this, "resources", "Array", true);
         Utils.checkProperty(this, "authType", "string", false);
         Utils.checkProperty(this, "jobType", "string", false);
         Utils.checkProperty(this, "jobProfileIds", "Array", false);
-
-        for (let i = 0; i < this.resources.length; i++) {
-            this.resources[i] = new ResourceEndpoint(this.resources[i]);
-        }
     }
 }

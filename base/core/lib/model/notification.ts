@@ -11,7 +11,9 @@ export class Notification extends McmaObject implements NotificationProperties {
     content: any;
 
     constructor(properties: NotificationProperties) {
-        super("Notification", properties);
+        super("Notification");
+        this.source = properties.source;
+        this.content = properties.content;
 
         Utils.checkProperty(this, "source", "string", false);
         Utils.checkProperty(this, "content", "object", true);

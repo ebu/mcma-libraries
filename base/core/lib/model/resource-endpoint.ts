@@ -13,7 +13,10 @@ export class ResourceEndpoint extends McmaObject implements ResourceEndpointProp
     authType?: string;
 
     constructor(properties: ResourceEndpointProperties) {
-        super("ResourceEndpoint", properties);
+        super("ResourceEndpoint");
+        this.resourceType = properties.resourceType;
+        this.httpEndpoint = properties.httpEndpoint;
+        this.authType = properties.authType;
 
         Utils.checkProperty(this, "resourceType", "string", true);
         Utils.checkProperty(this, "httpEndpoint", "url", true);

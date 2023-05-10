@@ -23,14 +23,12 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
     public onStarted: (requestContext: McmaApiRequestContext) => Promise<boolean>;
     public buildQuery: (requestContext: McmaApiRequestContext) => Query<T> | CustomQuery<T>;
     public onCompleted: (requestContext: McmaApiRequestContext, queryResults: QueryResults<T>) => Promise<void>;
-    public handleRequest: (requestContext: McmaApiRequestContext) => Promise<void>;
 
     private customQueryFactories: CustomQueryFactory<T>[] = [];
 
     constructor(private dbTableProvider: DocumentDatabaseTableProvider, public readonly root: string) {
-        super("GET", root, requestContext => this.handleRequest(requestContext));
+        super("GET", root, requestContext => this.defaultHandleRequest(requestContext));
         this.buildQuery = reqCtx => this.defaultBuildQuery(reqCtx);
-        this.handleRequest = reqCtx => this.defaultHandleRequest(reqCtx);
     }
 
     addCustomQuery(factory: CustomQueryFactory<T>): this {
