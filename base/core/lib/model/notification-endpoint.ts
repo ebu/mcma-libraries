@@ -9,7 +9,8 @@ export class NotificationEndpoint extends McmaObject implements NotificationEndp
     httpEndpoint: string;
 
     constructor(properties: NotificationEndpointProperties) {
-        super("NotificationEndpoint", properties);
+        super("NotificationEndpoint");
+        this.httpEndpoint = properties.httpEndpoint;
 
         Utils.checkProperty(this, "httpEndpoint", "url", true);
     }

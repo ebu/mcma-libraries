@@ -1,9 +1,9 @@
 {
     "name": "@mcma/google-cloud-firestore",
-    "version": "0.15.0",
+    "version": "0.16.0",
     "description": "Add Google Cloud Firestore as a backing data store for your MCMA services",
     "engines": {
-        "node": "^16.0.0"
+        "node": "^18.0.0"
     },
     "type": "commonjs",
     "main": "dist/index.js",
@@ -34,13 +34,13 @@
         "@google-cloud/firestore": "3.7.4"
     },
     "peerDependencies": {
-        "@mcma/core": "0.15.0",
-        "@mcma/data": "0.15.0"
+        "@mcma/core": "0.16.0",
+        "@mcma/data": "0.16.0"
     },
     "devDependencies": {
-        "@mcma/core": "0.15.0",
-        "@mcma/data": "0.15.0",
-        "@types/node": "^16.11.60",
+        "@mcma/core": "0.16.0",
+        "@mcma/data": "0.16.0",
+        "@types/node": "^18.15.10",
         "jasmine": "^3.2.0"
     }
 }

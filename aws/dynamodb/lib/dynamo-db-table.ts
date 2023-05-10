@@ -1,6 +1,17 @@
 import { types } from "util";
-import { DynamoDB } from "aws-sdk";
-import { DocumentClient, Key } from "aws-sdk/clients/dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+    DynamoDBDocumentClient,
+    GetCommand,
+    GetCommandInput,
+    QueryCommand,
+    QueryCommandInput,
+    DeleteCommandInput,
+    DeleteCommand,
+    PutCommand,
+    PutCommandInput
+} from "@aws-sdk/lib-dynamodb";
+import { NativeAttributeValue } from "@aws-sdk/util-dynamodb";
 import { McmaException, Utils } from "@mcma/core";
 import {
     CustomQuery,
@@ -23,11 +34,11 @@ import { DynamoDbMutex } from "./dynamo-db-mutex";
 function parsePartitionAndSortKeys(id: string): { partitionKey: string, sortKey: string } {
     const lastSlashIndex = id.lastIndexOf("/");
     return lastSlashIndex > 0
-        ? { partitionKey: id.substr(0, lastSlashIndex), sortKey: id.substr(lastSlashIndex + 1) }
+        ? { partitionKey: id.substring(0, lastSlashIndex), sortKey: id.substring(lastSlashIndex + 1) }
         : { partitionKey: id, sortKey: id };
 }
 
-export function keyFromBase64Json(str: string): Key {
+export function keyFromBase64Json(str: string): Record<string, NativeAttributeValue> {
     if (!str) {
         return undefined;
     }
@@ -38,19 +49,19 @@ export function keyFromBase64Json(str: string): Key {
     }
 }
 
-export function base64JsonFromKey(key: Key): string {
+export function base64JsonFromKey(key: Record<string, NativeAttributeValue>): string {
     return key ? Utils.toBase64(JSON.stringify(key)) : undefined;
 }
 
 export class DynamoDbTable implements DocumentDatabaseTable {
-    private readonly docClient: DocumentClient;
+    private readonly docClient: DynamoDBDocumentClient;
 
     constructor(
-        dynamoDb: DynamoDB,
+        dynamoDBClient: DynamoDBClient,
         private tableDescription: DynamoDbTableDescription,
         private options?: DynamoDbTableOptions
     ) {
-        this.docClient = new DocumentClient({ service: dynamoDb });
+        this.docClient = DynamoDBDocumentClient.from(dynamoDBClient, { marshallOptions: { removeUndefinedValues: true } });
     }
 
     private serialize(object: any) {
@@ -92,8 +103,8 @@ export class DynamoDbTable implements DocumentDatabaseTable {
     async query<TDocument extends Document = Document>(query: Query<TDocument>): Promise<QueryResults<TDocument>> {
         let keyNames = this.tableDescription.keyNames;
         let keyConditionExpression = "#partitionKey = :partitionKey";
-        let expressionAttributeNames: DocumentClient.ExpressionAttributeNameMap = { "#partitionKey": keyNames.partition };
-        let expressionAttributeValues: DocumentClient.ExpressionAttributeValueMap = { ":partitionKey": query.path };
+        let expressionAttributeNames: Record<string, string> = { "#partitionKey": keyNames.partition };
+        let expressionAttributeValues: Record<string, NativeAttributeValue> = { ":partitionKey": query.path };
 
         let filterExpression: string;
         if (hasFilterCriteria(query.filterExpression)) {
@@ -113,7 +124,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
             indexName = matchingIndex.name;
         }
 
-        const params: DocumentClient.QueryInput = {
+        const params: QueryCommandInput = {
             TableName: this.tableDescription.tableName,
             KeyConditionExpression: keyConditionExpression,
             FilterExpression: filterExpression,
@@ -126,7 +137,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
             ExclusiveStartKey: keyFromBase64Json(query.pageStartToken)
         };
 
-        const data = await this.docClient.query(params).promise();
+        const data = await this.docClient.send(new QueryCommand(params));
 
         return {
             results: data.Items.map(i => this.deserialize(i.resource)),
@@ -147,7 +158,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
         params.TableName = this.tableDescription.tableName;
         params.ExclusiveStartKey = keyFromBase64Json(query.pageStartToken);
 
-        const data = await this.docClient.query(params).promise();
+        const data = await this.docClient.send(new QueryCommand(params));
 
         return {
             results: data.Items.map(i => this.deserialize(i.resource)),
@@ -157,7 +168,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
 
     async get<TDocument extends Document = Document>(id: string): Promise<TDocument> {
         const { partitionKey, sortKey } = parsePartitionAndSortKeys(id);
-        const params: DocumentClient.GetItemInput = {
+        const params: GetCommandInput = {
             TableName: this.tableDescription.tableName,
             Key: {
                 [this.tableDescription.keyNames.partition]: partitionKey,
@@ -166,7 +177,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
             ConsistentRead: this.options?.consistentGet
         };
 
-        const data = await this.docClient.get(params).promise();
+        const data = await this.docClient.send(new GetCommand(params));
 
         return data?.Item?.resource ? this.deserialize(data.Item.resource) : null;
     }
@@ -187,12 +198,12 @@ export class DynamoDbTable implements DocumentDatabaseTable {
             }
         }
 
-        const params: DocumentClient.PutItemInput = {
+        const params: PutCommandInput = {
             TableName: this.tableDescription.tableName,
             Item: item
         };
         try {
-            await this.docClient.put(params).promise();
+            await this.docClient.send(new PutCommand(params));
         } catch (error) {
             throw new McmaException("Failed to put resource in DynamoDB table", error);
         }
@@ -202,7 +213,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
 
     async delete(id: string): Promise<void> {
         const { partitionKey, sortKey } = parsePartitionAndSortKeys(id);
-        const params: DocumentClient.DeleteItemInput = {
+        const params: DeleteCommandInput = {
             TableName: this.tableDescription.tableName,
             Key: {
                 [this.tableDescription.keyNames.partition]: partitionKey,
@@ -210,7 +221,7 @@ export class DynamoDbTable implements DocumentDatabaseTable {
             }
         };
         try {
-            await this.docClient.delete(params).promise();
+            await this.docClient.send(new DeleteCommand(params));
         } catch (error) {
             throw new McmaException("Failed to delete resource in DynamoDB table", error);
         }

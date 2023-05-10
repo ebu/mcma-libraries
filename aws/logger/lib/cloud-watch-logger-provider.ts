@@ -1,8 +1,17 @@
 import { v4 as uuidv4 } from "uuid";
-import { CloudWatchLogs } from "aws-sdk";
+import {
+    CloudWatchLogsClient,
+    DescribeLogGroupsCommand,
+    CreateLogGroupCommand,
+    CreateLogStreamCommand,
+    InputLogEvent,
+    PutLogEventsCommand,
+    DescribeLogGroupsCommandInput,
+    CreateLogGroupCommandInput, CreateLogStreamCommandInput
+} from "@aws-sdk/client-cloudwatch-logs";
 import { LogEvent, Logger, LoggerProvider, McmaException, McmaTrackerProperties, Utils } from "@mcma/core";
 import { AwsCloudWatchLogger } from "./cloud-watch-logger";
-import { InputLogEvent } from "aws-sdk/clients/cloudwatchlogs";
+import { getLogGroupName } from "./config-variables-ext";
 
 export class AwsCloudWatchLoggerProvider implements LoggerProvider {
 
@@ -13,7 +22,7 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
     private processing = false;
     private sequenceToken: string = undefined;
 
-    constructor(private source: string, private logGroupName: string, private cloudWatchLogs: CloudWatchLogs = new CloudWatchLogs()) {
+    constructor(private source: string, private logGroupName: string = getLogGroupName(), private cloudWatchLogsClient: CloudWatchLogsClient = new CloudWatchLogsClient({})) {
         if (typeof source !== "string" || typeof logGroupName !== "string") {
             throw new McmaException("Failed to initialize AwsCloudWatchLoggerProvider with params source: '" + source + "' and logGroupName: '" + logGroupName + "'");
         }
@@ -33,12 +42,12 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
 
                     let nextToken = undefined;
                     do {
-                        const params: CloudWatchLogs.DescribeLogGroupsRequest = {
+                        const params: DescribeLogGroupsCommandInput = {
                             logGroupNamePrefix: this.logGroupName,
                             nextToken,
                         };
 
-                        const data = await this.cloudWatchLogs.describeLogGroups(params).promise();
+                        const data = await this.cloudWatchLogsClient.send(new DescribeLogGroupsCommand(params));
                         for (const logGroup of data.logGroups) {
                             if (logGroup.logGroupName === this.logGroupName) {
                                 this.logGroupVerified = true;
@@ -50,20 +59,20 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
                     } while (!this.logGroupVerified && nextToken);
 
                     if (!this.logGroupVerified) {
-                        const params = {
+                        const params: CreateLogGroupCommandInput = {
                             logGroupName: this.logGroupName
                         };
-                        await this.cloudWatchLogs.createLogGroup(params).promise();
+                        await this.cloudWatchLogsClient.send(new CreateLogGroupCommand(params));
                         this.logGroupVerified = true;
                     }
                 }
 
                 if (!this.logStreamCreated) {
-                    const params = {
+                    const params: CreateLogStreamCommandInput = {
                         logGroupName: this.logGroupName,
                         logStreamName: this.logStreamName
                     };
-                    await this.cloudWatchLogs.createLogStream(params).promise();
+                    await this.cloudWatchLogsClient.send(new CreateLogStreamCommand(params));
                     this.logStreamCreated = true;
                 }
 
@@ -117,12 +126,12 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
 
     private async sendLogEvents(logEvents: InputLogEvent[]) {
         try {
-            const data = await this.cloudWatchLogs.putLogEvents({
+            const data = await this.cloudWatchLogsClient.send(new PutLogEventsCommand({
                 logEvents: logEvents,
                 logGroupName: this.logGroupName,
                 logStreamName: this.logStreamName,
                 sequenceToken: this.sequenceToken
-            }).promise();
+            }));
 
             this.sequenceToken = data.nextSequenceToken;
 

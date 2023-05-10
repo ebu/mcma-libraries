@@ -18,8 +18,13 @@ export class ProblemDetail extends McmaObject implements ProblemDetailProperties
 
     [key: string]: any;
 
-    constructor(properties?: ProblemDetailProperties) {
-        super("ProblemDetail", properties);
+    constructor(properties: ProblemDetailProperties) {
+        super("ProblemDetail");
+        this.type = properties.type;
+        this.title = properties.title;
+        this.detail = properties.detail;
+        this.instance = properties.instance;
+        Object.assign(this, properties);
 
         Utils.checkProperty(this, "type", "string", true);
         Utils.checkProperty(this, "title", "string", true);

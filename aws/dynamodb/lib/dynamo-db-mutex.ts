@@ -1,5 +1,4 @@
-import { DynamoDB } from "aws-sdk";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand, PutCommandInput } from "@aws-sdk/lib-dynamodb";
 import { Logger } from "@mcma/core";
 import { DynamoDbTableDescription } from "./dynamo-db-table-description";
 import { DocumentDatabaseMutex, LockData } from "@mcma/data";
@@ -14,7 +13,7 @@ export class DynamoDbMutex extends DocumentDatabaseMutex {
     private readonly _versionId: string;
     
     constructor(
-        private dc: DocumentClient,
+        private dc: DynamoDBDocumentClient,
         private tableDescription: DynamoDbTableDescription,
         mutexName: string,
         mutexHolder: string,
@@ -57,19 +56,19 @@ export class DynamoDbMutex extends DocumentDatabaseMutex {
     }
 
     protected async getLockData(): Promise<LockData> {
-        const record = await this.dc.get({
+        const record = await this.dc.send(new GetCommand({
             TableName: this.tableDescription.tableName,
             Key: this.generateTableKey(),
             ConsistentRead: true
-        }).promise();
+        }));
 
         // sanity check which removes the record from DynamoDB in case it has incompatible structure. Only possible
         // if modified externally, but this could lead to a situation where the lock would never be acquired.
         if (record.Item && (!record.Item.mutexHolder || !record.Item.versionId || !record.Item.timestamp)) {
-            await this.dc.delete({
+            await this.dc.send(new DeleteCommand({
                 TableName: this.tableDescription.tableName,
                 Key: this.generateTableKey(),
-            }).promise();
+            }));
             delete record.Item;
         }
 
@@ -77,7 +76,7 @@ export class DynamoDbMutex extends DocumentDatabaseMutex {
     }
 
     protected async putLockData() {
-        const value: DynamoDB.DocumentClient.PutItemInput = {
+        const value: PutCommandInput = {
             TableName: this.tableDescription.tableName,
             Item: this.generateTableItem(),
             Expected: {
@@ -88,16 +87,16 @@ export class DynamoDbMutex extends DocumentDatabaseMutex {
         };
         value.Expected[this.tableDescription.keyNames.partition] = { Exists: false };
 
-        await this.dc.put(value).promise();
+        await this.dc.send(new PutCommand(value));
     }
 
     protected async deleteLockData(versionId: string) {
-        await this.dc.delete({
+        await this.dc.send(new DeleteCommand({
             TableName: this.tableDescription.tableName,
             Key: this.generateTableKey(),
             ConditionExpression: "#v = :v",
             ExpressionAttributeNames: { "#v": "versionId" },
             ExpressionAttributeValues: { ":v": versionId }
-        }).promise();
+        }));
     }
 }

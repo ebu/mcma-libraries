@@ -17,18 +17,18 @@ export class McmaApiError extends McmaObject implements McmaApiErrorProperties {
     message?: string;
 
     constructor(properties: McmaApiErrorProperties) {
-        super("ApiError", properties);
+        super("ApiError");
+
+        this.timestamp = Utils.ensureValidDateOrUndefined(properties.timestamp) ?? new Date();
+        this.status = properties.status;
+        if (!this.error) {
+            this.error = getStatusError(properties.status);
+        }
+        this.path = properties.path;
+        this.message = properties.message;
 
         Utils.checkProperty(this, "status", "number", true);
         Utils.checkProperty(this, "path", "string", true);
         Utils.checkProperty(this, "message", "string", false);
-
-        this.timestamp = Utils.ensureValidDateOrUndefined(this.timestamp);
-        if (!this.timestamp) {
-            this.timestamp = new Date();
-        }
-        if (!this.error) {
-            this.error = getStatusError(this.status);
-        }
     }
 }

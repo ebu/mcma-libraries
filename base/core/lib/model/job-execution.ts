@@ -18,11 +18,12 @@ export class JobExecution extends JobBase<JobExecutionProperties> implements Job
 
     constructor(properties: JobExecutionProperties) {
         super("JobExecution", properties);
+        this.jobAssignmentId = properties.jobAssignmentId;
+        this.actualStartDate = Utils.ensureValidDateOrUndefined(properties.actualStartDate);
+        this.actualEndDate = Utils.ensureValidDateOrUndefined(properties.actualEndDate);
+        this.actualDuration = properties.actualDuration;
 
         Utils.checkProperty(this, "jobAssignmentId", "url", false);
         Utils.checkProperty(this, "actualDuration", "number", false);
-
-        this.actualStartDate = Utils.ensureValidDateOrUndefined(this.actualStartDate);
-        this.actualEndDate = Utils.ensureValidDateOrUndefined(this.actualEndDate);
     }
 }

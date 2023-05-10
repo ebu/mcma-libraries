@@ -16,17 +16,16 @@ export class JobAssignment extends JobBase<JobAssignmentProperties> implements J
 
     constructor(properties: JobAssignmentProperties) {
         super("JobAssignment", properties);
+        this.jobId = properties.jobId;
+        if (typeof properties.tracker === "object") {
+            this.tracker = new McmaTracker(properties.tracker);
+        }
+        if (typeof properties.notificationEndpoint === "object") {
+            this.notificationEndpoint = new NotificationEndpoint(properties.notificationEndpoint);
+        }
 
         Utils.checkProperty(this, "jobId", "url");
         Utils.checkProperty(this, "tracker", "object", false);
         Utils.checkProperty(this, "notificationEndpoint", "object", false);
-
-        if (typeof this.notificationEndpoint === "object") {
-            this.notificationEndpoint = new NotificationEndpoint(this.notificationEndpoint);
-        }
-
-        if (typeof this.tracker === "object") {
-            this.tracker = new McmaTracker(this.tracker);
-        }
     }
 }

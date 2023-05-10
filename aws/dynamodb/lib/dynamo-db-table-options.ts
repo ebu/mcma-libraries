@@ -1,5 +1,5 @@
 import { CustomQuery } from "@mcma/data";
-import { QueryInput } from "aws-sdk/clients/dynamodb";
+import { QueryInput } from "@aws-sdk/client-dynamodb";
 
 type AttributeValueRetriever = (partitionKey: any, sortKey: any, resource: any) => any;
 

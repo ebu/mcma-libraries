@@ -1,13 +1,10 @@
+import { AwsCredentialIdentity, Provider } from "@aws-sdk/types";
 import { AuthTypeRegistration } from "@mcma/client";
 import { AwsV4Authenticator } from "./aws-v4";
-import { AwsAuthContext, conformToAwsV4AuthContext } from "./aws-auth-context";
-import { AwsConfig } from "./aws-config";
-import { Aws } from "./aws";
 
-export function awsV4Auth(authContext?: Aws | AwsConfig | AwsAuthContext): AuthTypeRegistration {
-    const authContextConformed = conformToAwsV4AuthContext(authContext);
+export function awsV4Auth(config?: { credentials?: AwsCredentialIdentity | Provider<AwsCredentialIdentity>, region?: string, serviceName?: string }): AuthTypeRegistration {
     return {
         authType: "AWS4",
-        authenticator: new AwsV4Authenticator(Object.assign({}, authContextConformed)),
+        authenticator: new AwsV4Authenticator(config),
     };
 }

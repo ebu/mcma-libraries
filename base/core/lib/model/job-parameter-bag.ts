@@ -8,6 +8,8 @@ export class JobParameterBag extends McmaObject implements JobParameterBagProper
     [key: string]: any;
 
     constructor(properties?: { [key: string]: any }) {
-        super("JobParameterBag", properties);
+        super("JobParameterBag");
+        Object.assign(this, properties);
+        this["@type"] = "JobParameterBag";
     }
 }

@@ -5,11 +5,18 @@ export interface LocatorProperties extends McmaObjectProperties {
     url: string;
 }
 
-export abstract class Locator extends McmaObject implements LocatorProperties {
+export class Locator extends McmaObject implements LocatorProperties {
     url: string;
 
-    protected constructor(type: string, properties?: LocatorProperties) {
-        super(type, properties);
+    constructor(properties: LocatorProperties);
+    constructor(type: string, properties: LocatorProperties);
+    constructor(typeOrProperties: string | LocatorProperties, properties?: LocatorProperties) {
+        if (!properties && typeof typeOrProperties !== "string") {
+            properties = typeOrProperties;
+            typeOrProperties = "Locator";
+        }
+        super(typeOrProperties as string);
+        this.url = properties.url;
 
         Utils.checkProperty(this, "url", "string", true);
     }

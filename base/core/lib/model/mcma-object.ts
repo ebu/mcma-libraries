@@ -5,10 +5,7 @@ export interface McmaObjectProperties {
 export class McmaObject implements McmaObjectProperties {
     ["@type"]: string;
 
-    constructor(type: string, properties?: McmaObjectProperties) {
-        if (properties) {
-            Object.assign(this, properties);
-        }
+    constructor(type: string) {
         this["@type"] = type;
     }
 }
