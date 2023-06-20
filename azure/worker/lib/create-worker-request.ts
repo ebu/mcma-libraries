@@ -1,12 +1,9 @@
 import { Context } from "@azure/functions";
 
 import { McmaException } from "@mcma/core";
-import { WorkerRequest, WorkerRequestProperties } from "@mcma/worker";
+import { WorkerRequest } from "@mcma/worker";
 
 export interface WorkerQueueContext extends Context {
-    bindingData: {
-        queueTrigger: WorkerRequestProperties; 
-    }
 }
 
 function getWorkerRequest(context: WorkerQueueContext): WorkerRequest {
