@@ -1,16 +1,41 @@
 import { ConfigVariables, LoggerProvider } from "@mcma/core";
-import { McmaApiController, McmaApiRequest, McmaApiRequestContext, McmaApiRouteCollection } from "@mcma/api";
+import { McmaApiController, McmaApiRequest, McmaApiRequestContext, McmaApiRouteCollection, McmaApiMiddleware } from "@mcma/api";
 import { APIGatewayProxyEvent, APIGatewayProxyEventV2, APIGatewayProxyResult, APIGatewayProxyResultV2, Context } from "aws-lambda";
 
 function isAPIGatewayProxyEvent(x: any): x is APIGatewayProxyEvent {
     return !!x.httpMethod;
 }
 
-export class ApiGatewayApiController {
-    private mcmaApiController: McmaApiController;
+export interface ApiGatewayApiControllerConfig {
+    routes: McmaApiRouteCollection;
+    loggerProvider?: LoggerProvider;
+    configVariables?: ConfigVariables;
+    middleware?: McmaApiMiddleware[];
+    includeStageInPath?: boolean;
+}
 
-    constructor(routes: McmaApiRouteCollection, private loggerProvider?: LoggerProvider, private configVariables: ConfigVariables = ConfigVariables.getInstance()) {
-        this.mcmaApiController = new McmaApiController(routes);
+export class ApiGatewayApiController {
+    private apiController: McmaApiController;
+    private config: ApiGatewayApiControllerConfig;
+
+    constructor(config: ApiGatewayApiControllerConfig);
+    constructor(routes: McmaApiRouteCollection, loggerProvider?: LoggerProvider, configVariables?: ConfigVariables);
+    constructor(routesOrConfig: McmaApiRouteCollection | ApiGatewayApiControllerConfig, loggerProvider?: LoggerProvider, configVariables?: ConfigVariables) {
+        if (routesOrConfig instanceof McmaApiRouteCollection) {
+            this.config = {
+                routes: routesOrConfig,
+                loggerProvider: loggerProvider,
+                configVariables: configVariables,
+            }
+        } else {
+            this.config = routesOrConfig
+        }
+
+        if (!this.config.configVariables) {
+            this.config.configVariables = ConfigVariables.getInstance();
+        }
+
+        this.apiController = new McmaApiController(this.config.routes, this.config.middleware);
     }
 
     async handleRequest(event: APIGatewayProxyEventV2, context: Context): Promise<APIGatewayProxyResultV2>
@@ -19,10 +44,10 @@ export class ApiGatewayApiController {
         let httpMethod, path;
         if (isAPIGatewayProxyEvent(event)) {
             httpMethod = event.httpMethod;
-            path = event.path;
+            path = this.config.includeStageInPath ? event.requestContext.path : event.path;
         } else {
             httpMethod = event.requestContext.http.method;
-            path = event.requestContext.http.path.substring(event.requestContext.stage.length + 1);
+            path = this.config.includeStageInPath ? event.requestContext.http.path : event.requestContext.http.path.substring(event.requestContext.stage.length + 1);
         }
         const requestContext = new McmaApiRequestContext(
             new McmaApiRequest({
@@ -34,11 +59,11 @@ export class ApiGatewayApiController {
                 queryStringParameters: event.queryStringParameters,
                 body: event.body
             }),
-            this.loggerProvider,
-            this.configVariables
+            this.config.loggerProvider,
+            this.config.configVariables
         );
 
-        await this.mcmaApiController.handleRequest(requestContext);
+        await this.apiController.handleRequest(requestContext);
 
         let body = requestContext.response.body;
         let isBase64Encoded = false;

@@ -1,4 +1,4 @@
-import { McmaApiController, McmaApiRouteCollection, McmaApiRequestContext, McmaApiRequest } from "@mcma/api";
+import { McmaApiController, McmaApiRouteCollection, McmaApiRequestContext, McmaApiRequest, McmaApiMiddleware } from "@mcma/api";
 import { v4 as uuid } from "uuid";
 import { Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
@@ -20,11 +20,35 @@ function asStringMap(obj: Query | IncomingHttpHeaders): { [key: string]: string 
     return copy;
 }
 
-export class HttpFunctionApiController {
-    private mcmaApiController: McmaApiController;
+export interface HttpFunctionApiControllerConfig {
+    routes: McmaApiRouteCollection;
+    loggerProvider?: LoggerProvider;
+    configVariables?: ConfigVariables;
+    middleware?: McmaApiMiddleware[];
+}
 
-    constructor(routes: McmaApiRouteCollection, private loggerProvider?: LoggerProvider, private configVariables: ConfigVariables = ConfigVariables.getInstance()) {
-        this.mcmaApiController = new McmaApiController(routes);
+export class HttpFunctionApiController {
+    private apiController: McmaApiController;
+    private config: HttpFunctionApiControllerConfig;
+
+    constructor(config: HttpFunctionApiControllerConfig);
+    constructor(routes: McmaApiRouteCollection, loggerProvider?: LoggerProvider, configVariables?: ConfigVariables);
+    constructor(routesOrConfig: McmaApiRouteCollection | HttpFunctionApiControllerConfig, private loggerProvider?: LoggerProvider, private configVariables?: ConfigVariables) {
+        if (routesOrConfig instanceof McmaApiRouteCollection) {
+            this.config = {
+                routes: routesOrConfig,
+                loggerProvider: loggerProvider,
+                configVariables: configVariables,
+            }
+        } else {
+            this.config = routesOrConfig
+        }
+
+        if (!this.config.configVariables) {
+            this.config.configVariables = ConfigVariables.getInstance();
+        }
+
+        this.apiController = new McmaApiController(this.config.routes, this.config.middleware);
     }
 
     async handleRequest(request: Request, response: Response): Promise<void> {
@@ -38,11 +62,11 @@ export class HttpFunctionApiController {
                 queryStringParameters: asStringMap(request.query),
                 body: request.body
             }),
-            this.loggerProvider,
-            this.configVariables
+            this.config.loggerProvider,
+            this.config.configVariables
         );
 
-        await this.mcmaApiController.handleRequest(requestContext);
+        await this.apiController.handleRequest(requestContext);
 
         response.statusCode = requestContext.response.statusCode;
         response.statusMessage = requestContext.response.errorMessage;
