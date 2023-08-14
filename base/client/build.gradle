@@ -2,3 +2,5 @@ apply from:  "../../npmTasks.gradle"
 
 npmInstall.mustRunAfter ":base:core:npmPublish"
 npmInstall.mustRunAfter ":base:core:npmPublishLocal"
+npmInstall.mustRunAfter ":base:secrets:npmPublish"
+npmInstall.mustRunAfter ":base:secrets:npmPublishLocal"

@@ -1,3 +1,4 @@
+export * from "./http-methods";
 export * from "./http-statuses";
 export * from "./mcma-api-controller";
 export * from "./mcma-api-error";
