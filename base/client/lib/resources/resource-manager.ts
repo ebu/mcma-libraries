@@ -1,4 +1,13 @@
-import { McmaException, McmaResource, McmaResourceType, Notification, NotificationEndpointProperties, ResourceEndpoint, Service, ServiceProperties } from "@mcma/core";
+import {
+    McmaException,
+    McmaResource,
+    McmaResourceType,
+    Notification,
+    NotificationEndpointProperties,
+    ResourceEndpoint,
+    Service,
+    ServiceProperties
+} from "@mcma/core";
 
 import { Http, HttpClient } from "../http";
 import { AuthProvider } from "../auth";
@@ -45,7 +54,7 @@ export class ResourceManager {
                     }),
                     new ResourceEndpoint({
                         resourceType: "JobProfile",
-                        httpEndpoint: this.config.serviceRegistryUrl +  "/job-profiles",
+                        httpEndpoint: this.config.serviceRegistryUrl + "/job-profiles",
                     })
                 ]
             });
@@ -60,10 +69,9 @@ export class ResourceManager {
 
             for (const service of response.data.results) {
                 try {
-                    if (service.name === serviceRegistry.name) {
-                        this.serviceClients.shift();
+                    if (service.name !== serviceRegistry.name) {
+                        this.serviceClients.push(new ServiceClient(new Service(service), this.authProvider, this.config.httpClientConfig));
                     }
-                    this.serviceClients.push(new ServiceClient(new Service(service), this.authProvider, this.config.httpClientConfig));
                 } catch (error) {
                     console.warn("Failed to instantiate json " + JSON.stringify(service) + " as a Service due to error " + error.message);
                 }
@@ -90,7 +98,7 @@ export class ResourceManager {
         const results: T[] = [];
         const usedHttpEndpoints: string[] = [];
         const errors: Error[] = [];
-        
+
         let params: any = {};
         if (sortBy !== undefined && sortBy !== null) {
             params.sortBy = sortBy;

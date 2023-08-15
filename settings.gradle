@@ -1,6 +1,7 @@
 include "aws",
         "aws:api-gateway",
         "aws:client",
+        "aws:cloudwatch-events",
         "aws:dynamodb",
         "aws:lambda-worker-invoker",
         "aws:logger",
