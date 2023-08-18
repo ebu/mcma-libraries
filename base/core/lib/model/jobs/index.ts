@@ -4,6 +4,6 @@ export * from "./ame-job";
 export * from "./capture-job";
 export * from "./distribution-job";
 export * from "./qa-job";
-export * from "./transfer-job";
+export * from "./storage-job";
 export * from "./transform-job";
 export * from "./workflow-job";

@@ -1,7 +1,7 @@
 import { Job, JobProperties } from "./job";
 
-export class TransferJob extends Job {
+export class StorageJob extends Job {
     constructor(properties: JobProperties) {
-        super("TransferJob", properties);
+        super("StorageJob", properties);
     }
 }
