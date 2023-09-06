@@ -25,7 +25,7 @@ export class McmaApiController {
                 const mw = middleware[i];
                 const pipeline = this.pipeline;
                 this.pipeline = async (requestContext: McmaApiRequestContext) => {
-                    await mw(requestContext, pipeline);
+                    await mw.execute(requestContext, pipeline);
                 };
             }
         }

@@ -1,0 +1,45 @@
+{
+    "name": "@mcma/aws-cloudwatch-events",
+    "version": "0.16.3-beta13",
+    "description": "Node module with code and type definitions for using Cloudwatch Events in an MCMA environment.",
+    "engines": {
+        "node": "^18.0.0"
+    },
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "test": "jasmine"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ebu/mcma-libraries.git"
+    },
+    "keywords": [
+        "ebu",
+        "mcma",
+        "aws",
+        "s3"
+    ],
+    "author": "Joost Rovers <joost@rovers.pt>",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/ebu/mcma-libraries/issues"
+    },
+    "homepage": "https://github.com/ebu/mcma-libraries/mcma-data-dynamodb#readme",
+    "dependencies": {
+        "@aws-sdk/client-cloudwatch-events": "^3.300.0"
+    },
+    "peerDependencies": {
+        "@mcma/core": "0.16.3-beta13",
+        "@mcma/data": "0.16.3-beta13"
+    },
+    "devDependencies": {
+        "@mcma/core": "0.16.3-beta13",
+        "@mcma/data": "0.16.3-beta13",
+        "@types/node": "^18.15.10"
+    }
+}

@@ -7,13 +7,13 @@ export function buildQueryDefinition<TDocument extends Document = Document>(quer
     const sqlQuery: SqlQuery = {
         text: "SELECT VALUE root FROM root",
         parameters: [],
-        addParameter: function(parameter: any) {
+        addParameter: function (parameter: any) {
             const paramName = `@p${this.parameters.length}`;
             this.parameters.push(parameter);
             return paramName;
         }
     };
-    
+
     function addFilterExpression(filterExpression: FilterExpression): string {
         if (isFilterCriteriaGroup(filterExpression)) {
             return addFilterCriteriaGroup(filterExpression);
@@ -21,7 +21,7 @@ export function buildQueryDefinition<TDocument extends Document = Document>(quer
             return addFilterCriteria(filterExpression);
         }
     }
-    
+
     function addFilterCriteriaGroup(filterCriteriaGroup: FilterCriteriaGroup): string {
         return filterCriteriaGroup.children.length
             ? "(" + filterCriteriaGroup.children.map(x => addFilterExpression(x)).join(` ${(filterCriteriaGroup.logicalOperator === "||" ? "or" : "and")} `) + ")"
@@ -31,10 +31,10 @@ export function buildQueryDefinition<TDocument extends Document = Document>(quer
     function addFilterCriteria(filterCriteria: FilterCriteria): string {
         return `root["resource"]["${filterCriteria.propertyName}"] ${filterCriteria.operator} ${sqlQuery.addParameter(filterCriteria.propertyValue)}`;
     }
-    
+
     const partitionKeyClause = query.path ? `root["${partitionKeyName}"] = ${sqlQuery.addParameter(query.path)}` : null;
-    const filterClause = query.filterExpression ? addFilterExpression(query.filterExpression): null;
-    
+    const filterClause = query.filterExpression ? addFilterExpression(query.filterExpression) : null;
+
     if (partitionKeyClause && partitionKeyClause.length && filterClause && filterClause.length) {
         sqlQuery.text += ` WHERE (${partitionKeyClause}) and (${filterClause})`;
     } else if (partitionKeyClause && partitionKeyClause.length) {
@@ -42,11 +42,14 @@ export function buildQueryDefinition<TDocument extends Document = Document>(quer
     } else if (filterClause && filterClause.length) {
         sqlQuery.text += ` WHERE ${partitionKeyClause}`;
     }
-    
+
     if (query.sortBy) {
-        sqlQuery.text += ` ORDER BY root["resource"]["${query.sortBy}"] ${query.sortOrder}`;
+        sqlQuery.text += ` ORDER BY root["resource"]["${query.sortBy}"]`;
+        if (query.sortOrder) {
+            sqlQuery.text += ` ${query.sortOrder}`;
+        }
     }
-    
+
     return {
         query: sqlQuery.text,
         parameters: sqlQuery.parameters.map((p, i) => ({ name: `@p${i}`, value: p }))
