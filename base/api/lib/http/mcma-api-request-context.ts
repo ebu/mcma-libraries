@@ -48,7 +48,7 @@ export class McmaApiRequestContext {
         this.setResponseError(HttpStatusCode.NotFound, "No resource found on path '" + this.request.path + "'.");
     }
 
-    getTracker(): McmaTracker | undefined {
+    async getTracker(): Promise<McmaTracker | undefined> {
         // try to get the tracker from the headers or query string first
         const headerOrQueryParam =
             (this.request && this.request.headers && this.request.headers[McmaHeaders.tracker]) ||
@@ -60,7 +60,7 @@ export class McmaApiRequestContext {
                     return new McmaTracker(JSON.parse(trackerDataJson));
                 }
             } catch (e) {
-                this.loggerProvider?.get(this.request.id)?.warn(`Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: ${e}`);
+                (await this.loggerProvider?.get(this.request.id))?.warn(`Failed to convert text in header or query param 'mcmaTracker' to an McmaTracker object. Error: ${e}`);
             }
         }
 
@@ -68,7 +68,7 @@ export class McmaApiRequestContext {
         return this.request?.body?.tracker;
     }
 
-    getLogger(): Logger | undefined {
-        return this.loggerProvider?.get(this.request.id, this.getTracker());
+    async getLogger(): Promise<Logger | undefined> {
+        return this.loggerProvider?.get(this.request.id, await this.getTracker());
     }
 }

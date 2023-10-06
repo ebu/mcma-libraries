@@ -1,3 +1,5 @@
+import { Utils } from "./utils";
+
 export class McmaException extends Error {
     public originalStack: string;
 
@@ -24,7 +26,7 @@ export class McmaException extends Error {
             }
 
             if (includeDetails && c.context) {
-                ret += "\nContext:\n" + JSON.stringify(c.context, null, 2);
+                ret += "\nContext:\n" + Utils.stringify(c.context);
             }
 
             c = c.cause;
@@ -36,3 +38,4 @@ export class McmaException extends Error {
         return ret;
     }
 }
+

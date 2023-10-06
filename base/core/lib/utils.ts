@@ -79,6 +79,21 @@ function ensureValidDateOrUndefined(maybeDate: any): Date | undefined {
     return date;
 }
 
+function stringify(obj: any) {
+    let cache: any[] = [];
+    return JSON.stringify(obj, function (key, value) {
+        if (typeof value === "object" && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+                // Circular reference found, discard key
+                return;
+            }
+            // Store value in our collection
+            cache.push(value);
+        }
+        return value;
+    }, 2);
+}
+
 function checkProperty(object: any, propertyName: string, expectedType: string, required?: boolean) {
     const propertyValue = (<any>object)[propertyName];
     const propertyType = typeof propertyValue;
@@ -118,5 +133,6 @@ export const Utils = {
     isValidDateString,
     reviver,
     ensureValidDateOrUndefined,
+    stringify,
     checkProperty,
 };

@@ -10,7 +10,7 @@ export class CloudLoggingLoggerProvider implements LoggerProvider {
         this.log = this.logging.log(this.source);
     }
 
-    get(requestId?: string, tracker?: McmaTrackerProperties): Logger {
+    async get(requestId?: string, tracker?: McmaTrackerProperties): Promise<Logger> {
         return new CloudLoggingLogger(this.log, this.source, requestId, tracker);
     }
 }

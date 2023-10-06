@@ -40,7 +40,7 @@ export class McmaApiController {
         try {
             await this.pipeline(requestContext);
         } catch (error) {
-            const logger = requestContext.getLogger();
+            const logger = await requestContext.getLogger();
             logger?.error(error);
 
             response.statusCode = HttpStatusCode.InternalServerError;

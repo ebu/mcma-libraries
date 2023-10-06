@@ -150,14 +150,14 @@ export class AwsCloudWatchLoggerProvider implements LoggerProvider {
         setTimeout(() => this.processBatch(), 1000);
     }
 
-    get(requestId?: string, tracker?: McmaTrackerProperties): Logger {
+    async get(requestId?: string, tracker?: McmaTrackerProperties): Promise<Logger> {
         return new AwsCloudWatchLogger(le => this.addLogEvent(le), this.source, requestId, tracker);
     }
 
-    async flush(until?: Date | number): Promise<void> {
+    async flush(until?: Date): Promise<void> {
         while (this.logEvents.length > 0 || this.processing) {
-            const now = Date.now();
-            if (typeof until === "number" && until < now || until instanceof Date && until.getTime() < now) {
+            const now = new Date();
+            if (until instanceof Date && until < now) {
                 console.warn("Not able to flush all log messages to CloudWatch Logs within deadline. " + this.logEvents.length + " Remaining messages:");
                 for (const logEvent of this.logEvents) {
                     console.warn(logEvent.toString());
