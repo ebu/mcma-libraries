@@ -8,6 +8,7 @@ export * from "./job-parameter";
 export * from "./job-execution";
 export * from "./job-profile";
 export * from "./locator";
+export * from "./locator-status";
 export * from "./mcma-tracker";
 export * from "./notification-endpoint";
 export * from "./notification";
