@@ -1,6 +1,6 @@
 {
     "name": "@mcma/google-cloud-http-functions",
-    "version": "0.16.4",
+    "version": "0.16.6",
     "description": "Node module with code for using Google HTTP functions as an entry point to an MCMA API handler.",
     "engines": {
         "node": "^18.0.0"
@@ -36,18 +36,18 @@
         "uuid": "^9.0.0"
     },
     "peerDependencies": {
-        "@mcma/api": "0.16.4",
-        "@mcma/client": "0.16.4",
-        "@mcma/core": "0.16.4",
-        "@mcma/data": "0.16.4",
-        "@mcma/worker-invoker": "0.16.4"
+        "@mcma/api": "0.16.6",
+        "@mcma/client": "0.16.6",
+        "@mcma/core": "0.16.6",
+        "@mcma/data": "0.16.6",
+        "@mcma/worker-invoker": "0.16.6"
     },
     "devDependencies": {
-        "@mcma/api": "0.16.4",
-        "@mcma/client": "0.16.4",
-        "@mcma/core": "0.16.4",
-        "@mcma/data": "0.16.4",
-        "@mcma/worker-invoker": "0.16.4",
+        "@mcma/api": "0.16.6",
+        "@mcma/client": "0.16.6",
+        "@mcma/core": "0.16.6",
+        "@mcma/data": "0.16.6",
+        "@mcma/worker-invoker": "0.16.6",
         "@types/express": "^4.17.6",
         "@types/node": "^18.15.10",
         "@types/uri-templates": "^0.1.30",
