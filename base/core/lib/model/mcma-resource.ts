@@ -27,12 +27,12 @@ export abstract class McmaResource extends McmaObject implements McmaResourcePro
     dateModified?: Date;
     custom?: { [key: string]: any };
 
-    protected constructor(type: string, properties: McmaResourceProperties) {
+    protected constructor(type: string, properties?: McmaResourceProperties) {
         super(type);
-        this.id = properties.id;
-        this.dateCreated = Utils.ensureValidDateOrUndefined(properties.dateCreated);
-        this.dateModified = Utils.ensureValidDateOrUndefined(properties.dateModified);
-        if (typeof properties.custom === "object" && Object.keys(properties.custom).length > 0) {
+        this.id = properties?.id;
+        this.dateCreated = Utils.ensureValidDateOrUndefined(properties?.dateCreated);
+        this.dateModified = Utils.ensureValidDateOrUndefined(properties?.dateModified);
+        if (typeof properties?.custom === "object" && Object.keys(properties?.custom).length > 0) {
             this.custom = Object.assign({}, properties.custom);
         }
     }
