@@ -32,7 +32,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/google-cloud/storage#readme",
     "dependencies": {
-        "@google-cloud/storage": "5.1.1"
+        "@google-cloud/storage": "^7.5.0"
     },
     "peerDependencies": {
         "@mcma/core": "0.16.7"

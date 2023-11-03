@@ -31,7 +31,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/google-cloud/firestore#readme",
     "dependencies": {
-        "@google-cloud/firestore": "3.7.4"
+        "@google-cloud/firestore": "^7.1.0"
     },
     "peerDependencies": {
         "@mcma/core": "0.16.7",
