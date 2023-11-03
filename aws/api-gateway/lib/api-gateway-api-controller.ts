@@ -47,7 +47,7 @@ export class ApiGatewayApiController {
             path = this.config.includeStageInPath ? event.requestContext.path : event.path;
         } else {
             httpMethod = event.requestContext.http.method;
-            path = this.config.includeStageInPath ? event.requestContext.http.path : event.requestContext.http.path.substring(event.requestContext.stage.length + 1);
+            path = this.config.includeStageInPath || event.requestContext.stage === "$default" ? event.requestContext.http.path : event.requestContext.http.path.substring(event.requestContext.stage.length + 1);
         }
         const requestContext = new McmaApiRequestContext(
             new McmaApiRequest({
