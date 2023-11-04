@@ -31,7 +31,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
-        "@aws-sdk/client-secrets-manager": "^3.300.0"
+        "@aws-sdk/client-secrets-manager": "^3.441.0"
     },
     "peerDependencies": {
         "@mcma/secrets": "0.16.7"

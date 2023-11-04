@@ -30,7 +30,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-auth#readme",
     "dependencies": {
-        "@aws-sdk/credential-providers": "^3.300.0",
+        "@aws-sdk/credential-providers": "^3.441.0",
         "crypto-js": "^4.2.0"
     },
     "peerDependencies": {

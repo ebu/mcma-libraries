@@ -31,7 +31,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-worker-lambda#readme",
     "dependencies": {
-        "@aws-sdk/client-lambda": "^3.300.0"
+        "@aws-sdk/client-lambda": "^3.441.0"
     },
     "peerDependencies": {
         "@mcma/core": "0.16.7",

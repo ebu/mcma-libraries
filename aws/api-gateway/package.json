@@ -31,12 +31,11 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-nodejs#readme",
     "dependencies": {
-        
     },
     "peerDependencies": {
         "@mcma/core": "0.16.7",
         "@mcma/api": "0.16.7",
-        "@types/aws-lambda": "^8.10.114"
+        "@types/aws-lambda": "^8.10.125"
     },
     "devDependencies": {
         "@mcma/api": "0.16.7",
