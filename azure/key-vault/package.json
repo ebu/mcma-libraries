@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-key-vault",
-    "version": "0.16.8",
+    "version": "0.16.9",
     "description": "Use Azure Key Vault in a MCMA environment",
     "engines": {
         "node": "^18.0.0"
@@ -35,12 +35,12 @@
         "@azure/identity": "^3.2.4"
     },
     "peerDependencies": {
-        "@mcma/core": "0.16.8",
-        "@mcma/secrets": "0.16.8"
+        "@mcma/core": "0.16.9",
+        "@mcma/secrets": "0.16.9"
     },
     "devDependencies": {
-        "@mcma/core": "0.16.8",
-        "@mcma/secrets": "0.16.8",
+        "@mcma/core": "0.16.9",
+        "@mcma/secrets": "0.16.9",
         "@types/node": "^18.15.10",
         "jasmine": "^3.2.0"
     }

@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-logger",
-    "version": "0.16.8",
+    "version": "0.16.9",
     "description": "Add Azure AppInsights logging to your MCMA services",
     "engines": {
         "node": "^18.0.0"
@@ -33,11 +33,11 @@
         "applicationinsights": "^2.7.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.16.8"
+        "@mcma/core": "0.16.9"
     },
     "devDependencies": {
         "@azure/functions": "^3.5.1",
-        "@mcma/core": "0.16.8",
+        "@mcma/core": "0.16.9",
         "@types/node": "^18.15.10",
         "jasmine": "^3.2.0"
     }

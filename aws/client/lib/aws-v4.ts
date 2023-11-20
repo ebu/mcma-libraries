@@ -33,7 +33,7 @@ function hmac(secret: string | CryptoJS.WordArray, value: string) {
     return CryptoJS.HmacSHA256(value, secret, { asBytes: true });
 }
 
-function buildCanonicalRequest(method: string, pathname: string, queryParams: { [key: string]: string }, headers: { [key: string]: string }, data: any) {
+function buildCanonicalRequest(method: string, pathname: string, queryParams: { [key: string]: string }, headers: { [key: string]: any }, data: any) {
     return method + "\n" +
            buildCanonicalUri(pathname) + "\n" +
            buildCanonicalQueryString(queryParams) + "\n" +
@@ -88,7 +88,7 @@ function buildCanonicalHeaders(headers: { [key: string]: string }) {
     return canonicalHeaders;
 }
 
-function buildCanonicalSignedHeaders(headers: { [key: string]: string }): string {
+function buildCanonicalSignedHeaders(headers: { [key: string]: any }): string {
     const sortedKeys = [];
     for (const property of Object.keys(headers)) {
         sortedKeys.push(property.toLowerCase());
