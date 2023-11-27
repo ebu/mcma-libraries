@@ -1,4 +1,6 @@
 import { GetBucketLocationCommand, S3Client } from "@aws-sdk/client-s3";
+import { Locator } from "@mcma/core";
+import { S3Locator } from "./s3-locator";
 
 export async function buildS3Url(bucket: string, key: string, s3: S3Client): Promise<string>;
 export async function buildS3Url(bucket: string, key: string, region: string): Promise<string>;
@@ -20,4 +22,8 @@ export async function buildS3Url(bucket: string, key: string, s3OrRegion: S3Clie
     } else {
         return encodeURI(`https://${bucket}.s3.${region}.amazonaws.com/${key}`);
     }
+}
+
+export function isS3Locator(x: Locator): x is S3Locator {
+    return typeof x === "object" && x["@type"] === "S3Locator";
 }
