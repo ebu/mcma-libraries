@@ -73,7 +73,9 @@ export class Worker {
         try {
             await operation.execute(this.providers, request, ctx);
         } catch (e) {
+            request.logger?.error(e?.name);
             request.logger?.error(e?.message);
+            request.logger?.error(e?.stack);
             request.logger?.error(e?.toString());
             request.logger?.error(e);
             throw new McmaException("Failed to process worker operation '" + request.operationName + "'", e);
