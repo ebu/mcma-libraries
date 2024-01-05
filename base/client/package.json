@@ -1,6 +1,6 @@
 {
     "name": "@mcma/client",
-    "version": "0.16.12",
+    "version": "0.16.13",
     "description": "Node module with classes and functions used to access services in an MCMA environment",
     "engines": {
         "node": "^18.0.0"
@@ -32,12 +32,12 @@
         "axios": "^1.6.2"
     },
     "peerDependencies": {
-        "@mcma/core": "0.16.12",
-        "@mcma/secrets": "0.16.12"
+        "@mcma/core": "0.16.13",
+        "@mcma/secrets": "0.16.13"
     },
     "devDependencies": {
-        "@mcma/core": "0.16.12",
-        "@mcma/secrets": "0.16.12",
+        "@mcma/core": "0.16.13",
+        "@mcma/secrets": "0.16.13",
         "@types/node": "^18.15.10",
         "jasmine": "^3.3.1"
     }

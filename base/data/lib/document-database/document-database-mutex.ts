@@ -97,8 +97,6 @@ export abstract class DocumentDatabaseMutex {
 
         if (this.hasLock) {
             this.logger?.debug("Acquired lock for mutex '" + this.mutexName + "' by '" + this.mutexHolder + "'");
-        } else {
-            this.logger?.debug("Failed to acquire lock for mutex '" + this.mutexName + "' by '" + this.mutexHolder + "'");
         }
 
         return this.hasLock;

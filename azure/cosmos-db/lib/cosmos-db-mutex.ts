@@ -68,7 +68,7 @@ export class CosmosDbMutex extends DocumentDatabaseMutex {
             return undefined;
         }
 
-        itemResponse.resource.versioId = itemResponse.etag;
+        itemResponse.resource.versionId = itemResponse.etag;
 
         return itemResponse.resource;
     }
