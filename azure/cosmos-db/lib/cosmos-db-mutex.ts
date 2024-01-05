@@ -57,15 +57,19 @@ export class CosmosDbMutex extends DocumentDatabaseMutex {
                 
         const itemResponse = await item.read<TableItem>({ consistencyLevel: ConsistencyLevel.Strong });
 
+        if (!itemResponse.resource) {
+            return undefined;
+        }
+
         // sanity check which removes the record from CosmosDB in case it has incompatible structure. Only possible
         // if modified externally, but this could lead to a situation where the lock would never be acquired.
-        if (itemResponse.resource && (!itemResponse.resource.mutexHolder || !itemResponse.resource.timestamp)) {
+        if (!itemResponse.resource.mutexHolder || !itemResponse.resource.timestamp) {
             await item.delete();
             return undefined;
         }
-        
-        itemResponse.resource.versionId = itemResponse.etag;
-        
+
+        itemResponse.resource.versioId = itemResponse.etag;
+
         return itemResponse.resource;
     }
 
