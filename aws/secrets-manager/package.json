@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-secrets-manager",
-    "version": "0.16.14",
+    "version": "0.16.15",
     "description": "Use AWS Secrets Manager in a MCMA environment",
     "engines": {
         "node": "^18.0.0"
@@ -34,7 +34,7 @@
         "@aws-sdk/client-secrets-manager": "^3.441.0"
     },
     "peerDependencies": {
-        "@mcma/secrets": "0.16.14"
+        "@mcma/secrets": "0.16.15"
     },
     "devDependencies": {
         "@types/node": "^18.15.10"
