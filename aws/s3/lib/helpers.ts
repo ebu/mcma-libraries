@@ -18,9 +18,9 @@ export async function buildS3Url(bucket: string, key: string, s3OrRegion: S3Clie
     }
 
     if (bucket.indexOf(".") >= 0) {
-        return encodeURI(`https://s3.${region}.amazonaws.com/${bucket}/${key}`);
+        return `https://s3.${region}.amazonaws.com/${bucket}/${encodeURIComponent(key).replace(/%20/g, "+").replace(/%2F/g, "/")}`;
     } else {
-        return encodeURI(`https://${bucket}.s3.${region}.amazonaws.com/${key}`);
+        return `https://${bucket}.s3.${region}.amazonaws.com/${encodeURIComponent(key).replace(/%20/g, "+").replace(/%2F/g, "/")}`;
     }
 }
 
