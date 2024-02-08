@@ -15,7 +15,7 @@ export class S3Locator extends Locator implements S3LocatorProperties {
         super("S3Locator", properties);
 
         const url = new URL(this.url);
-        const pathname = decodeURIComponent(url.pathname);
+        const pathname = decodeURIComponent(url.pathname.replace(/\+/g, "%20"));
 
         // checking domain name
         const parts = url.hostname.split(".");
