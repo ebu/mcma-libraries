@@ -107,8 +107,13 @@ export abstract class DocumentDatabaseMutex {
             throw new McmaException("Cannot unlock when not locked");
         }
 
-        await this.deleteLockData(this.versionId);
+        try {
+            await this.deleteLockData(this.versionId);
+            this.logger?.debug("Released lock for mutex '" + this.mutexName + "' by '" + this.mutexHolder + "'");
+        } catch (e) {
+            this.logger?.warn(e);
+            this.logger?.warn("Failed to release lock for mutex '" + this.mutexName + "' by '" + this.mutexHolder + "'. Probably it was already released");
+        }
         this.hasLock = false;
-        this.logger?.debug("Released lock for mutex '" + this.mutexName + "' by '" + this.mutexHolder + "'");
     }
 }
