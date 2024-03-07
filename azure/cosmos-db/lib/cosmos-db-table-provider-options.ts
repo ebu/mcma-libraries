@@ -5,12 +5,21 @@ import { SqlQuerySpec } from "@azure/cosmos";
 export type CustomQueryFactory = (customQuery: CustomQuery) => SqlQuerySpec;
 export type CustomQueryRegistry = { [key: string]: CustomQueryFactory };
 
+export interface CosmosDbTableRetryOptions {
+    maxAttempts?: number;
+    intervalSeconds?: number;
+    backoffRate?: number;
+    maxDelaySeconds?: number;
+    jitter?: boolean;
+}
+
 export interface CosmosDbTableProviderOptions {
     endpoint: string;
     key: string;
     region: string;
     databaseId: string;
     customQueries?: CustomQueryRegistry;
+    retry?: CosmosDbTableRetryOptions
 }
 
 function emptyCosmosDbSettings(): CosmosDbTableProviderOptions {

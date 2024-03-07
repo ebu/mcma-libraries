@@ -22,6 +22,6 @@ export class CosmosDbTableProvider implements DocumentDatabaseTableProvider {
                 containerDefinition: containerResp.resource
             };
         }
-        return new CosmosDbTable(this.containers[tableName].container, this.containers[tableName].containerDefinition, this.options.customQueries);
+        return new CosmosDbTable(this.containers[tableName].container, this.containers[tableName].containerDefinition, this.options.customQueries, this.options.retry);
     }
 }
