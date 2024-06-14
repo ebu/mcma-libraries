@@ -1,5 +1,5 @@
 import { Logger, LogEvent, McmaTrackerProperties, LogLevel } from "@mcma/core";
-import { Contracts, TelemetryClient } from "applicationinsights";
+import { Contracts, TelemetryClient, KnownSeverityLevel } from "applicationinsights";
 
 function createTraceTelemetry(logEvent: LogEvent): Contracts.TraceTelemetry {
     const message = logEvent.message;
@@ -23,23 +23,23 @@ function createTraceTelemetry(logEvent: LogEvent): Contracts.TraceTelemetry {
     };
 }
 
-function getSeverityLevel(logLevel: number): Contracts.SeverityLevel {
+function getSeverityLevel(logLevel: number): KnownSeverityLevel {
     if (logLevel === 0) {
-        return Contracts.SeverityLevel.Verbose;
+        return KnownSeverityLevel.Verbose;
     }
     if (logLevel <= LogLevel.Fatal) {
-        return Contracts.SeverityLevel.Critical;
+        return KnownSeverityLevel.Critical;
     }
     if (logLevel <= LogLevel.Error) {
-        return Contracts.SeverityLevel.Error;
+        return KnownSeverityLevel.Error;
     }
     if (logLevel <= LogLevel.Warn) {
-        return Contracts.SeverityLevel.Warning;
+        return KnownSeverityLevel.Warning;
     }
     if (logLevel <= LogLevel.Info) {
-        return Contracts.SeverityLevel.Information;
+        return KnownSeverityLevel.Information;
     }
-    return Contracts.SeverityLevel.Verbose;
+    return KnownSeverityLevel.Verbose;
 }
 
 function getStringValue(value: any): string | undefined {

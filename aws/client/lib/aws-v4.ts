@@ -25,12 +25,12 @@ function hash(value: string) {
     return CryptoJS.SHA256(value);
 }
 
-function hexEncode(value: CryptoJS.WordArray) {
+function hexEncode(value: CryptoJS.lib.WordArray) {
     return value.toString(CryptoJS.enc.Hex);
 }
 
-function hmac(secret: string | CryptoJS.WordArray, value: string) {
-    return CryptoJS.HmacSHA256(value, secret, { asBytes: true });
+function hmac(secret: string | CryptoJS.lib.WordArray, value: string) {
+    return CryptoJS.HmacSHA256(value, secret);
 }
 
 function buildCanonicalRequest(method: string, pathname: string, queryParams: { [key: string]: string }, headers: { [key: string]: any }, data: any) {
@@ -109,11 +109,11 @@ function buildCredentialScope(datetime: string, region: string, service: string)
     return datetime.substring(0, 8) + "/" + region + "/" + service + "/" + AWS4_REQUEST;
 }
 
-function calculateSigningKey(secretKey: string, datetime: string, region: string, service: string): CryptoJS.WordArray {
+function calculateSigningKey(secretKey: string, datetime: string, region: string, service: string): CryptoJS.lib.WordArray {
     return hmac(hmac(hmac(hmac(AWS4 + secretKey, datetime.substring(0, 8)), region), service), AWS4_REQUEST);
 }
 
-function calculateSignature(key: CryptoJS.WordArray, stringToSign: string) {
+function calculateSignature(key: CryptoJS.lib.WordArray, stringToSign: string) {
     return hexEncode(hmac(key, stringToSign));
 }
 
