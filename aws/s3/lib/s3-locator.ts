@@ -48,7 +48,7 @@ export class S3Locator extends Locator implements S3LocatorProperties {
                 throw new McmaException("Invalid S3 url. Failed to determine bucket");
             }
             this.region = "";
-            this.bucket = pathname.substring(1, endBucketName);
+            this.bucket = pathname.substring(startBucketName, endBucketName);
             this.key = pathname.substring(endBucketName + 1);
             return;
         }
