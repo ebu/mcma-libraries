@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-cloudwatch-events",
-    "version": "0.16.19",
+    "version": "0.16.20",
     "description": "Node module with code and type definitions for using Cloudwatch Events in an MCMA environment.",
     "engines": {
         "node": ">=18.0.0"
@@ -34,12 +34,12 @@
         "@aws-sdk/client-cloudwatch-events": "^3.596.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.16.19",
-        "@mcma/data": "0.16.19"
+        "@mcma/core": "0.16.20",
+        "@mcma/data": "0.16.20"
     },
     "devDependencies": {
-        "@mcma/core": "0.16.19",
-        "@mcma/data": "0.16.19",
+        "@mcma/core": "0.16.20",
+        "@mcma/data": "0.16.20",
         "@types/node": "^18.19.34"
     }
 }

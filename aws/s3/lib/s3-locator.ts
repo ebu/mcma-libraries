@@ -4,15 +4,24 @@ export interface S3LocatorProperties extends LocatorProperties {
     region?: string;
     bucket?: string;
     key?: string;
+    endpointUrl?: string;
 }
 
 export class S3Locator extends Locator implements S3LocatorProperties {
     public region: string;
     public bucket: string;
     public key: string;
+    public endpointUrl?: string;
 
     constructor(properties: S3LocatorProperties) {
         super("S3Locator", properties);
+
+        if (properties.endpointUrl) {
+            if (!this.url.startsWith(properties.endpointUrl)) {
+                throw new McmaException("Provided endpointUrl does not match the provided url")
+            }
+            this.endpointUrl = properties.endpointUrl;
+        }
 
         const url = new URL(this.url);
         const pathname = decodeURIComponent(url.pathname.replace(/\+/g, "%20"));
@@ -23,14 +32,24 @@ export class S3Locator extends Locator implements S3LocatorProperties {
             parts[parts.length - 1] !== "com" ||
             parts[parts.length - 2] !== "amazonaws") {
 
+            let startBucketName = 1;
+
+            if (this.endpointUrl) {
+                // in case of provided endpointUrl we need to ignore any
+                // path components to determine start of bucket name
+                const endpointUrl = new URL(this.endpointUrl);
+                const endpointPathname = decodeURIComponent(endpointUrl.pathname.replace(/\+/g, "%20"));
+                startBucketName = endpointPathname.length;
+            }
+
             // in case it's not a S3 bucket hosted on AWS we assume path style and no region
-            const pos = pathname.indexOf("/", 1);
-            if (pos < 0) {
+            const endBucketName = pathname.indexOf("/", startBucketName);
+            if (endBucketName < 0) {
                 throw new McmaException("Invalid S3 url. Failed to determine bucket");
             }
             this.region = "";
-            this.bucket = pathname.substring(1, pos);
-            this.key = pathname.substring(pos + 1);
+            this.bucket = pathname.substring(1, endBucketName);
+            this.key = pathname.substring(endBucketName + 1);
             return;
         }
 

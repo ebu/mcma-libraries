@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-blob-storage",
-    "version": "0.16.19",
+    "version": "0.16.20",
     "description": "Add the ability to interact with Azure BlobStorage in your MCMA services",
     "engines": {
         "node": ">=18.0.0"
@@ -35,10 +35,10 @@
         "@azure/storage-blob": "^12.23.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.16.19"
+        "@mcma/core": "0.16.20"
     },
     "devDependencies": {
-        "@mcma/core": "0.16.19",
+        "@mcma/core": "0.16.20",
         "@types/node": "^18.19.34",
         "jasmine": "^5.1.0"
     }
