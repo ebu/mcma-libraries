@@ -10,6 +10,7 @@ const AWS4_REQUEST = "aws4_request";
 const AWS4 = "AWS4";
 const X_AMZ_DATE = "x-amz-date";
 const X_AMZ_SECURITY_TOKEN = "x-amz-security-token";
+const X_AMZ_CONTENT_SHA256 = "x-amz-content-sha256";
 const HOST = "host";
 const AUTHORIZATION = "Authorization";
 
@@ -129,8 +130,8 @@ function generateSignature(request: HttpRequestConfig, credentials: AwsCredentia
     // parse the url and create a params object from the query string, if any
     const requestUrl = new URL(request.url);
 
-    let requestQueryParams: { [key: string]: string } = {};
-    for (let entry of requestUrl.searchParams.entries()) {
+    const requestQueryParams: { [key: string]: string } = {};
+    for (const entry of requestUrl.searchParams.entries()) {
         requestQueryParams[entry[0]] = entry[1];
     }
 
@@ -179,6 +180,8 @@ export class AwsV4Authenticator {
         if (!request.headers[HOST]) {
             request.headers[HOST] = requestUrlParsed.host;
         }
+
+        request.headers[X_AMZ_CONTENT_SHA256] = hexEncode(hash(typeof request.data === "string" ? request.data : JSON.stringify(request.data)));
 
         const credentialScope = buildCredentialScope(datetime, this.region, this.serviceName);
         const signedHeaders = buildCanonicalSignedHeaders(request.headers);
@@ -241,8 +244,8 @@ export class AwsV4PresignedUrlGenerator {
             requestUrlParsed.searchParams.set(X_AMZ_SECURITY_TOKEN_QUERY_PARAM, credentials.sessionToken);
         }
 
-        let params: { [key: string]: string } = {};
-        for (let entry of requestUrlParsed.searchParams.entries()) {
+        const params: { [key: string]: string } = {};
+        for (const entry of requestUrlParsed.searchParams.entries()) {
             params[entry[0]] = entry[1];
         }
 

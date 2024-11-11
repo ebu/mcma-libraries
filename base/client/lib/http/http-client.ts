@@ -69,8 +69,9 @@ export class HttpClient implements Http {
 
         url = url || "";
 
-        config = config || {};
+        config = Object.assign({}, config);
         config.method = method;
+        config.baseURL = this.config?.axiosConfig?.baseURL;
         config.url = url;
         config.data = body;
         config.transformResponse = (data) => {
@@ -99,7 +100,7 @@ export class HttpClient implements Http {
             if (!config.url) {
                 config.url = config.baseURL;
             } else if (config.url.indexOf("http://") !== 0 && config.url.indexOf("https://") !== 0) {
-                config.url = config.baseURL + config.url;
+                config.url = config.baseURL.replace(/\/?\/$/, "") + "/" + config.url.replace(/^\/+/, "");
             } else if (!config.url.startsWith(config.baseURL)) {
                 throw new McmaException("HttpClient: Making " + config.method + " request to URL '" + config.url + "' which does not match baseURL '" + config.baseURL + "'");
             }
