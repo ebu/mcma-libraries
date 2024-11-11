@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-browser-client",
-    "version": "0.16.21",
+    "version": "0.16.22",
     "description": "Authentication from the browser for communicating with MCMA services hosted on Azure",
     "engines": {
         "node": ">=18.0.0"
@@ -34,14 +34,14 @@
         "jsbn": "^1.1.0"
     },
     "peerDependencies": {
-        "@mcma/client": "0.16.21",
-        "@mcma/core": "0.16.21",
-        "@mcma/encryption": "0.16.21"
+        "@mcma/client": "0.16.22",
+        "@mcma/core": "0.16.22",
+        "@mcma/encryption": "0.16.22"
     },
     "devDependencies": {
-        "@mcma/client": "0.16.21",
-        "@mcma/core": "0.16.21",
-        "@mcma/encryption": "0.16.21",
+        "@mcma/client": "0.16.22",
+        "@mcma/core": "0.16.22",
+        "@mcma/encryption": "0.16.22",
         "@types/jsbn": "^1.2.33",
         "@types/node": "^18.19.34",
         "jasmine": "^5.1.0"
