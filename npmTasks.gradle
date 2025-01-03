@@ -88,11 +88,11 @@ task npmPublish(type: Exec) {
         def stdout = new ByteArrayOutputStream()
         def stderr = new ByteArrayOutputStream()
         try {
-            exec {
+            providers.exec {
                 commandLine npmExecutable
                 args "view", packageName, "--registry", "https://registry.npmjs.org"
-                standardOutput stdout
-                errorOutput stderr
+                standardOutput = stdout
+                errorOutput = stderr
             }
         } catch (ignored) {
         }
@@ -106,10 +106,10 @@ task npmPublish(type: Exec) {
         while (!available) {
             try {
                 sleep(15000)
-                exec {
+                providers.exec {
                     commandLine npmExecutable
                     args "install", packageName, "--no-save"
-                    workingDir tempDir
+                    workingDir = tempDir
                 }
                 available = true
                 println "Package " + packageName + " available"
@@ -138,11 +138,11 @@ task npmPublishLocal(type: Exec) {
         def stdout = new ByteArrayOutputStream()
         def stderr = new ByteArrayOutputStream()
         try {
-            exec {
+            providers.exec {
                 commandLine npmExecutable
                 args "view", packageName, "--registry", "http://localhost:4873"
-                standardOutput stdout
-                errorOutput stderr
+                standardOutput = stdout
+                errorOutput = stderr
             }
         } catch (ignored) {
         }

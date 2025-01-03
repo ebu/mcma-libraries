@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-dynamodb",
-    "version": "0.16.22",
+    "version": "1.0.0",
     "description": "Node module with code for using DynamoDB as the backing data storage for MCMA API handlers and workers.",
     "engines": {
         "node": ">=18.0.0"
@@ -31,18 +31,18 @@
     },
     "homepage": "https://mcma.io",
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.596.0",
-        "@aws-sdk/lib-dynamodb": "^3.596.0"
+        "@aws-sdk/client-dynamodb": "^3.699.0",
+        "@aws-sdk/lib-dynamodb": "^3.699.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.16.22",
-        "@mcma/data": "0.16.22"
+        "@mcma/core": "1.0.0",
+        "@mcma/data": "1.0.0"
     },
     "devDependencies": {
-        "@mcma/core": "0.16.22",
-        "@mcma/data": "0.16.22",
+        "@mcma/core": "1.0.0",
+        "@mcma/data": "1.0.0",
         "@types/jsonpath": "0.2.4",
-        "@types/node": "^18.19.34",
-        "jasmine": "^5.1.0"
+        "@types/node": "^22.10.1",
+        "jasmine": "^5.5.0"
     }
 }

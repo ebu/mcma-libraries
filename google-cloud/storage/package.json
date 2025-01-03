@@ -1,6 +1,6 @@
 {
     "name": "@mcma/google-cloud-storage",
-    "version": "0.16.22",
+    "version": "1.0.0",
     "description": "Add Google Cloud Storage to your MCMA services",
     "engines": {
         "node": ">=18.0.0"
@@ -32,14 +32,14 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/google-cloud/storage#readme",
     "dependencies": {
-        "@google-cloud/storage": "^7.11.2"
+        "@google-cloud/storage": "^7.14.0"
     },
     "peerDependencies": {
-        "@mcma/core": "0.16.22"
+        "@mcma/core": "1.0.0"
     },
     "devDependencies": {
-        "@mcma/core": "0.16.22",
-        "@types/node": "^18.19.34",
-        "jasmine": "^5.1.0"
+        "@mcma/core": "1.0.0",
+        "@types/node": "^22.10.1",
+        "jasmine": "^5.5.0"
     }
 }
