@@ -1,9 +1,9 @@
 import { URL } from "url";
 import * as fs from "fs";
 import { v4 as uuidv4 } from "uuid";
+import { HttpRequest, HttpResponseInit } from "@azure/functions";
 import { ConfigVariables, LoggerProvider, McmaException } from "@mcma/core";
 import { McmaApiController, McmaApiRequest, McmaApiRequestContext, McmaApiRouteCollection, McmaApiMiddleware } from "@mcma/api";
-import { HttpRequest } from "@azure/functions";
 
 function getPath(req: HttpRequest): string {
     const hostJson = JSON.parse(fs.readFileSync("host.json", "utf-8"));
@@ -44,9 +44,9 @@ export class AzureFunctionApiController {
                 routes: routesOrConfig,
                 loggerProvider: loggerProvider,
                 configVariables: configVariables,
-            }
+            };
         } else {
-            this.config = routesOrConfig
+            this.config = routesOrConfig;
         }
 
         if (!this.config.configVariables) {
@@ -56,16 +56,36 @@ export class AzureFunctionApiController {
         this.apiController = new McmaApiController(this.config.routes, this.config.middleware);
     }
 
-    async handleRequest(req: HttpRequest) {
+    async handleRequest(req: HttpRequest): Promise<HttpResponseInit> {
+        const headers: { [key: string]: string } = {};
+        for (const entry of req.headers.entries()) {
+            headers[entry[0]] = entry[1];
+        }
+
+        const queryStringParameters: { [key: string]: string } = {};
+        for (const entry of req.query.entries()) {
+            queryStringParameters[entry[0]] = entry[1];
+        }
+
+        let httpMethod = req.method?.toUpperCase();
+        let requestBody: any = undefined;
+        switch (httpMethod) {
+            case "POST":
+            case "PUT":
+            case "PATCH":
+                requestBody = await req.text();
+                break;
+        }
+
         const requestContext = new McmaApiRequestContext(
             new McmaApiRequest({
                 id: uuidv4(),
                 path: getPath(req),
-                httpMethod: req.method,
-                headers: req.headers,
+                httpMethod,
+                headers,
                 pathVariables: {},
-                queryStringParameters: req.query,
-                body: req.body
+                queryStringParameters,
+                body: requestBody,
             }),
             this.config.loggerProvider,
             this.config.configVariables
@@ -73,10 +93,15 @@ export class AzureFunctionApiController {
 
         await this.apiController.handleRequest(requestContext);
 
+        let responseBody = requestContext.response.body;
+        if (typeof responseBody === "object") {
+            responseBody = JSON.stringify(responseBody);
+        }
+
         return {
-            statusCode: requestContext.response.statusCode,
+            status: requestContext.response.statusCode,
             headers: requestContext.response.headers,
-            body: requestContext.response.body
+            body: responseBody,
         };
     }
 }
