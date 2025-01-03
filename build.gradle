@@ -1,4 +1,4 @@
-def requiredVersionNodeJS = "^18.0.0"
+def requiredVersionNodeJS = "^22.0.0"
 def requiredVersionTsc = "^5.0.0"
 
 allprojects {
@@ -53,35 +53,17 @@ static def isSemVerMatching(String actual, String expected) {
 }
 
 def getVersionNodeJS() {
-    def stdout = new ByteArrayOutputStream()
-    def stderr = new ByteArrayOutputStream()
-    try {
-        exec {
-            commandLine nodeExecutable
-            args "--version"
-            standardOutput stdout
-            errorOutput stderr
-        }
-    } catch (Exception ignored) {
-    }
-
-    return stdout.toString().trim().replace("v", "")
+    return providers.exec {
+        commandLine nodeExecutable
+        args "--version"
+    }.standardOutput.asText.get().trim().replace("v", "")
 }
 
 def getVersionTsc() {
-    def stdout = new ByteArrayOutputStream()
-    def stderr = new ByteArrayOutputStream()
-    try {
-        exec {
-            commandLine tscExecutable
-            args "--v"
-            standardOutput stdout
-            errorOutput stderr
-        }
-    } catch (Exception ignored) {
-    }
-
-    return stdout.toString().trim().replace("Version ", "")
+    return providers.exec {
+        commandLine tscExecutable
+        args "--v"
+    }.standardOutput.asText.get().trim().replace("Version ", "")
 }
 
 task verifyNodeJS {
