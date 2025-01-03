@@ -71,7 +71,9 @@ export class HttpClient implements Http {
 
         config = Object.assign({}, config);
         config.method = method;
-        config.baseURL = this.config?.axiosConfig?.baseURL;
+        if (!config.baseURL && this.config?.axiosConfig?.baseURL) {
+            config.baseURL = this.config?.axiosConfig?.baseURL;
+        }
         config.url = url;
         config.data = body;
         config.transformResponse = (data) => {
