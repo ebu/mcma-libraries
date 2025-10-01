@@ -1,6 +1,6 @@
 {
     "name": "@mcma/worker-invoker",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Core classes and types for invoking MCMA Worker functions",
     "engines": {
         "node": ">=18.0.0"
@@ -34,10 +34,10 @@
         
     },
     "peerDependencies": {
-        "@mcma/core": "1.0.0"
+        "@mcma/core": "1.0.1"
     },
     "devDependencies": {
-        "@mcma/core": "1.0.0",
+        "@mcma/core": "1.0.1",
         "@types/node": "^22.10.1"
     }
 }
