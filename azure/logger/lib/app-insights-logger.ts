@@ -1,4 +1,4 @@
-import { Logger, LogEvent, McmaTrackerProperties, LogLevel } from "@mcma/core";
+import { Logger, LogEvent, McmaTrackerProperties, LogLevel, Utils } from "@mcma/core";
 import { Contracts, TelemetryClient, KnownSeverityLevel } from "applicationinsights";
 
 function createTraceTelemetry(logEvent: LogEvent): Contracts.TraceTelemetry {
@@ -16,7 +16,7 @@ function createTraceTelemetry(logEvent: LogEvent): Contracts.TraceTelemetry {
                 {});
 
     return {
-        message: message && typeof message !== "string" ? JSON.stringify(message) : message,
+        message: message && typeof message !== "string" ? Utils.stringify(message) : message,
         severity: getSeverityLevel(logEvent.level),
         time: logEvent.timestamp,
         properties
@@ -55,7 +55,7 @@ function getStringValue(value: any): string | undefined {
         if (value instanceof Date) {
             return value.toISOString();
         } else {
-            return JSON.stringify(value);
+            return Utils.stringify(value);
         }
     }
 
