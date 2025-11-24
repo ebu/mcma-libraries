@@ -9,7 +9,8 @@ import { HttpRequestConfig } from "./http-request-config";
 export type HttpClientConfig = {
     maxAttempts?: number,
     retryInterval?: number,
-    axiosConfig?: AxiosRequestConfig
+    axiosConfig?: AxiosRequestConfig,
+    sanitizeHeadersOnError?: (config: HttpRequestConfig) => HttpRequestConfig,
 }
 
 export class HttpClient implements Http {
@@ -29,6 +30,17 @@ export class HttpClient implements Http {
         }
         if (isNaN(this.config.retryInterval) || this.config.retryInterval < 0) {
             this.config.retryInterval = 5000;
+        }
+        if (!this.config.sanitizeHeadersOnError) {
+            this.config.sanitizeHeadersOnError = (config1) => {
+                if (config1.headers["x-api-key"]) {
+                    config1.headers["x-api-key"] = "********";
+                }
+                if (config1.headers["x-mcma-api-key"]) {
+                    config1.headers["x-mcma-api-key"] = "********";
+                }
+                return config1;
+            };
         }
 
         this.client = axios.create(Object.assign({}, this.config.axiosConfig));
@@ -157,7 +169,7 @@ export class HttpClient implements Http {
                     }
 
                     throw new McmaException("HttpClient: " + config.method + " request to " + config.url + " failed!", error, {
-                        config,
+                        config: this.config.sanitizeHeadersOnError(JSON.parse(JSON.stringify(config))),
                         response
                     });
                 }
