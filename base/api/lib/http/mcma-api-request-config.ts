@@ -12,4 +12,5 @@ export class McmaApiRequestConfig {
         [key: string]: string;
     };
     body?: any;
+    originalRequest: any
 }

@@ -86,6 +86,7 @@ export class AzureFunctionApiController {
                 pathVariables: {},
                 queryStringParameters,
                 body: requestBody,
+                originalRequest: req,
             }),
             this.config.loggerProvider,
             this.config.configVariables

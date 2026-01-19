@@ -57,7 +57,11 @@ export class ApiGatewayApiController {
                 headers: event.headers,
                 pathVariables: {},
                 queryStringParameters: event.queryStringParameters,
-                body: event.body
+                body: event.body,
+                originalRequest: {
+                    event,
+                    context,
+                },
             }),
             this.config.loggerProvider,
             this.config.configVariables

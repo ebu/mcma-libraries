@@ -60,7 +60,8 @@ export class HttpFunctionApiController {
                 headers: asStringMap(request.headers),
                 pathVariables: {},
                 queryStringParameters: asStringMap(request.query),
-                body: request.body
+                body: request.body,
+                originalRequest: request,
             }),
             this.config.loggerProvider,
             this.config.configVariables
