@@ -33,7 +33,7 @@
     "homepage": "https://github.com/ebu/mcma-libraries/google-cloud/http-functions#readme",
     "dependencies": {
         "@google-cloud/functions-framework": "^5.0.0",
-        "uuid": "^13.0.0"
+        "uuid": "^11.1.0"
     },
     "peerDependencies": {
         "@mcma/api": "1.1.0",

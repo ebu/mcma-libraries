@@ -32,7 +32,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/azure/api#readme",
     "dependencies": {
-        "uuid": "^13.0.0"
+        "uuid": "^11.1.0"
     },
     "peerDependencies": {
         "@mcma/api": "1.1.0",

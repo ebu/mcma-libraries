@@ -29,7 +29,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-core-nodejs#readme",
     "dependencies": {
-        "uuid": "^13.0.0"
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
         "@types/node": "^22.19.7",
