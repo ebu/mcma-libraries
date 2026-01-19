@@ -11,5 +11,6 @@ export class McmaApiRequest extends McmaApiRequestConfig {
         this.pathVariables = config?.pathVariables ?? {};
         this.queryStringParameters = config?.queryStringParameters ?? {};
         this.body = config?.body ?? null;
+        this.originalRequest = config?.originalRequest ?? null;
     }
 }
