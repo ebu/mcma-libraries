@@ -85,19 +85,17 @@ task npmPublish(type: Exec) {
 
     onlyIf {
         // check if package is already published
-        def stdout = new ByteArrayOutputStream()
-        def stderr = new ByteArrayOutputStream()
+        def stdout = ""
         try {
-            providers.exec {
+            stdout = providers.exec {
                 commandLine npmExecutable
                 args "view", packageName, "--registry", "https://registry.npmjs.org"
-                standardOutput = stdout
-                errorOutput = stderr
-            }
+            }.standardOutput.asText.get().trim()
+
         } catch (ignored) {
         }
 
-        return stdout.toString().trim().isEmpty()
+        return stdout.isEmpty()
     }
 
     doLast {
@@ -135,19 +133,16 @@ task npmPublishLocal(type: Exec) {
 
     onlyIf {
         // check if package is already published
-        def stdout = new ByteArrayOutputStream()
-        def stderr = new ByteArrayOutputStream()
+        def stdout = ""
         try {
-            providers.exec {
+            stdout = providers.exec {
                 commandLine npmExecutable
                 args "view", packageName, "--registry", "http://localhost:4873"
-                standardOutput = stdout
-                errorOutput = stderr
-            }
+            }.standardOutput.asText.get().trim()
         } catch (ignored) {
         }
 
-        return stdout.toString().trim().isEmpty()
+        return stdout.isEmpty()
     }
 }
 

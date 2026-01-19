@@ -1,0 +1,8 @@
+npm error code E404
+npm error 404 No match found for version 1.1.3
+npm error 404
+npm error 404  '@mcma/core@1.1.3' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: C:\Users\joost\AppData\Local\npm-cache\_logs\2026-01-19T16_51_56_916Z-debug-0.log
