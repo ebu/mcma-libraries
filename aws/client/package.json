@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-client",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Node module with code for using AWS V4 authentication in MCMA API handlers and workers",
     "engines": {
         "node": ">=18.0.0"
@@ -34,12 +34,12 @@
         "crypto-js": "^4.2.0"
     },
     "peerDependencies": {
-        "@mcma/client": "1.1.0",
-        "@mcma/core": "1.1.0"
+        "@mcma/client": "1.1.1",
+        "@mcma/core": "1.1.1"
     },
     "devDependencies": {
-        "@mcma/client": "1.1.0",
-        "@mcma/core": "1.1.0",
+        "@mcma/client": "1.1.1",
+        "@mcma/core": "1.1.1",
         "@types/node": "^22.19.7",
         "@types/crypto-js": "^4.2.2",
         "jasmine": "^6.0.0"

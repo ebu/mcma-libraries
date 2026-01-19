@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-client",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Authentication for communicating with MCMA services hosted on Azure",
     "engines": {
         "node": ">=18.0.0"
@@ -36,14 +36,14 @@
         "jsbn": "^1.1.0"
     },
     "peerDependencies": {
-        "@mcma/client": "1.1.0",
-        "@mcma/core": "1.1.0",
-        "@mcma/encryption": "1.1.0"
+        "@mcma/client": "1.1.1",
+        "@mcma/core": "1.1.1",
+        "@mcma/encryption": "1.1.1"
     },
     "devDependencies": {
-        "@mcma/client": "1.1.0",
-        "@mcma/core": "1.1.0",
-        "@mcma/encryption": "1.1.0",
+        "@mcma/client": "1.1.1",
+        "@mcma/core": "1.1.1",
+        "@mcma/encryption": "1.1.1",
         "@types/jsbn": "^1.2.33",
         "@types/node": "^22.19.7",
         "jasmine": "^6.0.0"
