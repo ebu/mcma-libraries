@@ -1,6 +1,6 @@
 {
     "name": "@mcma/client",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "description": "Node module with classes and functions used to access services in an MCMA environment",
     "engines": {
         "node": ">=18.0.0"
@@ -29,16 +29,16 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-client-nodejs#readme",
     "dependencies": {
-        "axios": "^1.13.2"
+        "axios": "^1.13.6"
     },
     "peerDependencies": {
-        "@mcma/core": "1.1.2",
-        "@mcma/secrets": "1.1.2"
+        "@mcma/core": "1.1.3",
+        "@mcma/secrets": "1.1.3"
     },
     "devDependencies": {
-        "@mcma/core": "1.1.2",
-        "@mcma/secrets": "1.1.2",
-        "@types/node": "^22.19.7",
-        "jasmine": "^6.0.0"
+        "@mcma/core": "1.1.3",
+        "@mcma/secrets": "1.1.3",
+        "@types/node": "^22.19.13",
+        "jasmine": "^6.1.0"
     }
 }
