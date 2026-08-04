@@ -1,6 +1,6 @@
 {
     "name": "@mcma/azure-queue-worker-invoker",
-    "version": "1.1.4",
+    "version": "1.2.0",
     "description": "Invoke MCMA Worker functions on Azure using Azure Queue Storage",
     "engines": {
         "node": ">=18.0.0"
@@ -36,13 +36,13 @@
         "@azure/storage-queue": "^12.31.0"
     },
     "peerDependencies": {
-        "@mcma/core": "1.1.4",
-        "@mcma/worker-invoker": "1.1.4"
+        "@mcma/core": "1.2.0",
+        "@mcma/worker-invoker": "1.2.0"
     },
     "devDependencies": {
         "@azure/functions": "^4.16.2",
-        "@mcma/core": "1.1.4",
-        "@mcma/worker-invoker": "1.1.4",
+        "@mcma/core": "1.2.0",
+        "@mcma/worker-invoker": "1.2.0",
         "@types/node": "^22.20.1"
     }
 }
