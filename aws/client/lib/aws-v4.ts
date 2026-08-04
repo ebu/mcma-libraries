@@ -22,6 +22,31 @@ const X_AMZ_SIGNEDHEADERS_QUERY_PARAM = "X-Amz-SignedHeaders";
 const X_AMZ_SIGNATURE_QUERY_PARAM = "X-Amz-Signature";
 const X_AMZ_EXPIRES_QUERY_PARAM = "X-Amz-Expires";
 
+export type AwsRegionResolver = (requestUrl: URL) => string | undefined | Promise<string | undefined>;
+
+export interface AwsV4Config {
+    credentials?: AwsCredentialIdentity | Provider<AwsCredentialIdentity>;
+    region?: string;
+    regionResolver?: AwsRegionResolver;
+    serviceName?: string;
+}
+
+function getRegionFromUrl(requestUrl: URL): string | undefined {
+    const match = requestUrl.hostname.match(/\.execute-api(?:-fips)?\.([a-z0-9-]+)\.amazonaws\.com(?:\.cn)?$/i);
+    return match?.[1];
+}
+
+async function resolveRegion(requestUrl: URL, config: AwsV4Config): Promise<string> {
+    const resolvedRegion = await config.regionResolver?.(requestUrl);
+    const region = resolvedRegion ?? config.region ?? getRegionFromUrl(requestUrl) ?? process.env.AWS_REGION;
+
+    if (!region) {
+        throw new McmaException(`AwsV4Authenticator: Failed to determine AWS region for URL '${requestUrl.toString()}'`);
+    }
+
+    return region;
+}
+
 function hash(value: string) {
     return CryptoJS.SHA256(value);
 }
@@ -153,21 +178,18 @@ function getAwsDate(): string {
 
 export class AwsV4Authenticator {
     private readonly credentials: AwsCredentialIdentity | Provider<AwsCredentialIdentity>;
-    private readonly region: string;
+    private readonly config: AwsV4Config;
     private readonly serviceName: string;
 
-    constructor(config?: { credentials?: AwsCredentialIdentity | Provider<AwsCredentialIdentity>, region?: string, serviceName?: string }) {
+    constructor(config?: AwsV4Config) {
+        this.config = config ?? {};
         this.credentials = config?.credentials ?? fromEnv();
-        this.region = config?.region ?? process.env.AWS_REGION;
         this.serviceName = config?.serviceName ?? "execute-api";
-
-        if (!this.region) {
-            throw new McmaException("AwsV4Authenticator: AWS_REGION is not set");
-        }
     }
 
     async sign(request: HttpRequestConfig): Promise<void> {
         const requestUrlParsed = new URL(request.url);
+        const region = await resolveRegion(requestUrlParsed, this.config);
 
         // create headers object in case missing
         request.headers = request.headers ?? {};
@@ -183,12 +205,12 @@ export class AwsV4Authenticator {
 
         request.headers[X_AMZ_CONTENT_SHA256] = hexEncode(hash(typeof request.data === "string" ? request.data : JSON.stringify(request.data)));
 
-        const credentialScope = buildCredentialScope(datetime, this.region, this.serviceName);
+        const credentialScope = buildCredentialScope(datetime, region, this.serviceName);
         const signedHeaders = buildCanonicalSignedHeaders(request.headers);
 
         const credentials = typeof this.credentials === "function" ? await this.credentials() : this.credentials;
 
-        const signature = generateSignature(request, credentials, this.region, this.serviceName, datetime, credentialScope);
+        const signature = generateSignature(request, credentials, region, this.serviceName, datetime, credentialScope);
 
         // add authorization header with signature
         request.headers[AUTHORIZATION] = buildAuthorizationHeader(signature, credentials.accessKeyId + "/" + credentialScope, signedHeaders);
@@ -205,29 +227,26 @@ export class AwsV4Authenticator {
 
 export class AwsV4PresignedUrlGenerator {
     private readonly credentials: AwsCredentialIdentity | Provider<AwsCredentialIdentity>;
-    private readonly region: string;
+    private readonly config: AwsV4Config;
     private readonly serviceName: string;
 
-    constructor(config?: { credentials?: AwsCredentialIdentity | Provider<AwsCredentialIdentity>, region?: string, serviceName?: string }) {
+    constructor(config?: AwsV4Config) {
+        this.config = config ?? {};
         this.credentials = config?.credentials ?? fromEnv();
-        this.region = config?.region ?? process.env.AWS_REGION;
         this.serviceName = config?.serviceName ?? "execute-api";
-
-        if (!this.region) {
-            throw new McmaException("AwsV4Authenticator: AWS_REGION is not set");
-        }
     }
 
     async generatePresignedUrl(method: Method, requestUrl: string, expires = 300) {
         // parse the url we want to sign so we can work with the query string
         const requestUrlParsed = new URL(requestUrl);
+        const region = await resolveRegion(requestUrlParsed, this.config);
 
         // gather inputs for generating the signature
         const headers: { [key: string]: string } = {};
         headers[HOST] = requestUrlParsed.host;
 
         const datetime = getAwsDate();
-        const credentialScope = buildCredentialScope(datetime, this.region, this.serviceName);
+        const credentialScope = buildCredentialScope(datetime, region, this.serviceName);
         const signedHeaders = buildCanonicalSignedHeaders(headers);
 
         const credentials = typeof this.credentials === "function" ? await this.credentials() : this.credentials;
@@ -258,7 +277,7 @@ export class AwsV4PresignedUrlGenerator {
         };
 
         // add the signature to the existing query object
-        requestUrlParsed.searchParams.set(X_AMZ_SIGNATURE_QUERY_PARAM, generateSignature(mockRequest, credentials, this.region, this.serviceName, datetime, credentialScope));
+        requestUrlParsed.searchParams.set(X_AMZ_SIGNATURE_QUERY_PARAM, generateSignature(mockRequest, credentials, region, this.serviceName, datetime, credentialScope));
 
         return requestUrlParsed.toString();
     };
