@@ -37,7 +37,8 @@ export class ResourceManager {
         if (config.serviceRegistryUrl.endsWith("/")) {
             config.serviceRegistryUrl = config.serviceRegistryUrl.substring(0, config.serviceRegistryUrl.length - 1);
         }
-        this.httpClient = new HttpClient(authProvider.getDefault(), config.httpClientConfig);
+        const authenticator = authProvider.get(config.serviceRegistryAuthType) ?? authProvider.getDefault();
+        this.httpClient = new HttpClient(authenticator, config.httpClientConfig);
     }
 
     async init(): Promise<void> {
@@ -220,13 +221,32 @@ export class ResourceManager {
 
         for (const serviceClient of this.serviceClients) {
             for (const resourceEndpoint of serviceClient.getAllResourceEndpointClients()) {
-                if (url.startsWith(resourceEndpoint.httpEndpoint)) {
+                const endpoint = resourceEndpoint.httpEndpoint.replace(/\/+$/, "");
+                if (url === endpoint || url.startsWith(endpoint + "/") || url.startsWith(endpoint + "?")) {
                     return resourceEndpoint;
                 }
             }
         }
         return undefined;
     };
+
+    async getHttpClient(url: string, fallbackAuthType?: string): Promise<Http> {
+        const resourceEndpointClient = await this.getResourceEndpointClient(url);
+        if (resourceEndpointClient) {
+            return resourceEndpointClient;
+        }
+
+        if (!fallbackAuthType) {
+            return this.httpClient;
+        }
+
+        const authenticator = this.authProvider.get(fallbackAuthType);
+        if (!authenticator) {
+            throw new McmaException(`No authenticator registered for auth type '${fallbackAuthType}'`);
+        }
+
+        return new HttpClient(authenticator, this.config.httpClientConfig);
+    }
 
     async sendNotification<T extends { id?: string, notificationEndpoint?: NotificationEndpointProperties }>(resource: T): Promise<void> {
         if (resource.notificationEndpoint) {

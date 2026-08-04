@@ -38,7 +38,7 @@ function getRegionFromUrl(requestUrl: URL): string | undefined {
 
 async function resolveRegion(requestUrl: URL, config: AwsV4Config): Promise<string> {
     const resolvedRegion = await config.regionResolver?.(requestUrl);
-    const region = resolvedRegion ?? config.region ?? getRegionFromUrl(requestUrl) ?? process.env.AWS_REGION;
+    const region = resolvedRegion ?? getRegionFromUrl(requestUrl) ?? config.region ?? process.env.AWS_REGION;
 
     if (!region) {
         throw new McmaException(`AwsV4Authenticator: Failed to determine AWS region for URL '${requestUrl.toString()}'`);
