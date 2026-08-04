@@ -31,14 +31,13 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/google-cloud/logging#readme",
     "dependencies": {
-        "@google-cloud/logging": "^11.2.1"
+        "@google-cloud/logging": "^11.4.0"
     },
     "peerDependencies": {
         "@mcma/core": "1.1.4"
     },
     "devDependencies": {
         "@mcma/core": "1.1.4",
-        "@types/node": "^22.19.15",
-        "jasmine": "^6.1.0"
+        "@types/node": "^22.20.1"
     }
 }

@@ -30,9 +30,9 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/azure/client#readme",
     "dependencies": {
-        "@azure/identity": "^4.13.0",
-        "@azure/msal-common": "^16.2.0",
-        "@azure/msal-node": "^5.0.6",
+        "@azure/identity": "^4.13.1",
+        "@azure/msal-common": "^16.11.3",
+        "@azure/msal-node": "^5.4.3",
         "jsbn": "^1.1.0"
     },
     "peerDependencies": {
@@ -45,7 +45,6 @@
         "@mcma/core": "1.1.4",
         "@mcma/encryption": "1.1.4",
         "@types/jsbn": "^1.2.33",
-        "@types/node": "^22.19.15",
-        "jasmine": "^6.1.0"
+        "@types/node": "^22.20.1"
     }
 }

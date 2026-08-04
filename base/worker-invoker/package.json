@@ -38,6 +38,6 @@
     },
     "devDependencies": {
         "@mcma/core": "1.1.4",
-        "@types/node": "^22.19.15"
+        "@types/node": "^22.20.1"
     }
 }

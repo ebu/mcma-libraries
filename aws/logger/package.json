@@ -31,14 +31,14 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-data-dynamodb#readme",
     "dependencies": {
-        "@aws-sdk/client-cloudwatch-logs": "^3.1004.0",
-        "uuid": "^11.1.0"
+        "@aws-sdk/client-cloudwatch-logs": "^3.1102.0",
+        "uuid": "^11.1.1"
     },
     "peerDependencies": {
         "@mcma/core": "1.1.4"
     },
     "devDependencies": {
         "@mcma/core": "1.1.4",
-        "@types/node": "^22.19.15"
+        "@types/node": "^22.20.1"
     }
 }

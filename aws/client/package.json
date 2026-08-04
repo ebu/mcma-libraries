@@ -30,7 +30,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-auth#readme",
     "dependencies": {
-        "@aws-sdk/credential-providers": "^3.1004.0",
+        "@aws-sdk/credential-providers": "^3.1102.0",
         "crypto-js": "^4.2.0"
     },
     "peerDependencies": {
@@ -40,8 +40,7 @@
     "devDependencies": {
         "@mcma/client": "1.1.4",
         "@mcma/core": "1.1.4",
-        "@types/node": "^22.19.15",
-        "@types/crypto-js": "^4.2.2",
-        "jasmine": "^6.1.0"
+        "@types/node": "^22.20.1",
+        "@types/crypto-js": "^4.2.2"
     }
 }

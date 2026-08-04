@@ -32,14 +32,13 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodejs/azure/blob-storage#readme",
     "dependencies": {
-        "@azure/storage-blob": "^12.31.0"
+        "@azure/storage-blob": "^12.33.0"
     },
     "peerDependencies": {
         "@mcma/core": "1.1.4"
     },
     "devDependencies": {
         "@mcma/core": "1.1.4",
-        "@types/node": "^22.19.15",
-        "jasmine": "^6.1.0"
+        "@types/node": "^22.20.1"
     }
 }
