@@ -1,21 +1,30 @@
-def requiredVersionNodeJS = "^22.0.0"
-def requiredVersionTsc = "^5.0.0"
+def requiredVersionNodeJS = ">=22.0.0"
+def requiredVersionTsc = "5.9.3"
 
 allprojects {
     ext {
         if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
             nodeExecutable = Arrays.asList("node")
             npmExecutable = Arrays.asList("cmd", "/c", "npm")
-            tscExecutable = Arrays.asList("cmd", "/c", "tsc")
+            tscExecutable = ["node", "${rootDir}/node_modules/typescript/bin/tsc"]
         } else {
             nodeExecutable = Arrays.asList("node")
             npmExecutable = Arrays.asList("npm")
-            tscExecutable = Arrays.asList("tsc")
+            tscExecutable = ["node", "${rootDir}/node_modules/typescript/bin/tsc"]
         }
     }
 }
 
 static def isSemVerMatching(String actual, String expected) {
+    if (expected.startsWith(">=")) {
+        def actualParts = actual.tokenize(".").collect { it as int }
+        def minimumParts = expected.substring(2).tokenize(".").collect { it as int }
+        for (int i = 0; i < 3; i++) {
+            if (actualParts[i] != minimumParts[i]) return actualParts[i] > minimumParts[i]
+        }
+        return true
+    }
+    if (!expected.startsWith("^") && !expected.startsWith("~")) return actual == expected
     def beginIndex
     def equalParts
 

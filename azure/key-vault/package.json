@@ -3,7 +3,7 @@
     "version": "1.2.1",
     "description": "Use Azure Key Vault in a MCMA environment",
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=22.0.0"
     },
     "type": "commonjs",
     "main": "dist/index.js",

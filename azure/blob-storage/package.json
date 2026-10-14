@@ -3,7 +3,7 @@
     "version": "1.2.1",
     "description": "Add the ability to interact with Azure BlobStorage in your MCMA services",
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=22.0.0"
     },
     "type": "commonjs",
     "main": "dist/index.js",

@@ -3,7 +3,7 @@
     "version": "1.2.1",
     "description": "Node module with type definitions and helper utils for the EBU MCMA framework",
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=22.0.0"
     },
     "type": "commonjs",
     "main": "dist/index.js",
@@ -12,7 +12,7 @@
         "dist"
     ],
     "scripts": {
-        "test": "jasmine"
+        "test": "node ../../node_modules/typescript/bin/tsc -p tsconfig.test.json && node --test build/test/logging.test.js"
     },
     "repository": {
         "type": "git",
