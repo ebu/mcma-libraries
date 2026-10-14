@@ -1,6 +1,6 @@
 import * as util from "util";
-import { McmaTrackerProperties } from "../model";
-import { McmaException } from "../mcma-exception";
+import { McmaTrackerProperties } from "../model/index.js";
+import { McmaException } from "../mcma-exception.js";
 
 export class LogEvent {
 

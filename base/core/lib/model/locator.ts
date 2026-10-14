@@ -1,6 +1,6 @@
-import { McmaResource, McmaResourceProperties } from "./mcma-resource";
-import { Utils } from "../utils";
-import { LocatorStatus } from "./locator-status";
+import { McmaResource, McmaResourceProperties } from "./mcma-resource.js";
+import { Utils } from "../utils.js";
+import { LocatorStatus } from "./locator-status.js";
 
 export interface LocatorProperties extends McmaResourceProperties {
     url: string;

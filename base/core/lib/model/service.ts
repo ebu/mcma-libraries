@@ -1,6 +1,6 @@
-import { McmaResource, McmaResourceProperties } from "./mcma-resource";
-import { ResourceEndpoint, ResourceEndpointProperties } from "./resource-endpoint";
-import { Utils } from "../utils";
+import { McmaResource, McmaResourceProperties } from "./mcma-resource.js";
+import { ResourceEndpoint, ResourceEndpointProperties } from "./resource-endpoint.js";
+import { Utils } from "../utils.js";
 
 export interface ServiceProperties extends McmaResourceProperties {
     name: string;

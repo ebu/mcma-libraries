@@ -1,5 +1,5 @@
-import { Logger } from "./logger";
-import { McmaTrackerProperties } from "../model";
+import { Logger } from "./logger.js";
+import { McmaTrackerProperties } from "../model/index.js";
 
 export interface LoggerProvider {
     get(requestId?: string, tracker?: McmaTrackerProperties): Promise<Logger>;

@@ -1,6 +1,6 @@
 import { AccessTokenProvider, AccessToken } from "@mcma/client";
 import { ManagedIdentityCredential } from "@azure/identity";
-import { AzureAdAuthContext } from "../azure-ad-auth-context";
+import { AzureAdAuthContext } from "../azure-ad-auth-context.js";
 
 export class AzureManagedIdentityAccessTokenProvider implements AccessTokenProvider<AzureAdAuthContext> {
     private identityCredential = new ManagedIdentityCredential();

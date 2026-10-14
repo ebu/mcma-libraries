@@ -1,1 +1,1 @@
-export * from "./azure-function-api-controller";
+export * from "./azure-function-api-controller.js";

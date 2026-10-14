@@ -1,1 +1,1 @@
-export * from "./secrets-manager-secrets-provider"
+export * from "./secrets-manager-secrets-provider.js"

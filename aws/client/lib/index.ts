@@ -1,2 +1,2 @@
-export * from "./aws-v4-auth";
-export * from "./aws-v4";
+export * from "./aws-v4-auth.js";
+export * from "./aws-v4.js";

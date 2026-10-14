@@ -1,7 +1,7 @@
 import { LoggerProvider, McmaTrackerProperties, Logger } from "@mcma/core";
 import { Logging, Log } from "@google-cloud/logging";
 
-import { CloudLoggingLogger } from "./cloud-logging-logger";
+import { CloudLoggingLogger } from "./cloud-logging-logger.js";
 
 export class CloudLoggingLoggerProvider implements LoggerProvider {
     private readonly log: Log;

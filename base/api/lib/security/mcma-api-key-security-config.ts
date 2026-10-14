@@ -1,4 +1,4 @@
-import { HttpMethod } from "../http";
+import { HttpMethod } from "../http/index.js";
 
 export interface McmaApiKeySecurityConfig {
     "no-auth"?: { [pathRegExp: string]: [HttpMethod] };

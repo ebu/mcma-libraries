@@ -1,6 +1,6 @@
-import { McmaResource, McmaResourceProperties } from "./mcma-resource";
-import { JobParameter, JobParameterProperties } from "./job-parameter";
-import { Utils } from "../utils";
+import { McmaResource, McmaResourceProperties } from "./mcma-resource.js";
+import { JobParameter, JobParameterProperties } from "./job-parameter.js";
+import { Utils } from "../utils.js";
 
 export interface JobProfileProperties extends McmaResourceProperties {
     name: string;

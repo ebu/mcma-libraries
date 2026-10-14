@@ -1,4 +1,4 @@
-import { Utils } from "./utils";
+import { Utils } from "./utils.js";
 
 export class McmaException extends Error {
     public originalStack: string;

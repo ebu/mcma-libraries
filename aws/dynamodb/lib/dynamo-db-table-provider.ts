@@ -1,9 +1,9 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DocumentDatabaseTableProvider, DocumentDatabaseTable } from "@mcma/data";
 
-import { DynamoDbTable } from "./dynamo-db-table";
-import { DynamoDbTableOptions } from "./dynamo-db-table-options";
-import { getTableDescription } from "./dynamo-db-table-description";
+import { DynamoDbTable } from "./dynamo-db-table.js";
+import { DynamoDbTableOptions } from "./dynamo-db-table-options.js";
+import { getTableDescription } from "./dynamo-db-table-description.js";
 
 export class DynamoDbTableProvider implements DocumentDatabaseTableProvider {
     

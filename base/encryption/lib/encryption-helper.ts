@@ -1,5 +1,5 @@
 import { Utils } from "@mcma/core";
-import { RSAKey } from "../vendor/jsbn";
+import { RSAKey } from "../vendor/jsbn/index.js";
 
 export interface RSAPublicParams {
     n: string;

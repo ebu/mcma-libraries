@@ -1,5 +1,5 @@
 import { Locator } from "@mcma/core";
-import { BlobStorageLocator } from "./blob-storage-locator";
+import { BlobStorageLocator } from "./blob-storage-locator.js";
 
 export function buildBlobStorageUrl(account: string, container: string, blobName: string): string {
     return `https://${account}.blob.core.windows.net/${container}/${blobName}`;

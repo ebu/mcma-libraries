@@ -1,1 +1,1 @@
-export * from "./document-database/index";
+export * from "./document-database/index.js";

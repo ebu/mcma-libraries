@@ -1,10 +1,10 @@
 import { ConfigVariables, Job, JobStatus, McmaException, McmaResourceType, ProblemDetail, Utils } from "@mcma/core";
 import { getTableName } from "@mcma/data";
-import { ProcessJobAssignmentHelper } from "./process-job-assignment-helper";
-import { ProviderCollection } from "../provider-collection";
-import { WorkerRequest } from "../worker-request";
-import { JobProfileHandler } from "./job-profile-handler";
-import { ProcessJobProfile } from "./process-job-profile";
+import { ProcessJobAssignmentHelper } from "./process-job-assignment-helper.js";
+import { ProviderCollection } from "../provider-collection.js";
+import { WorkerRequest } from "../worker-request.js";
+import { JobProfileHandler } from "./job-profile-handler.js";
+import { ProcessJobProfile } from "./process-job-profile.js";
 
 export class ProcessJobAssignmentOperation<T extends Job> {
     private readonly jobType: string;

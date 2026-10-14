@@ -1,8 +1,8 @@
-import { Query } from "./query/query";
-import { CustomQuery, CustomQueryParameters } from "./query/custom-query";
-import { Document } from "./document";
-import { DocumentDatabaseMutex } from "./document-database-mutex";
-import { QueryResults } from "./query/query-results";
+import { Query } from "./query/query.js";
+import { CustomQuery, CustomQueryParameters } from "./query/custom-query.js";
+import { Document } from "./document.js";
+import { DocumentDatabaseMutex } from "./document-database-mutex.js";
+import { QueryResults } from "./query/query-results.js";
 import { Logger } from "@mcma/core";
 
 export interface MutexProperties {

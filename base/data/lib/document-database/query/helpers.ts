@@ -1,5 +1,5 @@
-import { FilterExpression, FilterCriteria } from "./filter";
-import { Document } from "../document";
+import { FilterExpression, FilterCriteria } from "./filter.js";
+import { Document } from "../document.js";
 
 export function getFilterExpressionFromKeyValuePairs<T extends Document = Document>(keyValuePairs: { [key: string]: any }): FilterExpression<T> {
     return {

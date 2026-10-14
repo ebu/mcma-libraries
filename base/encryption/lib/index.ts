@@ -1,1 +1,1 @@
-export * from "./encryption-helper";
+export * from "./encryption-helper.js";

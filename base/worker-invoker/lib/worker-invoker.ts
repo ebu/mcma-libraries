@@ -1,5 +1,5 @@
 import { McmaException } from "@mcma/core";
-import { WorkerRequestProperties } from "./worker-request-properties";
+import { WorkerRequestProperties } from "./worker-request-properties.js";
 
 export abstract class WorkerInvoker {
     protected constructor() {

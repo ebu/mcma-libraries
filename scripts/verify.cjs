@@ -88,6 +88,7 @@ function build(pkg) {
     else for (const dep of deps) copyBuiltPackage(dep,path.join(pkg.dir,'node_modules',dep.manifest.name));
     resetGenerated(pkg.output);
     run([compiler,'-p','tsconfig.json'],pkg.dir);
+    if (!cloud) run(['--input-type=module','-e',"await import('./dist/index.js');"],pkg.dir);
     if(cloud && pkg.group === 'libraries') fs.copyFileSync(path.join(pkg.dir,'package.json'),path.join(pkg.output,'package.json'));
     if ((!cloud && ['@mcma/core','@mcma/aws-logger'].includes(pkg.manifest.name)) || (cloud && pkg.manifest.name==='@local/storage')) {
         resetGenerated(path.join(pkg.dir,'build/test'));
@@ -100,6 +101,7 @@ const packageOnly = process.argv.includes('--package-only');
 if (packageOnly && cloud) throw new Error('--package-only is for the MCMA core package smoke check.');
 if (!packageOnly) packages.forEach(build);
 if(!cloud) {
+    if (!packageOnly) run(['--test',path.join(root,'scripts/esm-interop.test.mjs')]);
     const core=byName.get('@mcma/core');
     const fixture=path.join(root,'build/package-smoke');
     resetGenerated(fixture);
@@ -109,6 +111,7 @@ if(!cloud) {
         [name, readJson(path.join(core.dir,'node_modules',name,'package.json')).version]));
     fs.writeFileSync(path.join(fixture,'package.json'),JSON.stringify({
         private:true,
+        type:'module',
         dependencies:lockedVersions(core.manifest.dependencies),
         devDependencies:lockedVersions(core.manifest.devDependencies)
     }));
@@ -116,9 +119,9 @@ if(!cloud) {
     assert.ok(packed[0].files.some(f=>f.path==='dist/index.js'));
     assert.ok(!packed[0].files.some(f=>f.path.startsWith('build/') || f.path.startsWith('test/')));
     run([npm,'install','--offline','--ignore-scripts','--no-save','--package-lock=false','--no-audit','--no-fund',path.join(fixture,packed[0].filename)],fixture);
-    run(['-e',"const assert=require('node:assert/strict'); const {ConsoleLogger,LogEvent}=require('@mcma/core'); assert.equal(typeof ConsoleLogger,'function'); assert.equal(typeof LogEvent,'function');"],fixture);
+    run(['--input-type=module','-e',"import assert from 'node:assert/strict'; import {ConsoleLogger,LogEvent} from '@mcma/core'; assert.equal(typeof ConsoleLogger,'function'); assert.equal(typeof LogEvent,'function');"],fixture);
     fs.writeFileSync(path.join(fixture,'consumer.ts'),'import { ConsoleLogger, LogEvent } from "@mcma/core";\nconst logger = new ConsoleLogger("consumer");\nlogger.info({ jobId: "job-1" });\nconst event: LogEvent = new LogEvent("INFO", 400, "consumer", "request", new Date(), "hello");\n');
-    run([compiler,'--noEmit','--module','commonjs','--moduleResolution','node','--target','ES2022','--strict','consumer.ts'],fixture);
+    run([compiler,'--noEmit','--module','Node20','--target','ES2022','--strict','consumer.ts'],fixture);
     console.log('Packed core runtime and declaration checks passed.');
 } else {
     for(const pkg of packages.filter(p=>p.group==='aws')) {

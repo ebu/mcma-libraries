@@ -1,7 +1,7 @@
-import { JobBase, JobBaseProperties } from "./job-base";
-import { McmaTracker, McmaTrackerProperties } from "./mcma-tracker";
-import { NotificationEndpoint, NotificationEndpointProperties } from "./notification-endpoint";
-import { Utils } from "../utils";
+import { JobBase, JobBaseProperties } from "./job-base.js";
+import { McmaTracker, McmaTrackerProperties } from "./mcma-tracker.js";
+import { NotificationEndpoint, NotificationEndpointProperties } from "./notification-endpoint.js";
+import { Utils } from "../utils.js";
 
 export interface JobAssignmentProperties extends JobBaseProperties {
     jobId: string;

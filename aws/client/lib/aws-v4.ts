@@ -1,4 +1,4 @@
-import * as CryptoJS from "crypto-js";
+import CryptoJS from "crypto-js";
 import { AwsCredentialIdentity, Provider } from "@aws-sdk/types";
 import { fromEnv } from "@aws-sdk/credential-providers";
 import { Method } from "axios";

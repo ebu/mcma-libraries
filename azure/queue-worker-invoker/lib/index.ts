@@ -1,1 +1,1 @@
-export * from "./queue-worker-invoker";
+export * from "./queue-worker-invoker.js";

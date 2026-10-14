@@ -1,5 +1,5 @@
-import { McmaApiRoute } from "./route";
-import { McmaApiRouteHandler } from "./route-handler";
+import { McmaApiRoute } from "./route.js";
+import { McmaApiRouteHandler } from "./route-handler.js";
 import { McmaException } from "@mcma/core";
 
 export class McmaApiRouteCollection {

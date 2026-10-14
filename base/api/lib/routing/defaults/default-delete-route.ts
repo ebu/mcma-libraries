@@ -1,8 +1,8 @@
 import { McmaResource } from "@mcma/core";
 import { DocumentDatabaseTableProvider, getTableName } from "@mcma/data";
 
-import { McmaApiRequestContext } from "../../http";
-import { McmaApiRoute } from "../route";
+import { McmaApiRequestContext } from "../../http/index.js";
+import { McmaApiRoute } from "../route.js";
 
 export class DefaultDeleteRoute<T extends McmaResource> extends McmaApiRoute {
     public onStarted: (requestContext: McmaApiRequestContext) => Promise<boolean>;

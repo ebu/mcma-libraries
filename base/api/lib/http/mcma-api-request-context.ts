@@ -1,8 +1,8 @@
 import { ConfigVariables, Logger, LoggerProvider, McmaException, McmaResource, McmaTracker, Utils } from "@mcma/core";
 import { McmaHeaders } from "@mcma/client";
-import { HttpStatusCode } from "./http-statuses";
-import { McmaApiRequest } from "./mcma-api-request";
-import { McmaApiResponse } from "./mcma-api-response";
+import { HttpStatusCode } from "./http-statuses.js";
+import { McmaApiRequest } from "./mcma-api-request.js";
+import { McmaApiResponse } from "./mcma-api-response.js";
 
 export class McmaApiRequestContext {
     public readonly response = new McmaApiResponse();

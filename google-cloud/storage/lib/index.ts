@@ -1,3 +1,3 @@
-export * from "./cloud-storage-locator";
-export * from "./helpers";
-export * from "./proxies";
+export * from "./cloud-storage-locator.js";
+export * from "./helpers.js";
+export * from "./proxies/index.js";

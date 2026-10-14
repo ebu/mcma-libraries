@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { CloudWatchLogsClient, DescribeLogGroupsCommand, PutLogEventsCommand } from "@aws-sdk/client-cloudwatch-logs";
-import { AwsCloudWatchLoggerProvider } from "../../dist";
+import { AwsCloudWatchLoggerProvider } from "../../dist/index.js";
 
 test("provider sends serialized diagnostics through the CloudWatch client", async () => {
     const batches: PutLogEventsCommand[] = [];

@@ -1,3 +1,3 @@
-export * from "./cloud-watch-logger-provider";
-export * from "./cloud-watch-logger";
-export * from "./config-variables-ext";
+export * from "./cloud-watch-logger-provider.js";
+export * from "./cloud-watch-logger.js";
+export * from "./config-variables-ext.js";

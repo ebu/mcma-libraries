@@ -1,1 +1,1 @@
-export * from "./pubsub-worker-invoker"
+export * from "./pubsub-worker-invoker.js"

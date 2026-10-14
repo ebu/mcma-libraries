@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { SecureRandom } from "./rng";
-import { BigInteger } from "./jsbn";
+import { SecureRandom } from "./rng.js";
+import { BigInteger } from "./jsbn.js";
 
 //==============================================================
 // rsa.js

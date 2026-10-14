@@ -2,8 +2,8 @@ import { McmaException } from "@mcma/core";
 import { AccessTokenProvider, AccessToken } from "@mcma/client";
 import { ConfidentialClientApplication } from "@azure/msal-node";
 
-import { AzureAdAuthContext } from "../azure-ad-auth-context";
-import { ConfigurationWithTenant } from "../configuration-with-tenant";
+import { AzureAdAuthContext } from "../azure-ad-auth-context.js";
+import { ConfigurationWithTenant } from "../configuration-with-tenant.js";
 
 export class AzureAdConfidentialClientAccessTokenProvider implements AccessTokenProvider<AzureAdAuthContext> {
     private readonly clientApplication: ConfidentialClientApplication;

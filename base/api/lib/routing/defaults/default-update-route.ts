@@ -1,9 +1,9 @@
 import { onResourceUpsert, McmaResource } from "@mcma/core";
 import { DocumentDatabaseTableProvider, getTableName } from "@mcma/data";
 
-import { getPublicUrl } from "../../config-variables-ext";
-import { McmaApiRequestContext } from "../../http";
-import { McmaApiRoute } from "../route";
+import { getPublicUrl } from "../../config-variables-ext.js";
+import { McmaApiRequestContext } from "../../http/index.js";
+import { McmaApiRoute } from "../route.js";
 
 export class DefaultUpdateRoute<T extends McmaResource> extends McmaApiRoute {
     public onStarted: (requestContext: McmaApiRequestContext) => Promise<boolean>;

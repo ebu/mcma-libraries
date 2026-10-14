@@ -2,10 +2,10 @@ import { McmaException } from "@mcma/core";
 import { CustomQuery, CustomQueryParameters, Document, DocumentDatabaseMutex, DocumentDatabaseTable, MutexProperties, Query, QueryResults } from "@mcma/data";
 import { CollectionReference, DocumentReference, QuerySnapshot } from "@google-cloud/firestore";
 
-import { buildFirestoreQuery } from "./build-firestore-query";
-import { FirestoreMutex } from "./firestore-mutex";
-import { CustomQueryRegistry } from "./firestore-table-provider-options";
-import { FirestoreMcmaDataConverter } from "./firestore-mcma-data-converter";
+import { buildFirestoreQuery } from "./build-firestore-query.js";
+import { FirestoreMutex } from "./firestore-mutex.js";
+import { CustomQueryRegistry } from "./firestore-table-provider-options.js";
+import { FirestoreMcmaDataConverter } from "./firestore-mcma-data-converter.js";
 
 async function getNextPageStartToken(results: QuerySnapshot, sortBy: string) {
     if (!results.docs.length) {

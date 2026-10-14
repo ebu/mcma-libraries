@@ -1,4 +1,4 @@
-import { getStatusError } from "./http-statuses";
+import { getStatusError } from "./http-statuses.js";
 import { McmaObject, McmaObjectProperties, Utils } from "@mcma/core";
 
 export interface McmaApiErrorProperties extends McmaObjectProperties {

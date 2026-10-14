@@ -1,4 +1,4 @@
-import { McmaResource } from "./mcma-resource";
+import { McmaResource } from "./mcma-resource.js";
 
 export interface McmaResourceConstructor<T extends McmaResource> {
     new(...args: any[]): T;

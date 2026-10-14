@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ConsoleLogger, LogEvent, Logger, LogLevel } from "../../dist";
+import { ConsoleLogger, LogEvent, Logger, LogLevel } from "../../dist/index.js";
 
 class CapturingLogger extends Logger {
     events: LogEvent[] = [];

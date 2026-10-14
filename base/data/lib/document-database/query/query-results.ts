@@ -1,4 +1,4 @@
-﻿import { Document } from "../document";
+﻿import { Document } from "../document.js";
 
 export interface QueryResults<TDocument extends Document = Document> {
     nextPageStartToken?: any;

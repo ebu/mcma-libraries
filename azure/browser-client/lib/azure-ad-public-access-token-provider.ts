@@ -2,8 +2,8 @@ import { McmaException } from "@mcma/core";
 import { AccessTokenProvider, AccessToken } from "@mcma/client";
 import { PublicClientApplication, AccountInfo } from "@azure/msal-browser";
 
-import { AzureAdAuthContext } from "./azure-ad-auth-context";
-import { ConfigurationWithTenant } from "./configuration-with-tenant";
+import { AzureAdAuthContext } from "./azure-ad-auth-context.js";
+import { ConfigurationWithTenant } from "./configuration-with-tenant.js";
 
 function requiresInteraction(errorCode: string): boolean {
     if (!errorCode || !errorCode.length) {

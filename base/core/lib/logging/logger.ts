@@ -1,8 +1,8 @@
 import * as util from "util";
 import { v4 as uuidv4 } from "uuid";
 
-import { McmaTrackerProperties } from "../model";
-import { LogEvent } from "./log-event";
+import { McmaTrackerProperties } from "../model/index.js";
+import { LogEvent } from "./log-event.js";
 
 export enum LogLevel {
     Fatal = 100,

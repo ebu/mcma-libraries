@@ -1,7 +1,7 @@
 import { Logger, LoggerProvider, McmaTrackerProperties } from "@mcma/core";
-import * as AppInsights from "applicationinsights";
+import AppInsights from "applicationinsights";
 
-import { AppInsightsLogger } from "./app-insights-logger";
+import { AppInsightsLogger } from "./app-insights-logger.js";
 
 if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
     AppInsights.setup().start();

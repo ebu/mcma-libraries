@@ -1,4 +1,4 @@
-import { McmaApiRequestConfig } from "./mcma-api-request-config";
+import { McmaApiRequestConfig } from "./mcma-api-request-config.js";
 
 export class McmaApiRequest extends McmaApiRequestConfig {
     constructor(config: McmaApiRequestConfig) {

@@ -1,5 +1,5 @@
-import { FilterExpression } from "./filter";
-import { Document } from "../document";
+import { FilterExpression } from "./filter.js";
+import { Document } from "../document.js";
 
 export enum QuerySortOrder {
     Ascending = "asc",

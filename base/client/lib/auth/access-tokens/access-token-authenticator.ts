@@ -1,8 +1,8 @@
 import { McmaException } from "@mcma/core";
-import { AccessTokenProvider } from "./access-token-provider";
-import { Authenticator } from "../authenticator";
-import { HttpRequestConfig } from "../../http";
-import { AccessToken } from "./access-token";
+import { AccessTokenProvider } from "./access-token-provider.js";
+import { Authenticator } from "../authenticator.js";
+import { HttpRequestConfig } from "../../http/index.js";
+import { AccessToken } from "./access-token.js";
 
 export class AccessTokenAuthenticator<T> implements Authenticator {
     private accessToken: AccessToken;

@@ -1,5 +1,5 @@
 import { default as uriTemplates } from "uri-templates";
-import { McmaApiRouteHandler } from "./route-handler";
+import { McmaApiRouteHandler } from "./route-handler.js";
 
 declare module "uri-templates" {
     interface URITemplate {

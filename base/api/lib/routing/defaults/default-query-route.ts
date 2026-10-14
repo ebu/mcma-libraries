@@ -10,8 +10,8 @@ import {
     QuerySortOrder,
 } from "@mcma/data";
 
-import { McmaApiRequestContext } from "../../http";
-import { McmaApiRoute } from "../route";
+import { McmaApiRequestContext } from "../../http/index.js";
+import { McmaApiRoute } from "../route.js";
 
 interface CustomQueryFactory<T> {
     isMatch(requestContext: McmaApiRequestContext): boolean;

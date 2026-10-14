@@ -1,1 +1,1 @@
-export * from "./event-rule-utils";
+export * from "./event-rule-utils.js";

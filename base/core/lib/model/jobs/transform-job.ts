@@ -1,4 +1,4 @@
-import { Job, JobProperties } from "./job";
+import { Job, JobProperties } from "./job.js";
 
 export class TransformJob extends Job {
     constructor(properties: JobProperties) {

@@ -1,2 +1,2 @@
-export * from "./google-auth-registration";
-export * from "./google-authenticator";
+export * from "./google-auth-registration.js";
+export * from "./google-authenticator.js";
