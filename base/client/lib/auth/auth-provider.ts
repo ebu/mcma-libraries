@@ -1,6 +1,6 @@
-import { Authenticator } from "./authenticator";
+import { Authenticator } from "./authenticator.js";
 import { McmaException } from "@mcma/core";
-import { AuthTypeRegistration } from "./auth-type-registration";
+import { AuthTypeRegistration } from "./auth-type-registration.js";
 
 export class AuthProvider {
     registeredAuthTypes: { [key: string]: Authenticator } = {};

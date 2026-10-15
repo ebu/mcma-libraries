@@ -1,4 +1,4 @@
-import { McmaException } from "./mcma-exception";
+import { McmaException } from "./mcma-exception.js";
 
 export class ConfigVariables {
     private static instance: ConfigVariables;

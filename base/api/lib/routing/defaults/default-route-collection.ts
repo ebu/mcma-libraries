@@ -1,14 +1,14 @@
 import { McmaException, McmaResource, McmaResourceType, Utils } from "@mcma/core";
 import { DocumentDatabaseTableProvider } from "@mcma/data";
 
-import { camelCaseToKebabCase, pluralizeKebabCase } from "../../strings";
-import { McmaApiRouteCollection } from "../route-collection";
+import { camelCaseToKebabCase, pluralizeKebabCase } from "../../strings.js";
+import { McmaApiRouteCollection } from "../route-collection.js";
 
-import { DefaultQueryRoute } from "./default-query-route";
-import { DefaultCreateRoute } from "./default-create-route";
-import { DefaultGetRoute } from "./default-get-route";
-import { DefaultUpdateRoute } from "./default-update-route";
-import { DefaultDeleteRoute } from "./default-delete-route";
+import { DefaultQueryRoute } from "./default-query-route.js";
+import { DefaultCreateRoute } from "./default-create-route.js";
+import { DefaultGetRoute } from "./default-get-route.js";
+import { DefaultUpdateRoute } from "./default-update-route.js";
+import { DefaultDeleteRoute } from "./default-delete-route.js";
 
 export class DefaultRouteCollection<T extends McmaResource> extends McmaApiRouteCollection {
     public query?: DefaultQueryRoute<T>;

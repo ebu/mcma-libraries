@@ -1,5 +1,5 @@
-import { OperationFilter } from "./operation-filter";
-import { OperationHandler } from "./operation-handler";
+import { OperationFilter } from "./operation-filter.js";
+import { OperationHandler } from "./operation-handler.js";
 
 export interface WorkerOperation {
     accepts: OperationFilter;

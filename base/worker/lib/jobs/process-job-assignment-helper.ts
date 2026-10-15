@@ -2,7 +2,7 @@ import { Job, JobAssignment, JobParameterBag, JobProfile, JobStatus, Logger, Mcm
 import { DocumentDatabaseTable } from "@mcma/data";
 import { ResourceManager } from "@mcma/client";
 
-import { WorkerRequest } from "../worker-request";
+import { WorkerRequest } from "../worker-request.js";
 
 export class ProcessJobAssignmentHelper<T extends Job> {
     private _jobAssignment: JobAssignment;

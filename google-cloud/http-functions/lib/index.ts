@@ -1,1 +1,1 @@
-export * from "./http-function-api-controller";
+export * from "./http-function-api-controller.js";

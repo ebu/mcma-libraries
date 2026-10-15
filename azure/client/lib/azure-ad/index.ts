@@ -1,3 +1,3 @@
-export * from "./azure-ad-auth-context";
-export * from "./confidential-client";
-export * from "./managed-identity";
+export * from "./azure-ad-auth-context.js";
+export * from "./confidential-client/index.js";
+export * from "./managed-identity/index.js";

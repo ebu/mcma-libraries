@@ -3,9 +3,9 @@
     "version": "1.2.1",
     "description": "Encryption algorithms used in the EBU MCMA framework. Wraps the jsbn library from Tom Wu (http://www-cs-students.stanford.edu/~tjw/jsbn/).",
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=22.0.0"
     },
-    "type": "commonjs",
+    "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [

@@ -1,2 +1,2 @@
-export * from "./cosmos-db-table-provider";
-export * from "./cosmos-db-table-provider-options";
+export * from "./cosmos-db-table-provider.js";
+export * from "./cosmos-db-table-provider-options.js";

@@ -1,3 +1,3 @@
-export * from "./auth";
-export * from "./http";
-export * from "./resources";
+export * from "./auth/index.js";
+export * from "./http/index.js";
+export * from "./resources/index.js";

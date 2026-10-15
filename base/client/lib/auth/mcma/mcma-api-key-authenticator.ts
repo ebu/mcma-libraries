@@ -1,7 +1,7 @@
-import { HttpRequestConfig } from "../../http";
-import { Authenticator } from "../authenticator";
-import { McmaApiKeyAuthenticatorConfig } from "./mcma-api-key-authenticator-config";
-import { getApiKeySecretId } from "./config-variables-ext";
+import { HttpRequestConfig } from "../../http/index.js";
+import { Authenticator } from "../authenticator.js";
+import { McmaApiKeyAuthenticatorConfig } from "./mcma-api-key-authenticator-config.js";
+import { getApiKeySecretId } from "./config-variables-ext.js";
 import { McmaException } from "@mcma/core";
 
 export class McmaApiKeyAuthenticator implements Authenticator {

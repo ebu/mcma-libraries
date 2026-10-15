@@ -1,1 +1,1 @@
-export * from "./cloud-storage-proxy";
+export * from "./cloud-storage-proxy.js";

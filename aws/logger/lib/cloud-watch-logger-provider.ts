@@ -10,8 +10,8 @@ import {
     CreateLogGroupCommandInput, CreateLogStreamCommandInput
 } from "@aws-sdk/client-cloudwatch-logs";
 import { LogEvent, Logger, LoggerProvider, McmaException, McmaTrackerProperties, Utils } from "@mcma/core";
-import { AwsCloudWatchLogger } from "./cloud-watch-logger";
-import { getLogGroupName } from "./config-variables-ext";
+import { AwsCloudWatchLogger } from "./cloud-watch-logger.js";
+import { getLogGroupName } from "./config-variables-ext.js";
 
 export class AwsCloudWatchLoggerProvider implements LoggerProvider {
 

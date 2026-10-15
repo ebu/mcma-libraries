@@ -1,7 +1,7 @@
 import { BlobServiceClient } from "@azure/storage-blob";
 import { ConfigVariables, McmaException } from "@mcma/core";
-import { BlobStorageLocator } from "../blob-storage-locator";
-import { BlobStorageProxy } from "./blob-storage-proxy";
+import { BlobStorageLocator } from "../blob-storage-locator.js";
+import { BlobStorageProxy } from "./blob-storage-proxy.js";
 
 const StorageAccountNameKeySuffix = "STORAGE_ACCOUNT_NAME";
 const StorageConnectionStringKeySuffix = "STORAGE_CONNECTION_STRING";

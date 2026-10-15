@@ -1,5 +1,5 @@
 import { Logger, McmaException, McmaTrackerProperties,  } from "@mcma/core";
-import { WorkerRequestProperties } from "./worker-request-properties";
+import { WorkerRequestProperties } from "./worker-request-properties.js";
 
 export class WorkerRequest implements WorkerRequestProperties {
     operationName: string;

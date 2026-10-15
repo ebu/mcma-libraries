@@ -1,4 +1,4 @@
-import { Authenticator } from "./authenticator";
+import { Authenticator } from "./authenticator.js";
 
 export interface AuthTypeRegistration {
     authType: string;

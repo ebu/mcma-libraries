@@ -61,6 +61,8 @@ task tsc(type: Exec) {
     dependsOn npmInstall
     inputs.file("tsconfig.json")
     inputs.file("package.json")
+    inputs.file("${rootDir}/package-lock.json")
+    inputs.file("${rootDir}/tsconfig.json")
     inputs.dir("lib")
     inputs.dir("node_modules")
     outputs.dir("dist")

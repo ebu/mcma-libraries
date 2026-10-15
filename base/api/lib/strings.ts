@@ -1,4 +1,6 @@
-import { plural } from "pluralize";
+import pluralize from "pluralize";
+
+const { plural } = pluralize;
 
 export function camelCaseToKebabCase(value: string): string {
     let result = "";

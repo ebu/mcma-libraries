@@ -1,5 +1,5 @@
-import { BinaryOperator, LogicalOperator } from "./operator";
-import { Document } from "../document";
+import { BinaryOperator, LogicalOperator } from "./operator.js";
+import { Document } from "../document.js";
 
 export type FilterExpression<T extends Document = Document> = FilterCriteriaGroup<T> | FilterCriteria<T>;
 

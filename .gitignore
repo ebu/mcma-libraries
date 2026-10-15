@@ -3,3 +3,6 @@
 .vscode
 dist
 node_modules
+
+# Local verification output
+build/

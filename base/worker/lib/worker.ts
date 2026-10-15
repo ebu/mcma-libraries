@@ -1,9 +1,9 @@
 import { McmaException } from "@mcma/core";
-import { WorkerRequest } from "./worker-request";
-import { ProviderCollection } from "./provider-collection";
-import { OperationFilter } from "./operation-filter";
-import { OperationHandler } from "./operation-handler";
-import { WorkerOperation } from "./worker-operation";
+import { WorkerRequest } from "./worker-request.js";
+import { ProviderCollection } from "./provider-collection.js";
+import { OperationFilter } from "./operation-filter.js";
+import { OperationHandler } from "./operation-handler.js";
+import { WorkerOperation } from "./worker-operation.js";
 
 function isWorkerOperation(operation: string | OperationFilter | WorkerOperation): operation is WorkerOperation {
     return operation && typeof (<any>operation)["execute"] !== "undefined";

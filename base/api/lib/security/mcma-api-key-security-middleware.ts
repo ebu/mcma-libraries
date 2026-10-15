@@ -1,7 +1,7 @@
 import { SecretsProvider } from "@mcma/secrets";
-import { McmaApiKeySecurityConfig } from "./mcma-api-key-security-config";
-import { HttpMethod, HttpStatusCode, McmaApiMiddleware, McmaApiRequestContext } from "../http";
-import { getApiSecurityConfigSecretId } from "../config-variables-ext";
+import { McmaApiKeySecurityConfig } from "./mcma-api-key-security-config.js";
+import { HttpMethod, HttpStatusCode, McmaApiMiddleware, McmaApiRequestContext } from "../http/index.js";
+import { getApiSecurityConfigSecretId } from "../config-variables-ext.js";
 
 export interface McmaApiKeySecurityMiddlewareConfig {
     apiSecurityConfigSecretId?: string;

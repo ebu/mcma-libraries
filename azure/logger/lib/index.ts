@@ -1,2 +1,2 @@
-export * from "./app-insights-logger-provider";
-export * from "./app-insights-logger";
+export * from "./app-insights-logger-provider.js";
+export * from "./app-insights-logger.js";

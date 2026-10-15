@@ -1,2 +1,2 @@
-export * from "./mcma-api-key-security-config";
-export * from "./mcma-api-key-security-middleware";
+export * from "./mcma-api-key-security-config.js";
+export * from "./mcma-api-key-security-middleware.js";

@@ -1,6 +1,6 @@
-import { Logger } from "./logger";
-import { McmaTrackerProperties } from "../model";
-import { LogEvent } from "./log-event";
+import { Logger } from "./logger.js";
+import { McmaTrackerProperties } from "../model/index.js";
+import { LogEvent } from "./log-event.js";
 
 export class ConsoleLogger extends Logger {
     constructor(source: string, requestId?: string, tracker?: McmaTrackerProperties) {

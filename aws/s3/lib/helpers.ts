@@ -1,6 +1,6 @@
 import { GetBucketLocationCommand, S3Client } from "@aws-sdk/client-s3";
 import { Locator } from "@mcma/core";
-import { S3Locator } from "./s3-locator";
+import { S3Locator } from "./s3-locator.js";
 
 export async function buildS3Url(bucket: string, key: string, s3: S3Client): Promise<string>;
 export async function buildS3Url(bucket: string, key: string, region: string): Promise<string>;

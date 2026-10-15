@@ -1,2 +1,2 @@
-export * from "./proxy-helpers";
-export * from "./blob-storage-proxy";
+export * from "./proxy-helpers.js";
+export * from "./blob-storage-proxy.js";

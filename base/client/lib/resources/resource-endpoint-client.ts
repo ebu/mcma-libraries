@@ -1,7 +1,7 @@
 import { AxiosResponse } from "axios";
 import { McmaException, ResourceEndpointProperties, Utils } from "@mcma/core";
-import { Http, HttpClient, HttpClientConfig, HttpRequestConfig } from "../http";
-import { AuthProvider } from "../auth";
+import { Http, HttpClient, HttpClientConfig, HttpRequestConfig } from "../http/index.js";
+import { AuthProvider } from "../auth/index.js";
 
 export class ResourceEndpointClient implements Http {
     private _httpClient: HttpClient;

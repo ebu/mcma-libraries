@@ -1,6 +1,6 @@
-import { CloudStorageLocator } from "../cloud-storage-locator";
+import { CloudStorageLocator } from "../cloud-storage-locator.js";
 import { Bucket, CreateWriteStreamOptions, File, Storage, StorageOptions } from "@google-cloud/storage";
-import { buildCloudStorageUrl } from "../helpers";
+import { buildCloudStorageUrl } from "../helpers.js";
 
 export class CloudStorageProxy {
     private readonly storage: Storage;

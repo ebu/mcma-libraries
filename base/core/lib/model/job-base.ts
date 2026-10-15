@@ -1,8 +1,8 @@
-import { JobParameterBag, JobParameterBagProperties } from "./job-parameter-bag";
-import { McmaResource, McmaResourceProperties } from "./mcma-resource";
-import { ProblemDetail, ProblemDetailProperties } from "./problem-detail";
-import { JobStatus } from "./job-status";
-import { Utils } from "../utils";
+import { JobParameterBag, JobParameterBagProperties } from "./job-parameter-bag.js";
+import { McmaResource, McmaResourceProperties } from "./mcma-resource.js";
+import { ProblemDetail, ProblemDetailProperties } from "./problem-detail.js";
+import { JobStatus } from "./job-status.js";
+import { Utils } from "../utils.js";
 
 export interface JobBaseProperties extends McmaResourceProperties {
     status?: JobStatus;

@@ -4,9 +4,9 @@ import { JobAssignment, JobAssignmentProperties, JobStatus, McmaTracker } from "
 import { DocumentDatabaseTableProvider, getTableName } from "@mcma/data";
 import { getWorkerFunctionId, WorkerInvoker } from "@mcma/worker-invoker";
 
-import { DefaultRouteCollection } from "./default-route-collection";
-import { getPublicUrl } from "../../config-variables-ext";
-import { HttpStatusCode, McmaApiRequestContext } from "../../http";
+import { DefaultRouteCollection } from "./default-route-collection.js";
+import { getPublicUrl } from "../../config-variables-ext.js";
+import { HttpStatusCode, McmaApiRequestContext } from "../../http/index.js";
 
 export class DefaultJobRouteCollection extends DefaultRouteCollection<JobAssignment> {
     constructor(

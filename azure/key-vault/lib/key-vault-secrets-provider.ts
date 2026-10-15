@@ -1,7 +1,7 @@
 import { SecretsProvider } from "@mcma/secrets";
 import { DefaultAzureCredential, TokenCredential } from "@azure/identity";
 import { SecretClient } from "@azure/keyvault-secrets";
-import { getKeyVaultUrl } from "./config-variables-ext";
+import { getKeyVaultUrl } from "./config-variables-ext.js";
 
 export interface AzureKeyVaultSecretsProviderConfig {
     keyVaultUrl?: string;

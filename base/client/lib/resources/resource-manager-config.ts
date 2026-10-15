@@ -1,4 +1,4 @@
-import { HttpClientConfig } from "../http";
+import { HttpClientConfig } from "../http/index.js";
 
 export interface ResourceManagerConfig {
     serviceRegistryUrl: string;

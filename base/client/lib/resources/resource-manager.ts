@@ -9,12 +9,12 @@ import {
     ServiceProperties
 } from "@mcma/core";
 
-import { Http, HttpClient } from "../http";
-import { AuthProvider } from "../auth";
+import { Http, HttpClient } from "../http/index.js";
+import { AuthProvider } from "../auth/index.js";
 
-import { ServiceClient } from "./service-client";
-import { ResourceManagerConfig } from "./resource-manager-config";
-import { ResourceEndpointClient } from "./resource-endpoint-client";
+import { ServiceClient } from "./service-client.js";
+import { ResourceManagerConfig } from "./resource-manager-config.js";
+import { ResourceEndpointClient } from "./resource-endpoint-client.js";
 
 type QueryResults<T> = {
     results: T[];

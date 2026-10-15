@@ -1,10 +1,10 @@
 import { McmaException, Utils } from "@mcma/core";
 import { default as axios, AxiosResponse, Method, AxiosRequestConfig, AxiosInstance } from "axios";
 
-import { Authenticator } from "../auth";
-import { McmaHeaders } from "./headers";
-import { Http } from "./http";
-import { HttpRequestConfig } from "./http-request-config";
+import { Authenticator } from "../auth/index.js";
+import { McmaHeaders } from "./headers.js";
+import { Http } from "./http.js";
+import { HttpRequestConfig } from "./http-request-config.js";
 
 export type HttpClientConfig = {
     maxAttempts?: number,

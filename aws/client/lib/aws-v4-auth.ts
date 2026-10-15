@@ -1,5 +1,5 @@
 import { AuthTypeRegistration } from "@mcma/client";
-import { AwsV4Authenticator, AwsV4Config } from "./aws-v4";
+import { AwsV4Authenticator, AwsV4Config } from "./aws-v4.js";
 
 export function awsV4Auth(config?: AwsV4Config): AuthTypeRegistration {
     return {

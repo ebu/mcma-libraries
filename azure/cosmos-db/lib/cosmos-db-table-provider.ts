@@ -1,8 +1,8 @@
 import { DocumentDatabaseTableProvider, DocumentDatabaseTable } from "@mcma/data";
 import { CosmosClient, Database, Container, ContainerDefinition } from "@azure/cosmos";
 
-import { CosmosDbTable } from "./cosmos-db-table";
-import { CosmosDbTableProviderOptions } from "./cosmos-db-table-provider-options";
+import { CosmosDbTable } from "./cosmos-db-table.js";
+import { CosmosDbTableProviderOptions } from "./cosmos-db-table-provider-options.js";
 
 export class CosmosDbTableProvider implements DocumentDatabaseTableProvider {
     private cosmosClient: CosmosClient;

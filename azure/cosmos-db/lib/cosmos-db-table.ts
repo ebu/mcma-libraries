@@ -2,10 +2,10 @@ import { McmaException, Utils } from "@mcma/core";
 import { CustomQuery, CustomQueryParameters, Document, DocumentDatabaseMutex, DocumentDatabaseTable, MutexProperties, Query, QueryResults } from "@mcma/data";
 import { Container, ContainerDefinition } from "@azure/cosmos";
 
-import { buildQueryDefinition } from "./build-query-definition";
-import { parsePartitionKeyAndGuid } from "./parse-partition-key-and-guid";
-import { CosmosDbTableRetryOptions, CustomQueryRegistry } from "./cosmos-db-table-provider-options";
-import { CosmosDbMutex } from "./cosmos-db-mutex";
+import { buildQueryDefinition } from "./build-query-definition.js";
+import { parsePartitionKeyAndGuid } from "./parse-partition-key-and-guid.js";
+import { CosmosDbTableRetryOptions, CustomQueryRegistry } from "./cosmos-db-table-provider-options.js";
+import { CosmosDbMutex } from "./cosmos-db-mutex.js";
 
 function deserialize(object: any) {
     let copy: any;

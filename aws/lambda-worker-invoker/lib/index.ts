@@ -1,1 +1,1 @@
-export * from "./lambda-worker-invoker";
+export * from "./lambda-worker-invoker.js";

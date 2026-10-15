@@ -1,6 +1,6 @@
 import { DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand, PutCommandInput } from "@aws-sdk/lib-dynamodb";
 import { Logger } from "@mcma/core";
-import { DynamoDbTableDescription } from "./dynamo-db-table-description";
+import { DynamoDbTableDescription } from "./dynamo-db-table-description.js";
 import { DocumentDatabaseMutex, LockData } from "@mcma/data";
 
 interface TableKey {

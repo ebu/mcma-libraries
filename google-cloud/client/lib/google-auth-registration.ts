@@ -1,7 +1,7 @@
 import { AuthTypeRegistration } from "@mcma/client";
 import { GoogleAuthOptions } from "google-auth-library";
 
-import { GoogleAuthenticator } from "./google-authenticator";
+import { GoogleAuthenticator } from "./google-authenticator.js";
 
 export function googleAuth(options?: GoogleAuthOptions): AuthTypeRegistration {
     return {

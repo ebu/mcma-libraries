@@ -26,10 +26,10 @@ import {
     QuerySortOrder,
 } from "@mcma/data";
 
-import { DynamoDbTableOptions } from "./dynamo-db-table-options";
-import { buildFilterExpression } from "./build-filter-expression";
-import { DynamoDbTableDescription } from "./dynamo-db-table-description";
-import { DynamoDbMutex } from "./dynamo-db-mutex";
+import { DynamoDbTableOptions } from "./dynamo-db-table-options.js";
+import { buildFilterExpression } from "./build-filter-expression.js";
+import { DynamoDbTableDescription } from "./dynamo-db-table-description.js";
+import { DynamoDbMutex } from "./dynamo-db-mutex.js";
 
 function parsePartitionAndSortKeys(id: string): { partitionKey: string, sortKey: string } {
     const lastSlashIndex = id.lastIndexOf("/");

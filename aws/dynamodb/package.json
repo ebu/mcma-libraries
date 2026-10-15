@@ -3,9 +3,9 @@
     "version": "1.2.1",
     "description": "Node module with code for using DynamoDB as the backing data storage for MCMA API handlers and workers.",
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=22.0.0"
     },
-    "type": "commonjs",
+    "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [

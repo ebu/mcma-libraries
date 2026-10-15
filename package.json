@@ -1,0 +1,14 @@
+{
+    "name": "mcma-libraries-development",
+    "private": true,
+    "engines": {
+        "node": ">=22.0.0"
+    },
+    "scripts": {
+        "verify": "node scripts/verify.cjs",
+        "verify:package": "node scripts/verify.cjs --package-only"
+    },
+    "devDependencies": {
+        "typescript": "5.9.3"
+    }
+}

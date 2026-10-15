@@ -3,9 +3,9 @@
     "version": "1.2.1",
     "description": "Node module with code for using AWS's API Gateway as an entry point to an MCMA API handler.",
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=22.0.0"
     },
-    "type": "commonjs",
+    "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -30,9 +30,7 @@
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
     "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-nodejs#readme",
-    "dependencies": {
-        
-    },
+    "dependencies": {},
     "peerDependencies": {
         "@mcma/core": "1.2.1",
         "@mcma/api": "1.2.1",

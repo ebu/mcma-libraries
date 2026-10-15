@@ -1,4 +1,4 @@
-import { WorkerRequest } from "./worker-request";
-import { ProviderCollection } from "./provider-collection";
+import { WorkerRequest } from "./worker-request.js";
+import { ProviderCollection } from "./provider-collection.js";
 
 export type OperationFilter = (providers: ProviderCollection, request: WorkerRequest, ctx?: any) => Promise<boolean>;

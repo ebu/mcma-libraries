@@ -1,7 +1,7 @@
-import { LoggerProvider } from "./logger-provider";
-import { Logger } from "./logger";
-import { McmaTrackerProperties } from "../model";
-import { ConsoleLogger } from "./console-logger";
+import { LoggerProvider } from "./logger-provider.js";
+import { Logger } from "./logger.js";
+import { McmaTrackerProperties } from "../model/index.js";
+import { ConsoleLogger } from "./console-logger.js";
 
 export class ConsoleLoggerProvider implements LoggerProvider {
     constructor(private source: string) { }

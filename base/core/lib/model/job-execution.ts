@@ -1,5 +1,5 @@
-import { JobBase, JobBaseProperties } from "./job-base";
-import { Utils } from "../utils";
+import { JobBase, JobBaseProperties } from "./job-base.js";
+import { Utils } from "../utils.js";
 
 export interface JobExecutionProperties extends JobBaseProperties {
     jobAssignmentId?: string;

@@ -1,7 +1,7 @@
 import { EncryptionHelper } from "@mcma/encryption";
 import { Authenticator, HttpRequestConfig } from "@mcma/client";
 
-import { AzureFunctionKeyAuthContext } from "./function-key-auth-context";
+import { AzureFunctionKeyAuthContext } from "./function-key-auth-context.js";
 import { McmaException } from "@mcma/core";
 
 const DefaultDecryptionKey = typeof process !== "undefined" && process.env && process.env["FunctionKeyEncryptionKey"];

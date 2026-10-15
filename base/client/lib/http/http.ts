@@ -1,4 +1,4 @@
-import { HttpRequestConfig } from ".";
+import { HttpRequestConfig } from "./index.js";
 import { AxiosResponse } from "axios";
 
 export interface Http {

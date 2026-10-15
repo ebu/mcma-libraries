@@ -1,5 +1,5 @@
 import { Job } from "@mcma/core";
-import { JobProfileHandler } from "./job-profile-handler";
+import { JobProfileHandler } from "./job-profile-handler.js";
 
 export interface ProcessJobProfile<T extends Job> {
     name: string;

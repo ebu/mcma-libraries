@@ -1,7 +1,7 @@
 import { DocumentDatabaseTable, DocumentDatabaseTableProvider } from "@mcma/data";
 import { Firestore } from "@google-cloud/firestore";
-import { FirestoreTable } from "./firestore-table";
-import { FirestoreTableProviderOptions } from "./firestore-table-provider-options";
+import { FirestoreTable } from "./firestore-table.js";
+import { FirestoreTableProviderOptions } from "./firestore-table-provider-options.js";
 
 export class FirestoreTableProvider implements DocumentDatabaseTableProvider {
     private firestore: Firestore;

@@ -1,4 +1,4 @@
-import { McmaObject, McmaObjectProperties } from "./mcma-object";
+import { McmaObject, McmaObjectProperties } from "./mcma-object.js";
 
 export interface JobParameterBagProperties extends McmaObjectProperties {
     [key: string]: any;

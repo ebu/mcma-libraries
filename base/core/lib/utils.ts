@@ -1,4 +1,4 @@
-import { McmaException } from "./mcma-exception";
+import { McmaException } from "./mcma-exception.js";
 
 function isValidUrl(url: string): boolean {
     try {

@@ -1,4 +1,4 @@
-import { Job, JobProperties } from "./job";
+import { Job, JobProperties } from "./job.js";
 
 export class AIJob extends Job {
     constructor(properties: JobProperties) {

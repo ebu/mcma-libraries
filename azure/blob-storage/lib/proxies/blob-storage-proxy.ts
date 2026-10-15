@@ -7,9 +7,9 @@ import {
     generateBlobSASQueryParameters,
     StorageSharedKeyCredential
 } from "@azure/storage-blob";
-import { BlobStorageLocator } from "../blob-storage-locator";
+import { BlobStorageLocator } from "../blob-storage-locator.js";
 import { Readable } from "stream";
-import { buildBlobStorageUrl } from "../helpers";
+import { buildBlobStorageUrl } from "../helpers.js";
 
 export class BlobStorageProxy {
     public container: ContainerClient;

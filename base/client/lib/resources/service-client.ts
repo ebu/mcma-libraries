@@ -1,7 +1,7 @@
 import { ServiceProperties } from "@mcma/core";
-import { ResourceEndpointClient } from "./resource-endpoint-client";
-import { AuthProvider } from "../auth/auth-provider";
-import { HttpClientConfig } from "../http";
+import { ResourceEndpointClient } from "./resource-endpoint-client.js";
+import { AuthProvider } from "../auth/auth-provider.js";
+import { HttpClientConfig } from "../http/index.js";
 
 export class ServiceClient {
     private endpointsMap: { [key: string]: ResourceEndpointClient } = {};

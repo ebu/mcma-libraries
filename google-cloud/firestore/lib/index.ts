@@ -1,6 +1,6 @@
-export * from "./build-firestore-query";
-export * from "./firestore-table";
-export * from "./firestore-table-provider";
-export { FirestoreMutex } from "./firestore-mutex";
-export { FirestoreTableProviderOptions } from "./firestore-table-provider-options";
-export { parsePathAndGuid } from "./parse-path-and-guid";
+export * from "./build-firestore-query.js";
+export * from "./firestore-table.js";
+export * from "./firestore-table-provider.js";
+export { FirestoreMutex } from "./firestore-mutex.js";
+export { FirestoreTableProviderOptions } from "./firestore-table-provider-options.js";
+export { parsePathAndGuid } from "./parse-path-and-guid.js";

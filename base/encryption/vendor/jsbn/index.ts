@@ -1,1 +1,1 @@
-export * from "./lib/rsa";
+export * from "./lib/rsa.js";

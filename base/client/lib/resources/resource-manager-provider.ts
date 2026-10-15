@@ -1,9 +1,9 @@
 import { ConfigVariables, McmaException } from "@mcma/core";
 
-import { AuthProvider } from "../auth";
-import { ResourceManagerConfig } from "./resource-manager-config";
-import { ResourceManager } from "./resource-manager";
-import { getResourceManagerConfig } from "./config-variables-ext";
+import { AuthProvider } from "../auth/index.js";
+import { ResourceManagerConfig } from "./resource-manager-config.js";
+import { ResourceManager } from "./resource-manager.js";
+import { getResourceManagerConfig } from "./config-variables-ext.js";
 
 export class ResourceManagerProvider {
     constructor(private authProvider: AuthProvider, private defaultConfig?: ResourceManagerConfig) {

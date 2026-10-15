@@ -1,4 +1,4 @@
-import { Secret } from "./secret";
+import { Secret } from "./secret.js";
 
 export abstract class SecretsProvider {
     abstract get(secretId: string): Promise<string>;

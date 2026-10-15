@@ -1,1 +1,1 @@
-export * from "./api-gateway-api-controller";
+export * from "./api-gateway-api-controller.js";

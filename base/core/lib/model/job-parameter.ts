@@ -1,5 +1,5 @@
-import { McmaObject, McmaObjectProperties } from "./mcma-object";
-import { Utils } from "../utils";
+import { McmaObject, McmaObjectProperties } from "./mcma-object.js";
+import { Utils } from "../utils.js";
 
 export interface JobParameterProperties extends McmaObjectProperties {
     parameterName: string;

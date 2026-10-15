@@ -3,9 +3,9 @@
     "version": "1.2.1",
     "description": "Core classes and types for invoking MCMA Worker functions",
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=22.0.0"
     },
-    "type": "commonjs",
+    "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -30,9 +30,7 @@
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
     "homepage": "https://github.com/ebu/mcma-libraries/nodes/mcma-worker-invoker#readme",
-    "dependencies": {
-        
-    },
+    "dependencies": {},
     "peerDependencies": {
         "@mcma/core": "1.2.1"
     },

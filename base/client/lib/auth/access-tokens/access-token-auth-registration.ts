@@ -1,6 +1,6 @@
-import { AccessTokenProvider } from "./access-token-provider";
-import { AccessTokenAuthenticator } from "./access-token-authenticator";
-import { AuthTypeRegistration } from "../auth-type-registration";
+import { AccessTokenProvider } from "./access-token-provider.js";
+import { AccessTokenAuthenticator } from "./access-token-authenticator.js";
+import { AuthTypeRegistration } from "../auth-type-registration.js";
 
 export function accessTokenAuth<T>(tokenProvider: AccessTokenProvider<T>, authType?: string, authContext?: T): AuthTypeRegistration {
     return {
