@@ -1,6 +1,6 @@
 {
     "name": "@mcma/google-cloud-firestore",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "description": "Add Google Cloud Firestore as a backing data store for your MCMA services",
     "engines": {
         "node": ">=22.0.0"
@@ -16,7 +16,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ebu/mcma-libraries.git"
+        "url": "git+https://github.com/ebu/mcma-libraries.git",
+        "directory": "google-cloud/firestore"
     },
     "keywords": [
         "ebu",
@@ -29,17 +30,17 @@
     "bugs": {
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
-    "homepage": "https://github.com/ebu/mcma-libraries/nodejs/google-cloud/firestore#readme",
+    "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
         "@google-cloud/firestore": "^8.7.0"
     },
     "peerDependencies": {
-        "@mcma/core": "1.2.1",
-        "@mcma/data": "1.2.1"
+        "@mcma/core": "2.0.0",
+        "@mcma/data": "2.0.0"
     },
     "devDependencies": {
-        "@mcma/core": "1.2.1",
-        "@mcma/data": "1.2.1",
+        "@mcma/core": "2.0.0",
+        "@mcma/data": "2.0.0",
         "@types/node": "^22.20.1"
     }
 }

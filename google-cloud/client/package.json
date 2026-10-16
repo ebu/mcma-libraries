@@ -1,6 +1,6 @@
 {
     "name": "@mcma/google-cloud-client",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "description": "Authentication for communicating with MCMA services hosted on Google Cloud Platform",
     "engines": {
         "node": ">=22.0.0"
@@ -16,7 +16,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ebu/mcma-libraries.git"
+        "url": "git+https://github.com/ebu/mcma-libraries.git",
+        "directory": "google-cloud/client"
     },
     "keywords": [
         "ebu",
@@ -28,18 +29,18 @@
     "bugs": {
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
-    "homepage": "https://github.com/ebu/mcma-libraries/nodejs/google-cloud/client#readme",
+    "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
         "google-auth-library": "^10.9.1"
     },
     "peerDependencies": {
-        "@mcma/client": "1.2.1",
-        "@mcma/core": "1.2.1"
+        "@mcma/client": "2.0.0",
+        "@mcma/core": "2.0.0"
     },
     "devDependencies": {
-        "@mcma/client": "1.2.1",
-        "@mcma/core": "1.2.1",
-        "@mcma/encryption": "1.2.1",
+        "@mcma/client": "2.0.0",
+        "@mcma/core": "2.0.0",
+        "@mcma/encryption": "2.0.0",
         "@types/node": "^22.20.1"
     }
 }

@@ -6,9 +6,47 @@
     },
     "scripts": {
         "verify": "node scripts/verify.cjs",
-        "verify:package": "node scripts/verify.cjs --package-only"
+        "verify:package": "node scripts/verify.cjs --package-only",
+        "build": "node scripts/build.cjs",
+        "test:release": "node --test scripts/release.test.cjs",
+        "release:prepare": "npm run verify",
+        "release:publish": "node scripts/release.cjs publish",
+        "release:version": "node scripts/set-version.cjs",
+        "release:publish-local": "node scripts/release.cjs publish-local"
     },
     "devDependencies": {
         "typescript": "5.9.3"
-    }
+    },
+    "workspaces": [
+        "base/api",
+        "base/client",
+        "base/core",
+        "base/data",
+        "base/encryption",
+        "base/secrets",
+        "base/worker",
+        "base/worker-invoker",
+        "aws/api-gateway",
+        "aws/client",
+        "aws/cloudwatch-events",
+        "aws/dynamodb",
+        "aws/lambda-worker-invoker",
+        "aws/logger",
+        "aws/s3",
+        "aws/secrets-manager",
+        "azure/api",
+        "azure/blob-storage",
+        "azure/browser-client",
+        "azure/client",
+        "azure/cosmos-db",
+        "azure/key-vault",
+        "azure/logger",
+        "azure/queue-worker-invoker",
+        "google-cloud/client",
+        "google-cloud/firestore",
+        "google-cloud/http-functions",
+        "google-cloud/logger",
+        "google-cloud/pubsub-worker-invoker",
+        "google-cloud/storage"
+    ]
 }

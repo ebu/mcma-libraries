@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-api-gateway",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "description": "Node module with code for using AWS's API Gateway as an entry point to an MCMA API handler.",
     "engines": {
         "node": ">=22.0.0"
@@ -16,7 +16,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ebu/mcma-libraries.git"
+        "url": "git+https://github.com/ebu/mcma-libraries.git",
+        "directory": "aws/api-gateway"
     },
     "keywords": [
         "ebu",
@@ -29,19 +30,19 @@
     "bugs": {
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
-    "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-nodejs#readme",
+    "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {},
     "peerDependencies": {
-        "@mcma/core": "1.2.1",
-        "@mcma/api": "1.2.1",
+        "@mcma/core": "2.0.0",
+        "@mcma/api": "2.0.0",
         "@types/aws-lambda": "^8.10.162"
     },
     "devDependencies": {
-        "@mcma/api": "1.2.1",
-        "@mcma/client": "1.2.1",
-        "@mcma/core": "1.2.1",
-        "@mcma/data": "1.2.1",
-        "@mcma/worker-invoker": "1.2.1",
+        "@mcma/api": "2.0.0",
+        "@mcma/client": "2.0.0",
+        "@mcma/core": "2.0.0",
+        "@mcma/data": "2.0.0",
+        "@mcma/worker-invoker": "2.0.0",
         "@types/aws-lambda": "^8.10.162",
         "@types/node": "^22.20.1",
         "@types/uri-templates": "^0.1.34"

@@ -1,6 +1,6 @@
 {
     "name": "@mcma/api",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "description": "Node module for building APIs based on the EBU MCMA framework",
     "engines": {
         "node": ">=22.0.0"
@@ -16,7 +16,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ebu/mcma-libraries.git"
+        "url": "git+https://github.com/ebu/mcma-libraries.git",
+        "directory": "base/api"
     },
     "keywords": [
         "ebu",
@@ -29,7 +30,7 @@
     "bugs": {
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
-    "homepage": "https://github.com/ebu/mcma-libraries/nodes/mcma-api#readme",
+    "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
         "@types/uri-templates": "^0.1.34",
         "pluralize": "^8.0.0",
@@ -37,18 +38,18 @@
         "uuid": "^11.1.1"
     },
     "peerDependencies": {
-        "@mcma/client": "1.2.1",
-        "@mcma/core": "1.2.1",
-        "@mcma/data": "1.2.1",
-        "@mcma/secrets": "1.2.1",
-        "@mcma/worker-invoker": "1.2.1"
+        "@mcma/client": "2.0.0",
+        "@mcma/core": "2.0.0",
+        "@mcma/data": "2.0.0",
+        "@mcma/secrets": "2.0.0",
+        "@mcma/worker-invoker": "2.0.0"
     },
     "devDependencies": {
-        "@mcma/client": "1.2.1",
-        "@mcma/core": "1.2.1",
-        "@mcma/data": "1.2.1",
-        "@mcma/secrets": "1.2.1",
-        "@mcma/worker-invoker": "1.2.1",
+        "@mcma/client": "2.0.0",
+        "@mcma/core": "2.0.0",
+        "@mcma/data": "2.0.0",
+        "@mcma/secrets": "2.0.0",
+        "@mcma/worker-invoker": "2.0.0",
         "@types/node": "^22.20.1",
         "@types/pluralize": "^0.0.33"
     }

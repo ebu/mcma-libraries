@@ -1,137 +1,69 @@
-def requiredVersionNodeJS = ">=22.0.0"
-def requiredVersionTsc = "5.9.3"
-
 allprojects {
     ext {
-        if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-            nodeExecutable = Arrays.asList("node")
-            npmExecutable = Arrays.asList("cmd", "/c", "npm")
-            tscExecutable = ["node", "${rootDir}/node_modules/typescript/bin/tsc"]
-        } else {
-            nodeExecutable = Arrays.asList("node")
-            npmExecutable = Arrays.asList("npm")
-            tscExecutable = ["node", "${rootDir}/node_modules/typescript/bin/tsc"]
-        }
+        nodeExecutable = ['node']
+        npmExecutable = org.gradle.internal.os.OperatingSystem.current().isWindows() ? ['cmd', '/c', 'npm'] : ['npm']
     }
 }
 
-static def isSemVerMatching(String actual, String expected) {
-    if (expected.startsWith(">=")) {
-        def actualParts = actual.tokenize(".").collect { it as int }
-        def minimumParts = expected.substring(2).tokenize(".").collect { it as int }
-        for (int i = 0; i < 3; i++) {
-            if (actualParts[i] != minimumParts[i]) return actualParts[i] > minimumParts[i]
-        }
-        return true
-    }
-    if (!expected.startsWith("^") && !expected.startsWith("~")) return actual == expected
-    def beginIndex
-    def equalParts
-
-    if (expected.startsWith("^")) {
-        beginIndex = 1
-        equalParts = 1
-    } else if (expected.startsWith("~")) {
-        beginIndex = 1
-        equalParts = 2
-    } else {
-        beginIndex = 0
-        equalParts = 3
-    }
-
-    def expectedParts = expected.substring(beginIndex).split(/\./).collect { it as int }
-    def actualParts = actual.split(/\./).collect { it as int }
-
-    for (def i = 0; i < expectedParts.size(); i++) {
-
-        if (i < equalParts) {
-            if (actualParts[i] != expectedParts[i]) {
-                return false
-            }
-        } else {
-            if (actualParts[i] > expectedParts[i]) {
-                return true
-            }
-            if (actualParts[i] < expectedParts[i]) {
-                return false
-            }
-        }
-    }
-
-    return true
+tasks.register('verifyNodeJS', Exec) {
+    commandLine nodeExecutable + ['scripts/verify-tools.cjs']
 }
-
-def getVersionNodeJS() {
-    return providers.exec {
-        commandLine nodeExecutable
-        args "--version"
-    }.standardOutput.asText.get().trim().replace("v", "")
+tasks.register('installDependencies', Exec) {
+    dependsOn 'verifyNodeJS'
+    commandLine npmExecutable + ['ci', '--ignore-scripts', '--no-audit', '--no-fund']
 }
-
-def getVersionTsc() {
-    return providers.exec {
-        commandLine tscExecutable
-        args "--v"
-    }.standardOutput.asText.get().trim().replace("Version ", "")
+tasks.register('verifyTsc', Exec) {
+    dependsOn 'installDependencies'
+    commandLine nodeExecutable + ['scripts/verify-tools.cjs', '--typescript']
 }
-
-task verifyNodeJS {
-    def actualVersion = getVersionNodeJS()
-
-    inputs.property("VERSION_NODE_JS", requiredVersionNodeJS)
-    outputs.upToDateWhen { isSemVerMatching(actualVersion, requiredVersionNodeJS) }
-    doLast {
-        if (!isSemVerMatching(actualVersion, requiredVersionNodeJS)) {
-            throw new Exception("Required Node version " + requiredVersionNodeJS + " not found. Detected version " + actualVersion)
-        }
-    }
+tasks.register('buildLibraries', Exec) {
+    dependsOn 'verifyTsc'
+    commandLine npmExecutable + ['run', 'build']
 }
-
-task verifyTsc {
-    def actualVersion = getVersionTsc()
-
-    inputs.property("VERSION_TSC", requiredVersionTsc)
-    outputs.upToDateWhen { isSemVerMatching(actualVersion, requiredVersionTsc) }
-    doLast {
-        if (!isSemVerMatching(actualVersion, requiredVersionTsc)) {
-            throw new Exception("Required tsc version " + requiredVersionTsc + " not found. Detected version " + actualVersion)
-        }
-    }
+tasks.register('verifyLibraries', Exec) {
+    dependsOn 'verifyTsc'
+    commandLine npmExecutable + ['run', 'verify']
 }
-
-task clean {}
-
-task setNpmRegistryToLocal(type: Exec) {
-    commandLine npmExecutable
-    args "set", "registry", "http://localhost:4873/"
+tasks.register('prepareRelease') {
+    group = 'publishing'
+    description = 'Build, test and pack all libraries without publishing.'
+    dependsOn 'verifyLibraries'
 }
-
-task setNpmRegistryToPublic(type: Exec) {
-    commandLine npmExecutable
-    args "set", "registry", "https://registry.npmjs.org/"
+tasks.register('publishRelease', Exec) {
+    group = 'publishing'
+    description = 'Publish previously verified tarballs; restricted to the manual GitHub workflow.'
+    // Intentionally do not rebuild the downloaded, already tested release artifact.
+    commandLine npmExecutable + ['run', 'release:publish']
 }
-
-afterEvaluate {
-    // avoiding simultaneous connections to npmjs.com
-    def prevTask = null
-    project.subprojects.each {
-        def task = it.tasks.find { task -> task.name.contains("npmUpdate") }
-        if (task != null) {
-            if (prevTask != null) {
-                task.mustRunAfter(prevTask)
-            }
-            prevTask = task
-        }
-    }
-
-    prevTask = null
-    project.subprojects.each {
-        def task = it.tasks.find { task -> task.name.contains("npmInstall") }
-        if (task != null) {
-            if (prevTask != null) {
-                task.mustRunAfter(prevTask)
-            }
-            prevTask = task
-        }
-    }
+tasks.register('publishLocalRelease', Exec) {
+    dependsOn 'prepareRelease'
+    commandLine npmExecutable + ['run', 'release:publish-local']
+}
+tasks.register('setVersion', Exec) {
+    def requestedVersion = providers.gradleProperty('releaseVersion').orElse(VERSION).get()
+    commandLine npmExecutable + ['run', 'release:version', '--', requestedVersion]
+}
+tasks.register('updateDependencies', Exec) {
+    commandLine npmExecutable + ['update']
+}
+tasks.register('auditDependencies', Exec) {
+    commandLine npmExecutable + ['audit']
+}
+tasks.register('fixDependencyAudit', Exec) {
+    commandLine npmExecutable + ['audit', 'fix']
+}
+tasks.register('forceFixDependencyAudit', Exec) {
+    commandLine npmExecutable + ['audit', 'fix', '--force']
+}
+tasks.register('removeDependencyLock', Delete) {
+    delete 'package-lock.json'
+}
+tasks.register('setNpmRegistryToLocal', Exec) {
+    commandLine npmExecutable + ['set', 'registry', 'http://localhost:4873/']
+}
+tasks.register('setNpmRegistryToPublic', Exec) {
+    commandLine npmExecutable + ['set', 'registry', 'https://registry.npmjs.org/']
+}
+tasks.register('clean', Delete) {
+    delete layout.buildDirectory
 }
