@@ -41,6 +41,15 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           package-manager-cache: false
+      - name: Use the verified npm version
+        run: npm install --global npm@11.10.0 --ignore-scripts
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+      - name: Locate npm diagnostic logs
+        shell: bash
+        run: echo "NPM_LOG_DIR=$(npm config get cache)/_logs" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -51,6 +60,14 @@ jobs:
       - name: Build, test and pack with Gradle (Windows)
         if: runner.os == 'Windows'
         run: .\gradlew.bat prepareRelease --no-daemon
+      - name: Upload npm logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-logs-${{ matrix.os }}-${{ matrix.node }}
+          path: ${{ env.NPM_LOG_DIR }}
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Check that preparation did not change tracked files
         run: git diff --exit-code
       - uses: actions/upload-artifact@v7
