@@ -9,6 +9,8 @@
         "verify:package": "node scripts/verify.cjs --package-only",
         "build": "node scripts/build.cjs",
         "test:release": "node --test scripts/release.test.cjs",
+        "test:behavior": "node scripts/test-behavior.cjs",
+        "test:coverage": "node scripts/test-behavior.cjs --coverage",
         "release:prepare": "npm run verify",
         "release:publish": "node scripts/release.cjs publish",
         "release:version": "node scripts/set-version.cjs",

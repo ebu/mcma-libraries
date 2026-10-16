@@ -19,6 +19,18 @@ Verification compiles the packages in dependency order and runs local tests. It 
 
 Logging tests cover current behavior, including serialization fallbacks and AWS output. Credential redaction is a separate change. Every library entry point is loaded in Node as ESM. All 30 release tarballs are installed in a temporary consumer using locked external dependencies, imported, and checked with TypeScript. These import checks do not exercise cloud operations or imply behavioral test coverage for every package.
 
+Core/client/API behavior tests cover configuration and resource validation, date serialization, HTTP request signing and retries, discovered versus fallback authentication, routing, middleware, and API-key permissions. HTTP tests use an ephemeral loopback server and the real Axios transport; secrets are supplied by in-memory test doubles. The full verification runs these tests automatically on every CI matrix entry.
+
+For a focused run after installing dependencies:
+
+```sh
+npm run build
+npm run test:behavior
+npm run test:coverage
+```
+
+The coverage command runs the same focused tests and reports executed lines, branches, and functions in the compiled `base/core`, `base/client`, and `base/api` JavaScript. It excludes test code and third-party dependencies. This is a baseline for these tests, not whole-repository coverage: the separate logging, ESM interop, and release tests are not included, and cloud operations still need integration validation. Rebuild after source changes so the tests and report use current output.
+
 Verification uses standard GitHub-hosted runners with read-only repository permissions. No cloud secrets are configured. A local pass validates only the Node/OS combination used locally; the other combinations are verified by CI after pushing.
 
 ## Module format
