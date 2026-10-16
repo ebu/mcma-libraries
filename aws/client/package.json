@@ -1,6 +1,6 @@
 {
     "name": "@mcma/aws-client",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "description": "Node module with code for using AWS V4 authentication in MCMA API handlers and workers",
     "engines": {
         "node": ">=22.0.0"
@@ -16,7 +16,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ebu/mcma-libraries.git"
+        "url": "git+https://github.com/ebu/mcma-libraries.git",
+        "directory": "aws/client"
     },
     "keywords": [
         "ebu",
@@ -28,18 +29,20 @@
     "bugs": {
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
-    "homepage": "https://github.com/ebu/mcma-libraries/mcma-aws-auth#readme",
+    "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
         "@aws-sdk/credential-providers": "^3.1102.0",
-        "crypto-js": "^4.2.0"
+        "crypto-js": "^4.2.0",
+        "axios": "^1.19.0",
+        "@aws-sdk/types": "^3.974.2"
     },
     "peerDependencies": {
-        "@mcma/client": "1.2.1",
-        "@mcma/core": "1.2.1"
+        "@mcma/client": "2.0.0",
+        "@mcma/core": "2.0.0"
     },
     "devDependencies": {
-        "@mcma/client": "1.2.1",
-        "@mcma/core": "1.2.1",
+        "@mcma/client": "2.0.0",
+        "@mcma/core": "2.0.0",
         "@types/node": "^22.20.1",
         "@types/crypto-js": "^4.2.2"
     }

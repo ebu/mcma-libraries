@@ -1,6 +1,6 @@
 {
     "name": "@mcma/client",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "description": "Node module with classes and functions used to access services in an MCMA environment",
     "engines": {
         "node": ">=22.0.0"
@@ -16,7 +16,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ebu/mcma-libraries/mcma-core-nodejs.git"
+        "url": "git+https://github.com/ebu/mcma-libraries.git",
+        "directory": "base/client"
     },
     "keywords": [
         "ebu",
@@ -25,19 +26,19 @@
     "author": "Joost Rovers <joost@rovers.pt>",
     "license": "Apache-2.0",
     "bugs": {
-        "url": "https://github.com/ebu/mcma-libraries/mcma-client-nodejs/issues"
+        "url": "https://github.com/ebu/mcma-libraries/issues"
     },
-    "homepage": "https://github.com/ebu/mcma-libraries/mcma-client-nodejs#readme",
+    "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
         "axios": "^1.19.0"
     },
     "peerDependencies": {
-        "@mcma/core": "1.2.1",
-        "@mcma/secrets": "1.2.1"
+        "@mcma/core": "2.0.0",
+        "@mcma/secrets": "2.0.0"
     },
     "devDependencies": {
-        "@mcma/core": "1.2.1",
-        "@mcma/secrets": "1.2.1",
+        "@mcma/core": "2.0.0",
+        "@mcma/secrets": "2.0.0",
         "@types/node": "^22.20.1"
     }
 }

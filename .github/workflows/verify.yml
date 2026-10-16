@@ -28,5 +28,14 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           package-manager-cache: false
-      - run: npm ci
-      - run: npm run verify
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Verify through Gradle (Linux)
+        if: runner.os != 'Windows'
+        run: bash ./gradlew prepareRelease --no-daemon
+      - name: Verify through Gradle (Windows)
+        if: runner.os == 'Windows'
+        run: .\gradlew.bat prepareRelease --no-daemon
+      - run: git diff --exit-code

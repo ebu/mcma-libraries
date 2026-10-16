@@ -1,0 +1,111 @@
+name: Publish release
+run-name: ${{ inputs.publish && 'Publish' || 'Verify release' }} ${{ inputs.version }}
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Committed release version (must match gradle.properties)
+        required: true
+        type: string
+        default: '2.0.0'
+      publish:
+        description: Publish to npm and create the GitHub release (leave off for a dry run)
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: npm-release
+  cancel-in-progress: false
+env:
+  RELEASE_VERSION: ${{ inputs.version }}
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main' && github.repository == 'ebu/mcma-libraries'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: [22, 24, 26]
+        include:
+          - os: windows-latest
+            node: 22
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build, test and pack with Gradle (Linux)
+        if: runner.os != 'Windows'
+        run: bash ./gradlew prepareRelease --no-daemon
+      - name: Build, test and pack with Gradle (Windows)
+        if: runner.os == 'Windows'
+        run: .\gradlew.bat prepareRelease --no-daemon
+      - name: Check that preparation did not change tracked files
+        run: git diff --exit-code
+      - uses: actions/upload-artifact@v7
+        if: matrix.os == 'ubuntu-latest' && matrix.node == 24
+        with:
+          name: npm-release
+          path: build/release/
+          if-no-files-found: error
+          retention-days: 30
+  publish:
+    needs: prepare
+    if: inputs.publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm install --global npm@11.10.0 --ignore-scripts
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/download-artifact@v8
+        with:
+          name: npm-release
+          path: build/release/
+      - name: Check release tag before publishing
+        run: node scripts/github-release.cjs check
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Publish the verified tarballs using npm trusted publishing
+        run: bash ./gradlew publishRelease --no-daemon
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Create tag and GitHub release at the tested commit
+        run: node scripts/github-release.cjs create
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,6 +1,7 @@
 import { McmaResource } from "@mcma/core";
 import {
     CustomQuery,
+    Document,
     DocumentDatabaseTableProvider,
     getFilterExpressionFromKeyValuePairs,
     getTableName,
@@ -13,7 +14,7 @@ import {
 import { McmaApiRequestContext } from "../../http/index.js";
 import { McmaApiRoute } from "../route.js";
 
-interface CustomQueryFactory<T> {
+interface CustomQueryFactory<T extends Document> {
     isMatch(requestContext: McmaApiRequestContext): boolean;
 
     create(requestContext: McmaApiRequestContext): CustomQuery<T>;
@@ -62,7 +63,7 @@ export class DefaultQueryRoute<T extends McmaResource> extends McmaApiRoute {
     }
 }
 
-export function buildStandardQuery<T>(requestContext: McmaApiRequestContext, defaultSortOrder: QuerySortOrder = QuerySortOrder.Ascending): Query<T> {
+export function buildStandardQuery<T extends Document>(requestContext: McmaApiRequestContext, defaultSortOrder: QuerySortOrder = QuerySortOrder.Ascending): Query<T> {
     const path = requestContext.request.path;
     const queryParams = requestContext.request.queryStringParameters;
 

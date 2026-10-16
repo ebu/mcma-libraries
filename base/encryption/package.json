@@ -1,6 +1,6 @@
 {
     "name": "@mcma/encryption",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "description": "Encryption algorithms used in the EBU MCMA framework. Wraps the jsbn library from Tom Wu (http://www-cs-students.stanford.edu/~tjw/jsbn/).",
     "engines": {
         "node": ">=22.0.0"
@@ -16,7 +16,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ebu/mcma-libraries/mcma-encryption-nodejs.git"
+        "url": "git+https://github.com/ebu/mcma-libraries.git",
+        "directory": "base/encryption"
     },
     "keywords": [
         "ebu",
@@ -25,14 +26,14 @@
     "author": "Evan Verney-Fink <evan@triskel-inc.com>",
     "license": "Apache-2.0",
     "bugs": {
-        "url": "https://github.com/ebu/mcma-libraries/mcma-encryption-nodejs/issues"
+        "url": "https://github.com/ebu/mcma-libraries/issues"
     },
-    "homepage": "https://github.com/ebu/mcma-libraries/mcma-encryption-nodejs#readme",
+    "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "devDependencies": {
-        "@mcma/core": "1.2.1",
+        "@mcma/core": "2.0.0",
         "@types/node": "^22.20.1"
     },
     "peerDependencies": {
-        "@mcma/core": "1.2.1"
+        "@mcma/core": "2.0.0"
     }
 }
