@@ -133,7 +133,7 @@ function smokeTest(items, entries) {
     }
     fs.writeFileSync(path.join(fixture, 'package.json'), JSON.stringify({ private: true, type: 'module', dependencies }));
     fs.writeFileSync(path.join(fixture, 'package-lock.json'), JSON.stringify(lock, null, 2));
-    console.log(npm(['ci', '--offline', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], fixture));
+    console.log(npm(['ci', '--prefer-offline', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], fixture));
     for (const entry of entries) {
         const installed = path.join(fixture, 'node_modules', entry.name);
         assert.ok(!fs.lstatSync(installed).isSymbolicLink(), 'Consumer must use tarballs, not workspace links');
