@@ -57,7 +57,7 @@ Run the complete local release preparation (Windows):
 .\gradlew.bat prepareRelease
 ```
 
-On Linux use `bash ./gradlew prepareRelease`. This installs locked workspace dependencies, builds, runs tests, and creates and tests all tarballs under `build/release/`. It requires Java 17 and Node 22+. The equivalent npm sequence is `npm ci --ignore-scripts` followed by `npm run release:prepare`.
+On Linux use `bash ./gradlew prepareRelease`. This installs locked workspace dependencies, builds, runs tests, and creates and tests all tarballs under `build/release/`. The wrapper uses Gradle 9.8.1 with distribution checksum verification; Java 17 and Node 22+ are required. The equivalent npm sequence is `npm ci --ignore-scripts` followed by `npm run release:prepare`.
 
 The Gradle subprojects remain available. Their `npmInstall` and `tsc` tasks delegate to the shared workspace installation and dependency-ordered build. `setVersion` is explicit (`gradlew setVersion -PreleaseVersion=2.0.1`). Public `npmPublish` delegates to the guarded release publisher and requires the GitHub release artifact; it no longer builds and publishes individual packages in an interleaved sequence. `npmPublishLocal` prepares and publishes the full package set to `http://localhost:4873` with tag `alpha`.
 
