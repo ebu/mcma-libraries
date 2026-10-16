@@ -33,10 +33,10 @@ export class HttpClient implements Http {
         }
         if (!this.config.sanitizeHeadersOnError) {
             this.config.sanitizeHeadersOnError = (config1) => {
-                if (config1.headers["x-api-key"]) {
+                if (config1.headers?.["x-api-key"]) {
                     config1.headers["x-api-key"] = "********";
                 }
-                if (config1.headers["x-mcma-api-key"]) {
+                if (config1.headers?.["x-mcma-api-key"]) {
                     config1.headers["x-mcma-api-key"] = "********";
                 }
                 return config1;

@@ -18,6 +18,7 @@ if (!process.argv.includes('--package-only')) {
         }
     }
     run(['--test', 'scripts/esm-interop.test.mjs', 'scripts/release.test.cjs']);
+    run(['scripts/test-behavior.cjs']);
 }
 // Pack and test every actual release tarball, not just workspace links.
 run(['scripts/release.cjs', 'prepare']);
