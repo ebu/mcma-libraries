@@ -31,7 +31,7 @@
     "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "devDependencies": {
         "@mcma/core": "2.0.0",
-        "@types/node": "^22.20.1"
+        "@types/node": "^22.20.5"
     },
     "peerDependencies": {
         "@mcma/core": "2.0.0"

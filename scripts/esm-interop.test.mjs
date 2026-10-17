@@ -3,6 +3,32 @@ import { createRequire } from 'node:module';
 import { test } from 'node:test';
 import { pluralizeKebabCase } from '../base/api/dist/lib/strings.js';
 import { AwsV4Authenticator, AwsV4PresignedUrlGenerator } from '../aws/client/dist/index.js';
+import { GoogleAuthenticator } from '../google-cloud/client/dist/index.js';
+
+test('Google authentication copies SDK Headers and preserves request headers', async (t) => {
+    const require = createRequire(new URL('../google-cloud/client/package.json', import.meta.url));
+    const { GoogleAuth, IdTokenClient } = require('google-auth-library');
+    const audience = 'https://service.example.test';
+    let requestedAudience;
+    const client = new IdTokenClient({ targetAudience: audience, idTokenProvider: {
+        async fetchIdToken(value) {
+            requestedAudience = value;
+            return `header.${Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url')}.signature`;
+        }
+    } });
+    const getClient = t.mock.method(GoogleAuth.prototype, 'getIdTokenClient', async () => client);
+    const authenticator = new GoogleAuthenticator({ scopes: audience });
+    const request = { headers: { 'x-request-id': 'request-1' } };
+    await authenticator.sign(request);
+    assert.equal(requestedAudience, audience);
+    assert.equal(request.headers['x-request-id'], 'request-1');
+    assert.match(request.headers.authorization, /^Bearer header\./);
+    const secondRequest = {};
+    await authenticator.sign(secondRequest);
+    assert.equal(secondRequest.headers.authorization, request.headers.authorization);
+    assert.equal(getClient.mock.callCount(), 1);
+    assert.deepEqual(getClient.mock.calls[0].arguments, [audience]);
+});
 
 test('ESM API helpers can call the CommonJS pluralize dependency', () => {
     assert.equal(pluralizeKebabCase('job-assignment'), 'job-assignments');

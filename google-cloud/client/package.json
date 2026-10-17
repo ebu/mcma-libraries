@@ -31,7 +31,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
-        "google-auth-library": "^10.9.1"
+        "google-auth-library": "^11.3.1"
     },
     "peerDependencies": {
         "@mcma/client": "2.0.0",
@@ -41,6 +41,6 @@
         "@mcma/client": "2.0.0",
         "@mcma/core": "2.0.0",
         "@mcma/encryption": "2.0.0",
-        "@types/node": "^22.20.1"
+        "@types/node": "^22.20.5"
     }
 }

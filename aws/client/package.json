@@ -31,10 +31,10 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
-        "@aws-sdk/credential-providers": "^3.1102.0",
+        "@aws-sdk/credential-providers": "^3.1152.0",
         "crypto-js": "^4.2.0",
-        "axios": "^1.19.0",
-        "@aws-sdk/types": "^3.974.2"
+        "axios": "^1.20.0",
+        "@aws-sdk/types": "^3.974.6"
     },
     "peerDependencies": {
         "@mcma/client": "2.0.0",
@@ -43,7 +43,7 @@
     "devDependencies": {
         "@mcma/client": "2.0.0",
         "@mcma/core": "2.0.0",
-        "@types/node": "^22.20.1",
+        "@types/node": "^22.20.5",
         "@types/crypto-js": "^4.2.2"
     }
 }

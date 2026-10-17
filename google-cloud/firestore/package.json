@@ -32,7 +32,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
-        "@google-cloud/firestore": "^8.7.0"
+        "@google-cloud/firestore": "^9.3.1"
     },
     "peerDependencies": {
         "@mcma/core": "2.0.0",
@@ -41,6 +41,6 @@
     "devDependencies": {
         "@mcma/core": "2.0.0",
         "@mcma/data": "2.0.0",
-        "@types/node": "^22.20.1"
+        "@types/node": "^22.20.5"
     }
 }

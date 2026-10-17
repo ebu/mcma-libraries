@@ -17,7 +17,7 @@
         "release:publish-local": "node scripts/release.cjs publish-local"
     },
     "devDependencies": {
-        "typescript": "5.9.3"
+        "typescript": "7.0.2"
     },
     "workspaces": [
         "base/api",

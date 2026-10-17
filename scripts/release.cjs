@@ -144,7 +144,7 @@ function smokeTest(items, entries) {
         `import * as package${i} from ${JSON.stringify(p.manifest.name)};\nvoid package${i};`).join('\n') + '\n' +
         'import { ConsoleLogger, LogEvent } from "@mcma/core";\nnew ConsoleLogger("consumer").info("test");\n' +
         'const event: LogEvent = new LogEvent("INFO", 400, "consumer", "request", new Date(), "hello");\n');
-    checked(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'), '--noEmit', '--module', 'Node20',
+    checked(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'), '--ignoreConfig', '--noEmit', '--module', 'Node20',
         '--target', 'ES2022', '--strict', 'consumer.ts'], fixture);
 }
 function existingPackage(result) {
