@@ -14,8 +14,8 @@ npm ci
 npm run verify
 ```
 
-The compiler is pinned to TypeScript 5.9.3. The repository is an npm workspace: the root lockfile covers all 30 libraries and their external dependencies. Internal MCMA dependencies resolve to the checked-out packages, including versions that have not been published yet. Run dependency installation from the repository root, not individual library folders.
-Verification compiles the packages in dependency order and runs local tests. It replaces generated build output and the temporary consumer installation. It does not update lockfiles, publish packages, deploy services, or require cloud credentials. The lockfile consolidation preserves the previously locked external dependency versions.
+The compiler is pinned to TypeScript 7.0.2. The repository is an npm workspace: the root lockfile covers all 30 libraries and their external dependencies. Internal MCMA dependencies resolve to the checked-out packages, including versions that have not been published yet. Run dependency installation from the repository root, not individual library folders.
+Verification compiles the packages in dependency order and runs local tests. It replaces generated build output and the temporary consumer installation. It does not update lockfiles, publish packages, deploy services, or require cloud credentials. Node.js type definitions stay on the latest 22.x release to keep compilation aligned with the minimum supported runtime.
 
 Logging tests cover current behavior, including serialization fallbacks and AWS output. Credential redaction is a separate change. Every library entry point is loaded in Node as ESM. All 30 release tarballs are installed in a temporary consumer using locked external dependencies, imported, and checked with TypeScript. These import checks do not exercise cloud operations or imply behavioral test coverage for every package.
 

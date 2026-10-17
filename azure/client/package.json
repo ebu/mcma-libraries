@@ -31,9 +31,9 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
-        "@azure/identity": "^4.13.1",
-        "@azure/msal-common": "^16.11.3",
-        "@azure/msal-node": "^5.4.3",
+        "@azure/identity": "^4.14.0",
+        "@azure/msal-common": "^16.14.2",
+        "@azure/msal-node": "^7.1.0",
         "jsbn": "^1.1.0"
     },
     "peerDependencies": {
@@ -46,6 +46,6 @@
         "@mcma/core": "2.0.0",
         "@mcma/encryption": "2.0.0",
         "@types/jsbn": "^1.2.33",
-        "@types/node": "^22.20.1"
+        "@types/node": "^22.20.5"
     }
 }

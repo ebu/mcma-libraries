@@ -31,7 +31,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
-        "@azure/msal-browser": "^5.17.3",
+        "@azure/msal-browser": "^5.25.1",
         "jsbn": "^1.1.0"
     },
     "peerDependencies": {
@@ -44,6 +44,6 @@
         "@mcma/core": "2.0.0",
         "@mcma/encryption": "2.0.0",
         "@types/jsbn": "^1.2.33",
-        "@types/node": "^22.20.1"
+        "@types/node": "^22.20.5"
     }
 }

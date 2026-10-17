@@ -32,7 +32,7 @@
     },
     "homepage": "https://github.com/ebu/mcma-libraries#readme",
     "dependencies": {
-        "@aws-sdk/client-lambda": "^3.1102.0"
+        "@aws-sdk/client-lambda": "^3.1152.0"
     },
     "peerDependencies": {
         "@mcma/core": "2.0.0",
@@ -41,6 +41,6 @@
     "devDependencies": {
         "@mcma/core": "2.0.0",
         "@mcma/worker-invoker": "2.0.0",
-        "@types/node": "^22.20.1"
+        "@types/node": "^22.20.5"
     }
 }

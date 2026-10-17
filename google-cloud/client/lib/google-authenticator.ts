@@ -28,6 +28,6 @@ export class GoogleAuthenticator implements Authenticator {
             this.idTokenClient = await this.googleAuth.getIdTokenClient(this.audience);
         }
         const reqHeaders = await this.idTokenClient.getRequestHeaders();
-        requestConfig.headers = Object.assign(requestConfig.headers ?? {}, reqHeaders);
+        requestConfig.headers = Object.assign(requestConfig.headers ?? {}, Object.fromEntries(reqHeaders));
     }
 }

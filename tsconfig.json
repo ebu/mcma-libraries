@@ -13,7 +13,7 @@
             "es7"
         ],
         "esModuleInterop": true,
-        "downlevelIteration": true,
+        "strict": false,
         "noImplicitAny": true,
         "noImplicitReturns": true
     }

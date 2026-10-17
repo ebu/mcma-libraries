@@ -3,7 +3,7 @@ const { spawnSync } = require('node:child_process');
 const { root, packages, readJson } = require('./packages.cjs');
 if (!process.env.npm_execpath) throw new Error('Run through npm run verify.');
 if (Number(process.versions.node.split('.')[0]) < 22) throw new Error('Node 22 or newer is required.');
-if (readJson(path.join(root, 'node_modules/typescript/package.json')).version !== '5.9.3') throw new Error('Run npm ci to install TypeScript 5.9.3.');
+if (readJson(path.join(root, 'node_modules/typescript/package.json')).version !== '7.0.2') throw new Error('Run npm ci to install TypeScript 7.0.2.');
 function run(args, cwd = root) {
     const result = spawnSync(process.execPath, args, { cwd, stdio: 'inherit' });
     if (result.error) throw result.error;
