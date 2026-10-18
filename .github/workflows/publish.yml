@@ -1,13 +1,8 @@
 name: Stage release
-run-name: ${{ inputs.stage && 'Stage' || 'Verify release' }} ${{ inputs.version }}
+run-name: ${{ inputs.stage && 'Stage release' || 'Verify release' }}
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: Committed release version (must match gradle.properties)
-        required: true
-        type: string
-        default: '2.0.0'
       stage:
         description: Stage on npm for manual approval (leave off for a dry run)
         required: true
@@ -18,8 +13,6 @@ permissions:
 concurrency:
   group: npm-release
   cancel-in-progress: false
-env:
-  RELEASE_VERSION: ${{ inputs.version }}
 jobs:
   prepare:
     if: github.ref == 'refs/heads/main' && github.repository == 'ebu/mcma-libraries'
@@ -41,6 +34,19 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           package-manager-cache: false
+      - name: Read and display release version
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const assert = require('node:assert/strict');
+          const match = fs.readFileSync('gradle.properties', 'utf8').match(/^VERSION=(.+)$/m);
+          const version = match?.[1].trim();
+          assert.match(version || '', /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
+          console.log(`Release version: ${version}`);
+          fs.appendFileSync(process.env.GITHUB_ENV, `RELEASE_VERSION=${version}\n`);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Release version: ${version}\n\nRead from the checked-out gradle.properties.\n`);
+          NODE
       - name: Use the verified npm version
         run: npm install --global npm@11.10.0 --ignore-scripts
       - name: Show tool versions
@@ -93,6 +99,19 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: Read and display release version
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const assert = require('node:assert/strict');
+          const match = fs.readFileSync('gradle.properties', 'utf8').match(/^VERSION=(.+)$/m);
+          const version = match?.[1].trim();
+          assert.match(version || '', /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
+          console.log(`Release version: ${version}`);
+          fs.appendFileSync(process.env.GITHUB_ENV, `RELEASE_VERSION=${version}\n`);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Release version: ${version}\n\nRead from the checked-out gradle.properties.\n`);
+          NODE
       - run: npm install --global npm@11.15.0 --ignore-scripts
       - uses: actions/setup-java@v6
         with:
