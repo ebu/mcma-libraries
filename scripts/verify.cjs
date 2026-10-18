@@ -17,7 +17,7 @@ if (!process.argv.includes('--package-only')) {
             run([process.env.npm_execpath, 'test'], pkg.dir);
         }
     }
-    run(['--test', 'scripts/esm-interop.test.mjs', 'scripts/release.test.cjs']);
+    run(['--test', 'scripts/esm-interop.test.mjs', 'scripts/azure-functions-logger.test.mjs', 'scripts/release.test.cjs']);
     run(['scripts/test-behavior.cjs']);
 }
 // Pack and test every actual release tarball, not just workspace links.

@@ -53,7 +53,7 @@ test('ESM Azure logger reads the current CommonJS default client', async (t) => 
     const connectionString = process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
     delete process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
     try {
-        const { AppInsightsLoggerProvider } = await import('../azure/logger/dist/index.js');
+        const { AppInsightsLoggerProvider } = await import('@mcma/azure-logger/application-insights');
         let flushed = false;
         // Setup after import exposes stale CommonJS namespace snapshots. Do not call start().
         appInsights.setup('InstrumentationKey=00000000-0000-0000-0000-000000000000');

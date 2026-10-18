@@ -116,7 +116,7 @@ function smokeTest(items, entries) {
     addConsumerDependency('@types/node', items.find(p => p.manifest.name === '@mcma/core'));
     for (const pkg of items) {
         for (const name of Object.keys(pkg.manifest.peerDependencies || {})) {
-            if (!name.startsWith('@mcma/')) addConsumerDependency(name, pkg);
+            if (!name.startsWith('@mcma/') && !pkg.manifest.peerDependenciesMeta?.[name]?.optional) addConsumerDependency(name, pkg);
         }
     }
     for (const pkg of items) {
@@ -124,6 +124,7 @@ function smokeTest(items, entries) {
         const destination = `node_modules/${e.name}`;
         lock.packages[destination] = { version: e.version, resolved: `file:../release/${e.filename}`, integrity: e.integrity,
             dependencies: pkg.manifest.dependencies, peerDependencies: pkg.manifest.peerDependencies,
+            peerDependenciesMeta: pkg.manifest.peerDependenciesMeta,
             optionalDependencies: pkg.manifest.optionalDependencies, engines: pkg.manifest.engines };
         for (const [key, value] of Object.entries(workspaceLock.packages)) {
             if (key.startsWith(pkg.relative + '/node_modules/')) {
@@ -134,6 +135,8 @@ function smokeTest(items, entries) {
     fs.writeFileSync(path.join(fixture, 'package.json'), JSON.stringify({ private: true, type: 'module', dependencies }));
     fs.writeFileSync(path.join(fixture, 'package-lock.json'), JSON.stringify(lock, null, 2));
     console.log(npm(['ci', '--prefer-offline', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], fixture));
+    assert.ok(!fs.existsSync(path.join(fixture, 'node_modules/applicationinsights')),
+        'The default release consumer must not install the optional Application Insights SDK');
     for (const entry of entries) {
         const installed = path.join(fixture, 'node_modules', entry.name);
         assert.ok(!fs.lstatSync(installed).isSymbolicLink(), 'Consumer must use tarballs, not workspace links');

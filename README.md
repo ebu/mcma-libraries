@@ -41,6 +41,8 @@ Consumers should use ESM imports, for example `import { ConsoleLogger } from "@m
 
 ## Preparing a release
 
+For Azure Functions, `@mcma/azure-logger` now uses invocation-context logging without a mandatory telemetry SDK. See [Azure logger usage and migration](azure/logger/README.md) for invocation scoping, log-query changes, and the optional Application Insights SDK entry point.
+
 Version 2.0.0 is the first ESM release. Node 18 and 20 are no longer supported.
 
 For a future release, create a branch and update versions explicitly:
