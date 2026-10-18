@@ -1,18 +1,28 @@
 {
     "name": "@mcma/azure-logger",
     "version": "2.0.0",
-    "description": "Add Azure AppInsights logging to your MCMA services",
+    "description": "Azure Functions host logging with optional Application Insights SDK integration",
     "engines": {
         "node": ">=22.0.0"
     },
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./application-insights": {
+            "types": "./dist/application-insights.d.ts",
+            "import": "./dist/application-insights.js"
+        }
+    },
     "files": [
         "dist"
     ],
     "scripts": {
-        "test": "jasmine"
+        "test": "node --test ../../scripts/azure-functions-logger.test.mjs"
     },
     "repository": {
         "type": "git",
@@ -30,13 +40,17 @@
         "url": "https://github.com/ebu/mcma-libraries/issues"
     },
     "homepage": "https://github.com/ebu/mcma-libraries#readme",
-    "dependencies": {
+    "peerDependencies": {
+        "@mcma/core": "2.0.0",
         "applicationinsights": "^3.17.0"
     },
-    "peerDependencies": {
-        "@mcma/core": "2.0.0"
+    "peerDependenciesMeta": {
+        "applicationinsights": {
+            "optional": true
+        }
     },
     "devDependencies": {
+        "applicationinsights": "^3.17.0",
         "@azure/functions": "^4.16.5",
         "@mcma/core": "2.0.0",
         "@types/node": "^22.20.5"

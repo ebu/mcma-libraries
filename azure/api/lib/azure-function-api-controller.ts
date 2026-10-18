@@ -1,7 +1,6 @@
 import { URL } from "url";
 import * as fs from "fs";
-import { v4 as uuidv4 } from "uuid";
-import { HttpRequest, HttpResponseInit } from "@azure/functions";
+import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { ConfigVariables, LoggerProvider, McmaException } from "@mcma/core";
 import { McmaApiController, McmaApiRequest, McmaApiRequestContext, McmaApiRouteCollection, McmaApiMiddleware } from "@mcma/api";
 
@@ -56,7 +55,7 @@ export class AzureFunctionApiController {
         this.apiController = new McmaApiController(this.config.routes, this.config.middleware);
     }
 
-    async handleRequest(req: HttpRequest): Promise<HttpResponseInit> {
+    async handleRequest(req: HttpRequest, context: Pick<InvocationContext, "invocationId">): Promise<HttpResponseInit> {
         const headers: { [key: string]: string } = {};
         for (const entry of req.headers.entries()) {
             headers[entry[0]] = entry[1];
@@ -79,7 +78,7 @@ export class AzureFunctionApiController {
 
         const requestContext = new McmaApiRequestContext(
             new McmaApiRequest({
-                id: uuidv4(),
+                id: context.invocationId,
                 path: getPath(req),
                 httpMethod,
                 headers,
