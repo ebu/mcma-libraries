@@ -4,13 +4,31 @@ const { existingPackage, verifyExisting, integrity } = require('./release.cjs');
 const { orderedPackages } = require('./packages.cjs');
 const { spawnSync } = require('node:child_process');
 const path = require('node:path');
-test('publishing refuses local runs, pull-request events and non-main branches before doing any work', () => {
+const { validateStagingRun } = require('./staging-run.cjs');
+
+test('finalization accepts only a successful staging run from this repository main branch', () => {
+    const valid = { repository: { full_name: 'ebu/mcma-libraries' }, head_repository: { full_name: 'ebu/mcma-libraries' },
+        path: '.github/workflows/publish.yml', event: 'workflow_dispatch', head_branch: 'main',
+        status: 'completed', conclusion: 'success', head_sha: 'a'.repeat(40) };
+    const jobs = [{ name: 'stage', conclusion: 'success' }];
+    assert.equal(validateStagingRun(valid, jobs), valid.head_sha);
+    for (const overrides of [{ repository: { full_name: 'other/repo' } }, { head_repository: { full_name: 'fork/repo' } },
+        { path: '.github/workflows/verify.yml' }, { event: 'pull_request' }, { head_branch: 'feature' },
+        { status: 'in_progress' }, { conclusion: 'failure' }, { head_sha: 'bad' }]) {
+        assert.throws(() => validateStagingRun({ ...valid, ...overrides }, jobs));
+    }
+    for (const conclusion of ['skipped', 'failure', 'cancelled']) {
+        assert.throws(() => validateStagingRun(valid, [{ name: 'stage', conclusion }]));
+    }
+    assert.throws(() => validateStagingRun(valid, []));
+});
+test('staging refuses local runs, pull-request events and non-main branches before doing any work', () => {
     const base = { ...process.env, GITHUB_ACTIONS: 'true', GITHUB_EVENT_NAME: 'workflow_dispatch',
         GITHUB_REF: 'refs/heads/main', GITHUB_REPOSITORY: 'ebu/mcma-libraries' };
     delete base.ACTIONS_ID_TOKEN_REQUEST_URL;
     for (const overrides of [{ GITHUB_ACTIONS: 'false' }, { GITHUB_EVENT_NAME: 'pull_request' },
         { GITHUB_REF: 'refs/heads/feature' }, { GITHUB_REPOSITORY: 'someone/other-repo' }, {}]) {
-        const result = spawnSync(process.execPath, [path.join(__dirname, 'release.cjs'), 'publish'],
+        const result = spawnSync(process.execPath, [path.join(__dirname, 'release.cjs'), 'stage'],
             { env: { ...base, ...overrides }, encoding: 'utf8' });
         assert.equal(result.status, 1);
         assert.match(result.stderr, /AssertionError/);
@@ -37,7 +55,7 @@ test('dependency order puts prerequisites first and rejects cycles', () => {
     core.manifest.devDependencies = { '@mcma/client': '2.0.0' };
     assert.throws(() => orderedPackages([core, client]), /cycle/);
 });
-const { publishPackages, validateArtifacts } = require('./release.cjs');
+const { stagePackages, validateArtifacts } = require('./release.cjs');
 const { finalizeRelease } = require('./github-release.cjs');
 function registryFixture() {
     const manifest = { version: '2.0.0', commit: 'commit-a', packages: ['core', 'client', 'api'].map(name => ({
@@ -48,23 +66,23 @@ function registryFixture() {
     const metadata = entry => ({ dist: { integrity: entry.integrity }, gitHead: manifest.commit });
     const adapter = {
         lookup(entry) { reads.push(entry.name); return remote.get(entry.name) || null; },
-        publishTarball(entry) { writes.push(entry.name); remote.set(entry.name, metadata(entry)); },
+        stageTarball(entry) { writes.push(entry.name); remote.set(entry.name, metadata(entry)); },
         async wait() { waits++; }
     };
     return { manifest, remote, writes, reads, adapter, metadata, waits: () => waits };
 }
-test('preflights every version before publishing in dependency order', async () => {
+test('preflights every version before staging in dependency order', async () => {
     const f = registryFixture();
-    const publish = f.adapter.publishTarball;
-    f.adapter.publishTarball = entry => {
+    const publish = f.adapter.stageTarball;
+    f.adapter.stageTarball = entry => {
         assert.deepEqual(f.reads.slice(0, 3), f.manifest.packages.map(p => p.name));
         publish(entry);
     };
-    await publishPackages(f.manifest, f.adapter);
+    await stagePackages(f.manifest, f.adapter);
     assert.deepEqual(f.writes, f.manifest.packages.map(p => p.name));
     assert.equal(f.waits(), 0);
 });
-test('a conflict or registry failure on the final package prevents every publish', async () => {
+test('a conflict or registry failure on the final package prevents every stage', async () => {
     for (const failure of ['bytes', 'commit', 'authorization']) {
         const f = registryFixture(), last = f.manifest.packages[2];
         if (failure === 'authorization') {
@@ -75,58 +93,70 @@ test('a conflict or registry failure on the final package prevents every publish
             if (failure === 'bytes') value.dist.integrity = 'different'; else value.gitHead = 'other';
             f.remote.set(last.name, value);
         }
-        await assert.rejects(publishPackages(f.manifest, f.adapter));
+        await assert.rejects(stagePackages(f.manifest, f.adapter));
         assert.deepEqual(f.writes, []);
     }
 });
-test('retry resumes partial publication, including a timeout after registry acceptance', async () => {
+test('retry skips matching approved packages after an interrupted run', async () => {
     for (const accepted of [false, true]) {
-        const f = registryFixture(), publish = f.adapter.publishTarball;
-        f.adapter.publishTarball = entry => {
+        const f = registryFixture(), publish = f.adapter.stageTarball;
+        f.adapter.stageTarball = entry => {
             if (entry === f.manifest.packages[1]) {
                 if (accepted) publish(entry);
                 throw new Error('connection lost');
             }
             publish(entry);
         };
-        await assert.rejects(publishPackages(f.manifest, f.adapter), /connection lost/);
+        await assert.rejects(stagePackages(f.manifest, f.adapter), /Staging .* failed/);
         assert.equal(f.remote.has('@mcma/api'), false);
-        f.adapter.publishTarball = publish;
-        await publishPackages(f.manifest, f.adapter);
+        f.adapter.stageTarball = publish;
+        await stagePackages(f.manifest, f.adapter);
         assert.deepEqual(f.writes, ['@mcma/core', '@mcma/client', '@mcma/api']);
-        await publishPackages(f.manifest, f.adapter);
+        await stagePackages(f.manifest, f.adapter);
         assert.equal(f.writes.length, 3, 'completed retries must not publish again');
     }
 });
-test('visibility polling recovers from delayed metadata and stops after its bounded timeout', async () => {
-    for (const delay of [2, Infinity]) {
-        const f = registryFixture(), lookup = f.adapter.lookup;
-        let polls = 0;
-        f.adapter.lookup = entry => {
-            if (f.remote.has(entry.name) && entry === f.manifest.packages[0] && polls++ < delay) return null;
-            return lookup(entry);
-        };
-        if (delay === Infinity) {
-            await assert.rejects(publishPackages(f.manifest, f.adapter), /not visible after 12 checks/);
-            assert.equal(polls, 12);
-            assert.equal(f.writes.length, 1);
-            assert.equal(f.waits(), 12);
-        } else {
-            await publishPackages(f.manifest, f.adapter);
-            assert.equal(f.waits(), 2);
-            assert.equal(f.writes.length, 3);
-        }
+test('staging completes without waiting for public registry visibility', async () => {
+    const f = registryFixture();
+    f.adapter.stageTarball = entry => f.writes.push(entry.name);
+    await stagePackages(f.manifest, f.adapter);
+    assert.equal(f.writes.length, 3);
+    assert.equal(f.remote.size, 0);
+});
+
+test('pending stages are not silently skipped; approval allows recovery from a lost response', async () => {
+    const f = registryFixture(), pending = new Map();
+    f.adapter.stageTarball = entry => {
+        if (pending.has(entry.name)) throw new Error('version already staged');
+        pending.set(entry.name, f.metadata(entry));
+        if (entry === f.manifest.packages[1]) throw new Error('response lost');
+    };
+    await assert.rejects(stagePackages(f.manifest, f.adapter), /Inspect pending packages/);
+    assert.equal(pending.size, 2);
+    await assert.rejects(stagePackages(f.manifest, f.adapter), /Inspect pending packages/);
+    assert.equal(pending.size, 2, 'retry must stop at the existing pending stage');
+    // The maintainer reviews and approves the two stages using npm and 2FA.
+    for (const [name, metadata] of pending) f.remote.set(name, metadata);
+    pending.clear();
+    await stagePackages(f.manifest, f.adapter);
+    assert.deepEqual([...pending.keys()], ['@mcma/api']);
+});
+
+test('finalization requires every approved package to match the tested artifact', () => {
+    const { verifyPublishedPackages } = require('./release.cjs');
+    for (const scenario of ['missing', 'bytes', 'commit', 'authorization', 'valid']) {
+        const f = registryFixture();
+        for (const entry of f.manifest.packages) f.remote.set(entry.name, f.metadata(entry));
+        const last = f.manifest.packages[2];
+        if (scenario === 'missing') f.remote.delete(last.name);
+        if (scenario === 'bytes') f.remote.get(last.name).dist.integrity = 'other';
+        if (scenario === 'commit') f.remote.get(last.name).gitHead = 'other';
+        if (scenario === 'authorization') f.adapter.lookup = () => { throw new Error('E403'); };
+        if (scenario === 'valid') verifyPublishedPackages(f.manifest, f.adapter.lookup);
+        else assert.throws(() => verifyPublishedPackages(f.manifest, f.adapter.lookup));
     }
 });
-test('unexpected published metadata stops dependent packages', async () => {
-    const f = registryFixture();
-    f.adapter.publishTarball = entry => {
-        f.writes.push(entry.name);
-        f.remote.set(entry.name, { dist: { integrity: 'wrong' }, gitHead: f.manifest.commit });
-    };
-    await assert.rejects(publishPackages(f.manifest, f.adapter), /Published bytes differ/);
-    assert.equal(f.writes.length, 1);
-});
+
 test('artifact validation rejects tampering, wrong versions and paths before reading outside the release folder', () => {
     const f = registryFixture();
     const read = filename => Buffer.from(filename.replace('.tgz', ''));

@@ -1,5 +1,5 @@
-name: Publish release
-run-name: ${{ inputs.publish && 'Publish' || 'Verify release' }} ${{ inputs.version }}
+name: Stage release
+run-name: ${{ inputs.stage && 'Stage' || 'Verify release' }} ${{ inputs.version }}
 on:
   workflow_dispatch:
     inputs:
@@ -8,8 +8,8 @@ on:
         required: true
         type: string
         default: '2.0.0'
-      publish:
-        description: Publish to npm and create the GitHub release (leave off for a dry run)
+      stage:
+        description: Stage on npm for manual approval (leave off for a dry run)
         required: true
         type: boolean
         default: false
@@ -77,9 +77,9 @@ jobs:
           path: build/release/
           if-no-files-found: error
           retention-days: 30
-  publish:
+  stage:
     needs: prepare
-    if: inputs.publish
+    if: inputs.stage
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -93,7 +93,7 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - run: npm install --global npm@11.10.0 --ignore-scripts
+      - run: npm install --global npm@11.15.0 --ignore-scripts
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -102,27 +102,9 @@ jobs:
         with:
           name: npm-release
           path: build/release/
-      - name: Check release tag before publishing
+      - name: Check release tag before staging
         run: node scripts/github-release.cjs check
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Publish the verified tarballs using npm trusted publishing
-        run: bash ./gradlew publishRelease --no-daemon
-  release:
-    needs: publish
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          package-manager-cache: false
-      - name: Create tag and GitHub release at the tested commit
-        run: node scripts/github-release.cjs create
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Stage the verified tarballs using npm trusted publishing
+        run: bash ./gradlew stageRelease --no-daemon

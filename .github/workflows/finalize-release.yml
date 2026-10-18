@@ -1,0 +1,62 @@
+name: Finalize release
+run-name: Finalize ${{ inputs.version }} from staging run ${{ inputs.staging_run_id }}
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version approved on npm
+        required: true
+        type: string
+        default: '2.0.0'
+      staging_run_id:
+        description: Numeric run ID from the successful Stage release workflow
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: npm-release
+  cancel-in-progress: false
+env:
+  RELEASE_VERSION: ${{ inputs.version }}
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main' && github.repository == 'ebu/mcma-libraries'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate the original staging run
+        id: staging
+        run: node scripts/staging-run.cjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STAGING_RUN_ID: ${{ inputs.staging_run_id }}
+      - name: Check out the tested source commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.staging.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: npm-release
+          path: build/release/
+          run-id: ${{ inputs.staging_run_id }}
+          github-token: ${{ github.token }}
+      - run: npm install --global npm@11.15.0 --ignore-scripts
+      - name: Verify every approved package and create the GitHub release
+        run: |
+          npm run release:verify-published
+          node scripts/github-release.cjs create
+        env:
+          RELEASE_COMMIT: ${{ steps.staging.outputs.commit }}
+          GH_TOKEN: ${{ github.token }}

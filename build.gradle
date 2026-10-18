@@ -29,11 +29,11 @@ tasks.register('prepareRelease') {
     description = 'Build, test and pack all libraries without publishing.'
     dependsOn 'verifyLibraries'
 }
-tasks.register('publishRelease', Exec) {
+tasks.register('stageRelease', Exec) {
     group = 'publishing'
-    description = 'Publish previously verified tarballs; restricted to the manual GitHub workflow.'
+    description = 'Stage previously verified tarballs for npm approval; restricted to the manual GitHub workflow.'
     // Intentionally do not rebuild the downloaded, already tested release artifact.
-    commandLine npmExecutable + ['run', 'release:publish']
+    commandLine npmExecutable + ['run', 'release:stage']
 }
 tasks.register('publishLocalRelease', Exec) {
     dependsOn 'prepareRelease'
