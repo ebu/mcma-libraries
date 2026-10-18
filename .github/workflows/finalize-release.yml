@@ -1,13 +1,8 @@
 name: Finalize release
-run-name: Finalize ${{ inputs.version }} from staging run ${{ inputs.staging_run_id }}
+run-name: Finalize release from staging run ${{ inputs.staging_run_id }}
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: Version approved on npm
-        required: true
-        type: string
-        default: '2.0.0'
       staging_run_id:
         description: Numeric run ID from the successful Stage release workflow
         required: true
@@ -17,8 +12,6 @@ permissions:
 concurrency:
   group: npm-release
   cancel-in-progress: false
-env:
-  RELEASE_VERSION: ${{ inputs.version }}
 jobs:
   release:
     if: github.ref == 'refs/heads/main' && github.repository == 'ebu/mcma-libraries'
@@ -52,6 +45,18 @@ jobs:
           path: build/release/
           run-id: ${{ inputs.staging_run_id }}
           github-token: ${{ github.token }}
+      - name: Read and display original release version
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const assert = require('node:assert/strict');
+          const { version } = JSON.parse(fs.readFileSync('build/release/manifest.json', 'utf8'));
+          assert.match(version || '', /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
+          console.log(`Release version: ${version}`);
+          fs.appendFileSync(process.env.GITHUB_ENV, `RELEASE_VERSION=${version}\n`);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Release version: ${version}\n\nRead from the original staging artifact; publication verification follows.\n`);
+          NODE
       - run: npm install --global npm@11.15.0 --ignore-scripts
       - name: Verify every approved package and create the GitHub release
         run: |
