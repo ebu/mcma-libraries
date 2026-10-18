@@ -8,7 +8,8 @@ async function main() {
     assert.equal(process.env.GITHUB_REPOSITORY, 'ebu/mcma-libraries');
     assert.equal(process.env.GITHUB_REF, 'refs/heads/main');
     assert.equal(process.env.GITHUB_EVENT_NAME, 'workflow_dispatch');
-    assert.match(process.env.GITHUB_SHA || '', /^[a-f0-9]{40}$/);
+    const commit = process.env.RELEASE_COMMIT || process.env.GITHUB_SHA;
+    assert.match(commit || '', /^[a-f0-9]{40}$/);
     assert.ok(fs.readFileSync(path.join(root, 'gradle.properties'), 'utf8').split(/\r?\n/).includes(`VERSION=${version}`));
     assert.ok(['check', 'create'].includes(process.argv[2]));
     async function api(endpoint, method = 'GET', body) {
@@ -20,7 +21,7 @@ async function main() {
         if (!response.ok) throw new Error(`GitHub ${method} ${endpoint}: ${response.status} ${await response.text()}`);
         return response.json();
     }
-    return finalizeRelease({ version, commit: process.env.GITHUB_SHA, mode: process.argv[2] }, api);
+    return finalizeRelease({ version, commit, mode: process.argv[2] }, api);
 }
 async function finalizeRelease({ version, commit, mode }, api) {
     const tag = `v${version}`;

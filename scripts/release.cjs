@@ -161,29 +161,51 @@ function verifyExisting(remote, entry, commit) {
     assert.equal(remote.dist?.integrity, entry.integrity, `Published bytes differ: ${entry.name}@${entry.version}`);
     assert.equal(remote.gitHead, commit, `Published source differs: ${entry.name}@${entry.version}`);
 }
-async function publish() {
+function releaseManifest(staging) {
     assert.equal(process.env.GITHUB_ACTIONS, 'true', 'Publish only from GitHub Actions');
     assert.equal(process.env.GITHUB_EVENT_NAME, 'workflow_dispatch');
     assert.equal(process.env.GITHUB_REF, 'refs/heads/main', 'Publish only from main');
     assert.equal(process.env.GITHUB_REPOSITORY, 'ebu/mcma-libraries');
-    assert.ok(process.env.ACTIONS_ID_TOKEN_REQUEST_URL, 'OIDC identity is required');
+    if (staging) assert.ok(process.env.ACTIONS_ID_TOKEN_REQUEST_URL, 'OIDC identity is required');
     const manifest = readJson(path.join(releaseDir, 'manifest.json'));
     assert.equal(manifest.version, version());
     assert.equal(manifest.version, process.env.RELEASE_VERSION);
-    assert.equal(manifest.commit, process.env.GITHUB_SHA);
+    assert.equal(manifest.commit, staging ? process.env.GITHUB_SHA : process.env.RELEASE_COMMIT);
     assert.equal(manifest.commit, sourceCommit());
     const items = orderedPackages();
     validatePackages(items, manifest.version);
     assert.deepEqual(manifest.packages.map(e => e.name), items.map(p => p.manifest.name));
     validateArtifacts(manifest, filename => fs.readFileSync(path.join(releaseDir, filename)));
-    const lookup = entry => existingPackage(command(process.execPath, [process.env.npm_execpath, 'view',
+    return manifest;
+}
+function lookupPublished(entry) {
+    return existingPackage(command(process.execPath, [process.env.npm_execpath, 'view',
         `${entry.name}@${entry.version}`, '--json', '--registry', registry]));
-    return publishPackages(manifest, {
-        lookup,
-        publishTarball: entry => console.log(npm(['publish', path.join(releaseDir, entry.filename), '--access', 'public', '--tag', 'latest',
-            '--registry', registry, '--ignore-scripts', '--provenance'])),
-        wait: () => new Promise(resolve => setTimeout(resolve, 5000))
+}
+async function stage() {
+    const manifest = releaseManifest(true);
+    await stagePackages(manifest, {
+        lookup: lookupPublished,
+        stageTarball: entry => console.log(npm(['stage', 'publish', path.join(releaseDir, entry.filename),
+            '--access', 'public', '--tag', 'latest', '--registry', registry, '--ignore-scripts', '--provenance']))
     });
+    console.log('Staging finished. Review and approve each package on npm, then run Finalize release with this workflow run ID.');
+    if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+        `## Staged release ${manifest.version}\n\nSource commit: ${manifest.commit}\n\n` +
+        `Review and approve the packages on npm. Then run **Finalize release** with staging run ID **${process.env.GITHUB_RUN_ID}**.\n\n` +
+        manifest.packages.map(e => `- ${e.name}@${e.version}`).join('\n') + '\n');
+}
+function verifyPublished() {
+    const manifest = releaseManifest(false);
+    verifyPublishedPackages(manifest, lookupPublished);
+    console.log(`All ${manifest.packages.length} approved packages match the tested artifacts.`);
+}
+function verifyPublishedPackages(manifest, lookup) {
+    for (const entry of manifest.packages) {
+        const remote = lookup(entry);
+        assert.ok(remote, `${entry.name}@${entry.version} is not published yet; approve it on npm first`);
+        verifyExisting(remote, entry, manifest.commit);
+    }
 }
 function validateArtifacts(manifest, readTarball) {
     for (const entry of manifest.packages) {
@@ -192,7 +214,7 @@ function validateArtifacts(manifest, readTarball) {
         assert.equal(integrity(readTarball(entry.filename)), entry.integrity, 'Tarball changed after testing');
     }
 }
-async function publishPackages(manifest, { lookup, publishTarball, wait }) {
+async function stagePackages(manifest, { lookup, stageTarball }) {
     // Preflight all existing versions before publishing anything. Never silently skip a conflicting release.
     const existing = new Set();
     for (const entry of manifest.packages) {
@@ -201,14 +223,12 @@ async function publishPackages(manifest, { lookup, publishTarball, wait }) {
     }
     for (const entry of manifest.packages) {
         if (existing.has(entry.name)) { console.log(`Already published and identical: ${entry.name}`); continue; }
-        await publishTarball(entry);
-        let visible = false;
-        for (let attempt = 0; attempt < 12; attempt++) {
-            const remote = lookup(entry);
-            if (remote) { verifyExisting(remote, entry, manifest.commit); visible = true; break; }
-            await wait();
+        // OIDC cannot inspect pending stages. Never treat a staging conflict or
+        // ambiguous network failure as success; the maintainer must inspect npm.
+        try { await stageTarball(entry); }
+        catch (cause) {
+            throw new Error(`Staging ${entry.name} failed. Inspect pending packages on npm, approve matching stages, then re-run failed jobs on this same run. Do not blindly reject or replace stages.`, { cause });
         }
-        assert.ok(visible, `${entry.name} not visible after 12 checks; retry the same workflow run`);
     }
 }
 function publishLocal() {
@@ -224,12 +244,13 @@ function publishLocal() {
             '--registry', 'http://localhost:4873', '--ignore-scripts']));
     }
 }
-module.exports = { integrity, existingPackage, verifyExisting, validatePackages, validateArtifacts, publishPackages };
+module.exports = { integrity, existingPackage, verifyExisting, validatePackages, validateArtifacts, stagePackages, verifyPublishedPackages };
 if (require.main === module) {
     Promise.resolve().then(() => {
         if (process.argv[2] === 'prepare') return prepare();
-        if (process.argv[2] === 'publish') return publish();
+        if (process.argv[2] === 'stage') return stage();
+        if (process.argv[2] === 'verify-published') return verifyPublished();
         if (process.argv[2] === 'publish-local') return publishLocal();
-        throw new Error('Expected prepare, publish or publish-local');
+        throw new Error('Expected prepare, stage, verify-published or publish-local');
     }).catch(error => { console.error(error); process.exitCode = 1; });
 }

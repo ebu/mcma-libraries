@@ -3,7 +3,7 @@
 tasks.register('npmInstall') { dependsOn ':installDependencies' }
 tasks.register('tsc') { dependsOn ':buildLibraries' }
 tasks.register('setVersion') { dependsOn ':setVersion' }
-tasks.register('npmPublish') { dependsOn ':publishRelease' }
+tasks.register('npmPublish') { dependsOn ':stageRelease' }
 tasks.register('npmPublishLocal') { dependsOn ':publishLocalRelease' }
 tasks.register('npmUpdate') { dependsOn ':updateDependencies' }
 tasks.register('npmAudit') { dependsOn ':auditDependencies' }
