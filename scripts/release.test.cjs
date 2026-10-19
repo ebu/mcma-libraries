@@ -12,6 +12,15 @@ test('finalization accepts only a successful staging run from this repository ma
         status: 'completed', conclusion: 'success', head_sha: 'a'.repeat(40) };
     const jobs = [{ name: 'stage', conclusion: 'success' }];
     assert.equal(validateStagingRun(valid, jobs), valid.head_sha);
+    assert.equal(validateStagingRun(valid, [{ name: 'Stage 2.0.0', conclusion: 'success' }]), valid.head_sha);
+    for (const name of ['Stage 2.0.0', 'stage']) {
+        for (const conclusion of ['skipped', 'failure', 'cancelled']) {
+            assert.throws(() => validateStagingRun(valid, [{ name, conclusion }]));
+        }
+    }
+    for (const name of ['Prepare 2.0.0', 'Stage ', 'Stage 2.0.0-beta', 'Stage 2.0.0 extra']) {
+        assert.throws(() => validateStagingRun(valid, [{ name, conclusion: 'success' }]));
+    }
     for (const overrides of [{ repository: { full_name: 'other/repo' } }, { head_repository: { full_name: 'fork/repo' } },
         { path: '.github/workflows/verify.yml' }, { event: 'pull_request' }, { head_branch: 'feature' },
         { status: 'in_progress' }, { conclusion: 'failure' }, { head_sha: 'bad' }]) {
