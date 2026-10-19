@@ -13,13 +13,17 @@ concurrency:
   group: npm-release
   cancel-in-progress: false
 jobs:
-  release:
+  resolve:
+    name: Read staged release version
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      commit: ${{ steps.staging.outputs.commit }}
     if: github.ref == 'refs/heads/main' && github.repository == 'ebu/mcma-libraries'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       actions: read
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -34,11 +38,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           STAGING_RUN_ID: ${{ inputs.staging_run_id }}
-      - name: Check out the tested source commit
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ steps.staging.outputs.commit }}
-          persist-credentials: false
       - uses: actions/download-artifact@v8
         with:
           name: npm-release
@@ -46,6 +45,7 @@ jobs:
           run-id: ${{ inputs.staging_run_id }}
           github-token: ${{ github.token }}
       - name: Read and display original release version
+        id: version
         shell: bash
         run: |
           node <<'NODE'
@@ -54,14 +54,39 @@ jobs:
           const { version } = JSON.parse(fs.readFileSync('build/release/manifest.json', 'utf8'));
           assert.match(version || '', /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
           console.log(`Release version: ${version}`);
-          fs.appendFileSync(process.env.GITHUB_ENV, `RELEASE_VERSION=${version}\n`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\n`);
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Release version: ${version}\n\nRead from the original staging artifact; publication verification follows.\n`);
           NODE
+  release:
+    name: Finalize ${{ needs.resolve.outputs.version }}
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    env:
+      RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: npm-release
+          path: build/release/
+          run-id: ${{ inputs.staging_run_id }}
+          github-token: ${{ github.token }}
       - run: npm install --global npm@11.15.0 --ignore-scripts
       - name: Verify every approved package and create the GitHub release
         run: |
           npm run release:verify-published
           node scripts/github-release.cjs create
         env:
-          RELEASE_COMMIT: ${{ steps.staging.outputs.commit }}
+          RELEASE_COMMIT: ${{ needs.resolve.outputs.commit }}
           GH_TOKEN: ${{ github.token }}

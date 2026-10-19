@@ -10,7 +10,8 @@ function validateStagingRun(run, jobs) {
     assert.equal(run.status, 'completed');
     assert.equal(run.conclusion, 'success');
     assert.match(run.head_sha || '', /^[a-f0-9]{40}$/);
-    assert.ok(jobs.some(job => job.name === 'stage' && job.conclusion === 'success'),
+    // Older workflow runs used the job ID as their display name.
+    assert.ok(jobs.some(job => (job.name === 'stage' || /^Stage (0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(job.name)) && job.conclusion === 'success'),
         'Select a successful staging run, not a dry run');
     return run.head_sha;
 }
